@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.mvl" name="My Video library" version="2.4" provider-name="Heurixtics">
+<addon id="plugin.video.mvl" name="My Video library" version="2.5" provider-name="Heurixtics">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmcswift2" version="2.4.0"/>
@@ -14,8 +14,8 @@
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <language>en</language>
-        <summary>An add-on for MVL to stream movies</summary>
-        <description>Visit "http://www.myvideolibrary.com/" for further details.</description>
+        <summary>An add-on for MVL to stream movies. This is V2.5!</summary>
+        <description>Visit "http://www.myvideolibrary.com/" for further details. Currently testing...</description>
 		<license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
 		<source>https://github.com/ashikzk/mvl-skin/tree/master/plugin.video.mvl</source>
     </extension>
