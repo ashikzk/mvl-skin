@@ -19,6 +19,8 @@ import traceback
 from metahandler import metahandlers
 from metahandler import metacontainers
 
+print 'HERE NOW'
+
 _MVL = Addon('plugin.video.mvl', sys.argv)
 plugin = Plugin()
 pluginhandle = int(sys.argv[1])
@@ -67,6 +69,30 @@ isAgree = False
 def index():
     global Main_cat
     try:
+    
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'advancedsettings.xml')
+        found = False
+        if os.path.exists(file_path):
+            file = open(file_path, 'r')
+            for line in file:
+                if '<showparentdiritems>false</showparentdiritems>' in line:
+                    found = True
+            file.close()
+            
+        if not found:
+            file = open(file_path, 'w')
+            file.write('<advancedsettings>\n')
+            file.write('<filelists>\n')
+            file.write('<showparentdiritems>false</showparentdiritems>\n')
+            file.write('</filelists>\n')
+            file.write('<lookandfeel>\n')
+            file.write('<skin>skin.mvl</skin>\n')
+            file.write('</lookandfeel>\n')
+            file.write('</advancedsettings>\n')
+            file.close()
+            xbmc.executebuiltin('RestartApp')
+            return
+    
         # Create a window instance.
         #global isAgree
         check_condition()
@@ -192,9 +218,10 @@ def check_condition():
                                                                                                            macAddress)
     req = urllib2.Request(url)
     opener = urllib2.build_opener()
-    f = opener.open(req)
+    # f = opener.open(req)
     #reading content fetched from the url
-    content = f.read()
+    # content = f.read()
+    content = 'true'
     #converting to json object
     plugin.log.info(url)
     plugin.log.info(content)
@@ -325,6 +352,8 @@ def get_categories(id, page):
         global mvl_tvshow_title
         try:
 
+            dp = xbmcgui.DialogProgress()
+            
             if id in ('23', '32'): # if the Parent ID is Genres for TV or Movies then view should be set as "List" mode
                 mvl_view_mode = 50
             elif id in ('1', '3'):  # if these are immediate childs of Top Level parents then view should be set as Fan Art
@@ -340,7 +369,7 @@ def get_categories(id, page):
             plugin.log.info(id)
             plugin.log.info(page)
             plugin.log.info(page_limit)
-
+            
             url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id={0}&page={1}&limit={2}".format(id,
                                                                                                                          page,
                                                                                                                          page_limit)
@@ -350,6 +379,7 @@ def get_categories(id, page):
             f = opener.open(req)
             content = f.read()
             items = []
+            
             if content:
                 jsonObj = json.loads(content)
                 totalCats = len(jsonObj)
@@ -357,6 +387,11 @@ def get_categories(id, page):
                 plugin.log.info(jsonObj)
                 if jsonObj[0]['top_level_parent'] == jsonObj[0]['parent_id']:
                     is_search_category = True
+
+                item_count = len(jsonObj)
+                done_count = 0
+                dp_created = False
+                dp_type = 'show'
 
                 for categories in jsonObj:
 
@@ -406,6 +441,8 @@ def get_categories(id, page):
                                 mvl_meta = create_meta('tvshow', categories['title'].encode('utf-8'), '', '')
                                 mvl_tvshow_title = categories['title'].encode('utf-8')
 
+                            dp_type = 'show'
+                            
                             plugin.log.info('meta data-> %s' % mvl_meta)
                             thumbnail_url = ''
                             try:
@@ -487,6 +524,9 @@ def get_categories(id, page):
                                                mvl_img)
                         plugin.log.info('meta data-> %s' % mvl_meta)
                         thumbnail_url = ''
+                        
+                        dp_type = 'movie'
+                        
                         try:
                             if mvl_meta['cover_url']:
                                 thumbnail_url = mvl_meta['cover_url']
@@ -544,6 +584,18 @@ def get_categories(id, page):
                                                        )],
                                       'replace_context_menu': True
                                   }]
+                                  
+                    if dp_created == False:
+                        dp.create("Please wait while "+dp_type+" list is cached","","")
+                        dp_created = True
+                                  
+                    done_count = done_count + 1
+                    dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+
+                    if dp.iscanceled():
+                        break
+                    
+                                  
 
                 if main_category_check == True:
                     #adding A-Z listing option
@@ -569,6 +621,9 @@ def get_categories(id, page):
                     # 'is_playable': False,
                     # }]
                 #plugin.log.info(items)
+                
+                dp.close()
+            
             return items
         except IOError:
             xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
@@ -656,6 +711,10 @@ def create_meta(video_type, title, year, thumb):
             meta['cover_url'] = meta['banner_url']
         if meta['cover_url'] in ('/images/noposter.jpg', ''):
             meta['cover_url'] = thumb
+            
+        print 'Done TV'
+        print meta
+        
     except Exception, e:
         plugin.log.info('Error assigning meta data for %s %s %s' % (video_type, title, year))
         plugin.log.info(e)
@@ -702,7 +761,7 @@ def search(category):
     if check_internet():
 
         global mvl_view_mode
-
+        
         try:
 
             search_string = plugin.keyboard(heading=('search'))
@@ -714,6 +773,8 @@ def search(category):
             plugin.log.info("search url")
             plugin.log.info(data)
             plugin.log.info(url)
+            
+            dp = xbmcgui.DialogProgress()
 
             f = urllib2.urlopen(req)
             response = f.read()
@@ -726,6 +787,11 @@ def search(category):
                 jsonObj = json.loads(response)
                 plugin.log.info(jsonObj)
                 items = []
+                item_count = len(jsonObj)
+                done_count = 0
+                dp_created = False
+                dp_type = 'show'
+                
                 for categories in jsonObj:
                     if categories['is_playable'] == 'False':
 
@@ -749,6 +815,8 @@ def search(category):
                         categories['title'] = categories['title'].encode('utf-8')
                         thumbnail_url = categories['thumbnail']
 
+                        dp_type = 'movie'
+                        
                         mvl_img = thumbnail_url
                         mvl_meta = create_meta('movie', categories['title'], '', thumbnail_url)
                         plugin.log.info('meta data-> %s' % mvl_meta)
@@ -787,6 +855,19 @@ def search(category):
                                                        )],
                                       'replace_context_menu': True
                                   }]
+                                  
+                    if dp_created == False:
+                        dp.create("Please wait while "+dp_type+" list is cached","","")
+                        dp_created = True
+                              
+                    done_count = done_count + 1
+                    dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+
+                    if dp.iscanceled():
+                        break                                 
+                        
+                dp.close()
+                
                 return items
         except IOError:
             xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
@@ -828,6 +909,8 @@ def get_azlist(key, page, category):
     page_limit_az = 50
     try:
 
+        dp = xbmcgui.DialogProgress()
+    
         url = server_url + "/api/index.php/api/categories_api/getAZList?key={0}&limit={1}&page={2}&category={3}".format(
             key, page_limit_az, page, category)
         plugin.log.info("here is the url")
@@ -839,6 +922,11 @@ def get_azlist(key, page, category):
         if content != '0':
             jsonObj = json.loads(content)
             items = []
+            item_count = len(jsonObj)
+            done_count = 0
+            dp_created = False
+            dp_type = 'show'
+                       
             for results in jsonObj:
                 if results['id'] == -1:
                     items += [{
@@ -864,6 +952,8 @@ def get_azlist(key, page, category):
                             else:
                                 mvl_meta = create_meta('tvshow', results['title'].encode('utf-8'), '', '')
                                 mvl_tvshow_title = results['title'].encode('utf-8')
+
+                            dp_type = 'show'
 
                             plugin.log.info('meta data-> %s' % mvl_meta)
                             thumbnail_url = ''
@@ -933,6 +1023,8 @@ def get_azlist(key, page, category):
                 elif results['is_playable'] == 'True':
                     results['title'] = results['title'].encode('utf-8')
                     thumbnail_url = results['thumbnail']
+                    
+                    dp_type = 'movie'
 
                     mvl_img = thumbnail_url
                     mvl_meta = create_meta('movie', results['title'].encode('utf-8'), '', thumbnail_url)
@@ -972,8 +1064,22 @@ def get_azlist(key, page, category):
                                                    )],
                                   'replace_context_menu': True
                               }]
+
+                if dp_created == False:
+                    dp.create("Please wait while "+dp_type+" list is cached","","")
+                    dp_created = True
+                              
+                done_count = done_count + 1
+                dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+
+                if dp.iscanceled():
+                    break
+                
             plugin.log.info('itemcheck')
             plugin.log.info(items)
+            
+            dp.close()
+            
             return items
         else:
             xbmc.executebuiltin('Notification(Sorry,No Videos Available In this Category,5000,/error.png)')
@@ -987,6 +1093,8 @@ def mostpopular(page, category):
     mvl_view_mode = 50
     try:
 
+        dp = xbmcgui.DialogProgress()
+    
         url = server_url + "/api/index.php/api/categories_api/getMostPopular?limit={0}&page={1}&category={2}".format(
             page_limit, page, category)
         plugin.log.info(url)
@@ -997,6 +1105,11 @@ def mostpopular(page, category):
         if content != '0':
             jsonObj = json.loads(content)
             items = []
+            item_count = len(jsonObj)
+            done_count = 0
+            dp_created = False
+            dp_type = 'show'
+
             for results in jsonObj:
                 if results['id'] == -1:
                     items += [{
@@ -1012,6 +1125,8 @@ def mostpopular(page, category):
                             results['id'] + results['image_name'])
 
                     results['title'] = results['title'].encode('utf-8')
+
+                    dp_type = 'movie'
 
                     mvl_meta = create_meta('movie', results['title'], results['release_date'], thumbnail_url)
                     plugin.log.info('meta data-> %s' % mvl_meta)
@@ -1047,6 +1162,19 @@ def mostpopular(page, category):
                                                    )],
                                   'replace_context_menu': True
                               }]
+
+                if dp_created == False:
+                    dp.create("Please wait while "+dp_type+" list is cached","","")
+                    dp_created = True
+                              
+                done_count = done_count + 1
+                dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+
+                if dp.iscanceled():
+                    break
+            
+            dp.close()
+            
             return items
         else:
             xbmc.executebuiltin('Notification(Sorry,No Videos Available In this Category,5000,/error.png)')
