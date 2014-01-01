@@ -19,8 +19,6 @@ import traceback
 from metahandler import metahandlers
 from metahandler import metacontainers
 
-print 'HERE NOW'
-
 _MVL = Addon('plugin.video.mvl', sys.argv)
 plugin = Plugin()
 pluginhandle = int(sys.argv[1])
@@ -60,7 +58,7 @@ DB = 'sqlite'
 __translated__ = xbmc.translatePath("special://database")
 DB_DIR = os.path.join(__translated__, 'myvideolibrary.db')
 plugin.log.info('DB_DIR: ' + DB_DIR)
-mvl_view_mode = 59
+mvl_view_mode = 58
 mvl_tvshow_title = ''
 isAgree = False
 
@@ -68,8 +66,6 @@ isAgree = False
 @plugin.route('/')
 def index():
     global Main_cat
-    global mvl_view_mode
-
     try:
     
         file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'advancedsettings.xml')
@@ -103,8 +99,7 @@ def index():
         init_database()
         #creating a context menu
         #url used to get main categories from server
-        url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id=0&limit={0}&page=1".format(
-            page_limit)
+        url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id=0&limit={0}&page=1".format(page_limit)
         plugin.log.info(url)
         req = urllib2.Request(url)
         opener = urllib2.build_opener()
@@ -140,8 +135,7 @@ def onClick_agree():
     global isAgree
     macAddress = usrsettings.getSetting('mac_address')
     plugin.log.info("I Agree func calls")
-    url = server_url + "/api/index.php/api/authentication_api/set_flag_status?username={0}&mac={1}".format(username,
-                                                                                                           macAddress)
+    url = server_url + "/api/index.php/api/authentication_api/set_flag_status?username={0}&mac={1}".format(username, macAddress)
     req = urllib2.Request(url)
     opener = urllib2.build_opener()
     f = opener.open(req)
@@ -211,7 +205,32 @@ def prev_page():
         plugin.log.info("clicked")
         curr_page = 5
 
+class TextBox:
+    # constants
+    WINDOW = 10147
+    CONTROL_LABEL = 1
+    CONTROL_TEXTBOX = 5
 
+    def __init__(self, *args, **kwargs):
+        # activate the text viewer window
+        xbmc.executebuiltin("ActivateWindow(%d)" % ( self.WINDOW, ))
+        # get window
+        self.win = xbmcgui.Window(self.WINDOW)
+        # give window time to initialize
+        xbmc.sleep(1000)
+        self.setControls()
+
+    def setControls(self):
+        # set heading
+        heading = "Terms & Conditions"
+        self.win.getControl(self.CONTROL_LABEL).setLabel(heading)
+        # set text
+        tc_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 't&c.info')
+        f = open(tc_path)
+        text = f.read()
+        self.win.getControl(self.CONTROL_TEXTBOX).setText(text)
+        
+        
 def check_condition():
     macAddress = usrsettings.getSetting('mac_address')
     global curr_page
@@ -229,43 +248,45 @@ def check_condition():
     plugin.log.info(content)
     if content == 'false':
         global window
-        window = AddonDialogWindow('Terms and Conditions')
-        # Set the window width, height and the grid resolution: 2 rows, 3 columns.
-        window.setGeometry(700, 500, 10, 10)
+        
+        TextBox()
 
-        # TextBox
-        window.textbox = TextBox()
-        window.placeControl(window.textbox, 0, 0, 9, 10)
-        window.textbox.setText(
-            "General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.\nDefinitions\nThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
+        # window = AddonDialogWindow('Terms and Conditions')
+        # # Set the window width, height and the grid resolution: 2 rows, 3 columns.
+        # window.setGeometry(800, 600, 10, 10)
 
-        # window.textbox.setText('General\nWelcome to My V')
-        # Create a button.
-        next = Button('Next')
-        # Place the label on the window grid.
-        window.placeControl(next, 9, 8, columnspan=2)
-        window.connect(next, next_page)
+        # # TextBox
+        # window.textbox = TextBox()
+        # window.placeControl(window.textbox, 0, 0, 9, 10)
+        #window.textbox.setText("General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.DefinitionsThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
 
-        prev = Button('Previous')
-        # Place the label on the window grid.
-        window.placeControl(prev, 9, 0, columnspan=2)
-        window.connect(prev, prev_page)
+        # # window.textbox.setText('General\nWelcome to My V')
+        # # Create a button.
+        # next = Button('Next')
+        # # Place the label on the window grid.
+        # window.placeControl(next, 9, 8, columnspan=2)
+        # window.connect(next, next_page)
 
-        # Create a button.
-        button = Button('I Agree')
-        button2 = Button('Do Not Agree')
+        # prev = Button('Previous')
+        # # Place the label on the window grid.
+        # window.placeControl(prev, 9, 0, columnspan=2)
+        # window.connect(prev, prev_page)
 
-        # Place the button on the window grid.
-        window.placeControl(button, 9, 3, columnspan=2)
-        window.placeControl(button2, 9, 5, columnspan=2)
+        # # Create a button.
+        # button = Button('I Agree')
+        # button2 = Button('Do Not Agree')
 
-        # Set initial focus on the button.
-        window.setFocus(button)
-        # Connect the button to a function.
-        window.connect(button, onClick_agree)
-        window.connect(button2, onClick_disAgree)
-        # Show the created window.
-        window.doModal()
+        # # Place the button on the window grid.
+        # window.placeControl(button, 9, 3, columnspan=2)
+        # window.placeControl(button2, 9, 5, columnspan=2)
+
+        # # Set initial focus on the button.
+        # window.setFocus(button)
+        # # Connect the button to a function.
+        # window.connect(button, onClick_agree)
+        # window.connect(button2, onClick_disAgree)
+        # # Show the created window.
+        # window.doModal()
     elif content == 'true':
         global isAgree
         isAgree = True
@@ -367,14 +388,15 @@ def get_categories(id, page):
             main_category_check = False
             is_search_category = False
             top_level_parent = 0
+            page_limit_cat = 50
             xbmcplugin.setContent(pluginhandle, 'Movies')
             plugin.log.info(id)
             plugin.log.info(page)
-            plugin.log.info(page_limit)
+            plugin.log.info(page_limit_cat)
             
-            url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id={0}&page={1}&limit={2}".format(id,
+            url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id={0}&page={1}&limit={2}".format(id, 
                                                                                                                          page,
-                                                                                                                         page_limit)
+                                                                                                                         page_limit_cat)
             plugin.log.info(url)
             req = urllib2.Request(url)
             opener = urllib2.build_opener()
@@ -396,7 +418,6 @@ def get_categories(id, page):
                 dp_type = 'show'
 
                 for categories in jsonObj:
-
                     try:    # The last item of Json only contains the one element in array with key as "ID" so causing the issue
 
                         plugin.log.info('{0}'.format(categories['is_playable']))
@@ -427,8 +448,7 @@ def get_categories(id, page):
                     #categories['is_playable'] is False for all categories and True for all video Items
                     elif categories['is_playable'] == 'False':
 
-                        if categories['top_level_parent'] == '3' and categories['parent_id'] not in (
-                        '32', '3'):  # Parsing the TV Shows Titles & Seasons only
+                        if categories['top_level_parent'] == '3' and categories['parent_id'] not in ('32', '3'):  # Parsing the TV Shows Titles & Seasons only
                             tmpTitle = categories['title'].encode('utf-8')
 
                             mvl_meta = ''
@@ -587,6 +607,12 @@ def get_categories(id, page):
                                       'replace_context_menu': True
                                   }]
                                   
+                    if categories['id'] != -1:
+                        if categories['top_level_parent'] == '1':
+                            dp_type = 'movie'
+                        elif categories['top_level_parent'] == '3':
+                            dp_type = 'show'
+                        
                     if dp_created == False:
                         dp.create("Please wait while "+dp_type+" list is loaded","","")
                         dp_created = True
@@ -796,23 +822,81 @@ def search(category):
                 
                 for categories in jsonObj:
                     if categories['is_playable'] == 'False':
+                        if categories['top_level_parent'] == '3' and categories['parent_id'] not in ('32', '3'):  # Parsing the TV Shows Titles & Seasons only:      # if TV Series fetch there fan art
+                            tmpTitle = categories['title'].encode('utf-8')
+                            mvl_meta = ''
+                            if tmpTitle == "Season 1":
+                                tmpSeasons = []
+                                mvl_view_mode = 50
+                                # for i in range(totalCats):
+                                # tmpSeasons.append( i )
+                                #plugin.log.info('season found')
+                                #mvl_meta = __metaget__.get_seasons(mvl_tvshow_title, '', tmpSeasons)
+                            else:
+                                mvl_meta = create_meta('tvshow', categories['title'].encode('utf-8'), '', '')
+                                mvl_tvshow_title = categories['title'].encode('utf-8')
 
-                        items += [{
-                                      'label': '{0}'.format(categories['title'].encode('utf-8')),
-                                      'path': plugin.url_for('get_categories', id=categories['id'], page=0),
-                                      'is_playable': False,
-                                      'thumbnail': art('{0}.png'.format(categories['title'].lower())),
-                                      'context_menu': [(
-                                                           'Add to Favourites',
-                                                           'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                 id=categories['id'],
-                                                                                                 title=categories['title'],
-                                                                                                 thumbnail="None",
-                                                                                                 isplayable="False",
-                                                                                                 category=category)
-                                                       )],
-                                      'replace_context_menu': True
-                                  }]
+                            dp_type = 'show'
+
+                            plugin.log.info('meta data-> %s' % mvl_meta)
+                            thumbnail_url = ''
+                            try:
+                                if mvl_meta['cover_url']:
+                                    thumbnail_url = mvl_meta['cover_url']
+                            except:
+                                thumbnail_url = ''
+
+                            fanart_url = ''
+                            try:
+                                if mvl_meta['backdrop_url']:
+                                    fanart_url = mvl_meta['backdrop_url']
+                            except:
+                                fanart_url = ''
+
+                            mvl_plot = ''
+                            try:
+                                if mvl_meta['plot']:
+                                    mvl_plot = mvl_meta['plot']
+                            except:
+                                mvl_plot = ''
+
+                            items += [{
+                                          'label': '{0}'.format(categories['title'].encode('utf-8')),
+                                          'path': plugin.url_for('get_categories', id=categories['id'], page=0),
+                                          'is_playable': False,
+                                          'thumbnail': thumbnail_url,
+                                          'properties': {
+                                              'fanart_image': fanart_url,
+                                          },
+                                          'context_menu': [(
+                                                               'Add to Favourites',
+                                                               'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                                                                                     id=categories['id'],
+                                                                                                     title=categories['title'].encode('utf-8'),
+                                                                                                     thumbnail="None",
+                                                                                                     isplayable="False",
+                                                                                                     category=categories['top_level_parent'])
+                                                           )],
+                                          'replace_context_menu': True
+                                      }]
+
+                        else:                    
+                            items += [{
+                                          'label': '{0}'.format(categories['title'].encode('utf-8')),
+                                          'path': plugin.url_for('get_categories', id=categories['id'], page=0),
+                                          'is_playable': False,
+                                          'thumbnail': art('{0}.png'.format(categories['title'].lower())),
+                                          'context_menu': [(
+                                                               'Add to Favourites',
+                                                               'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                                                                                     id=categories['id'],
+                                                                                                     title=categories['title'],
+                                                                                                     thumbnail="None",
+                                                                                                     isplayable="False",
+                                                                                                     category=category)
+                                                           )],
+                                          'replace_context_menu': True
+                                      }]
                     elif categories['is_playable'] == 'True':
                         categories['title'] = categories['title'].encode('utf-8')
                         thumbnail_url = categories['thumbnail']
@@ -857,6 +941,13 @@ def search(category):
                                                        )],
                                       'replace_context_menu': True
                                   }]
+                                  
+
+                    if categories['id'] != -1:
+                        if categories['top_level_parent'] == '1':
+                            dp_type = 'movie'
+                        elif categories['top_level_parent'] == '3':
+                            dp_type = 'show'
                                   
                     if dp_created == False:
                         dp.create("Please wait while "+dp_type+" list is loaded","","")
@@ -1067,6 +1158,12 @@ def get_azlist(key, page, category):
                                   'replace_context_menu': True
                               }]
 
+                if results['id'] != -1:
+                    if results['top_level_parent'] == '1':
+                        dp_type = 'movie'
+                    elif results['top_level_parent'] == '3':
+                        dp_type = 'show'
+                    
                 if dp_created == False:
                     dp.create("Please wait while "+dp_type+" list is loaded","","")
                     dp_created = True
@@ -1096,9 +1193,10 @@ def mostpopular(page, category):
     try:
 
         dp = xbmcgui.DialogProgress()
+        
+        page_limit_mp = 50
     
-        url = server_url + "/api/index.php/api/categories_api/getMostPopular?limit={0}&page={1}&category={2}".format(
-            page_limit, page, category)
+        url = server_url + "/api/index.php/api/categories_api/getMostPopular?limit={0}&page={1}&category={2}".format(page_limit_mp, page, category)
         plugin.log.info(url)
         req = urllib2.Request(url)
         opener = urllib2.build_opener()
@@ -1165,6 +1263,12 @@ def mostpopular(page, category):
                                   'replace_context_menu': True
                               }]
 
+                if results['id'] != -1:
+                    if results['top_level_parent'] == '1':
+                        dp_type = 'movie'
+                    elif results['top_level_parent'] == '3':
+                        dp_type = 'show'
+                    
                 if dp_created == False:
                     dp.create("Please wait while "+dp_type+" list is loaded","","")
                     dp_created = True
@@ -1279,3 +1383,4 @@ def get_favourites(category):
 if __name__ == '__main__':
     plugin.run()
     xbmc.executebuiltin("Container.SetViewMode(%s)" % mvl_view_mode)
+

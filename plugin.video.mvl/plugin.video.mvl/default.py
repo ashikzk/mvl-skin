@@ -205,7 +205,32 @@ def prev_page():
         plugin.log.info("clicked")
         curr_page = 5
 
+class TextBox:
+    # constants
+    WINDOW = 10147
+    CONTROL_LABEL = 1
+    CONTROL_TEXTBOX = 5
 
+    def __init__(self, *args, **kwargs):
+        # activate the text viewer window
+        xbmc.executebuiltin("ActivateWindow(%d)" % ( self.WINDOW, ))
+        # get window
+        self.win = xbmcgui.Window(self.WINDOW)
+        # give window time to initialize
+        xbmc.sleep(1000)
+        self.setControls()
+
+    def setControls(self):
+        # set heading
+        heading = "Terms & Conditions"
+        self.win.getControl(self.CONTROL_LABEL).setLabel(heading)
+        # set text
+        tc_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 't&c.info')
+        f = open(tc_path)
+        text = f.read()
+        self.win.getControl(self.CONTROL_TEXTBOX).setText(text)
+        
+        
 def check_condition():
     macAddress = usrsettings.getSetting('mac_address')
     global curr_page
@@ -223,43 +248,45 @@ def check_condition():
     plugin.log.info(content)
     if content == 'false':
         global window
-        window = AddonDialogWindow('Terms and Conditions')
-        # Set the window width, height and the grid resolution: 2 rows, 3 columns.
-        window.setGeometry(700, 500, 10, 10)
+        
+        TextBox()
 
-        # TextBox
-        window.textbox = TextBox()
-        window.placeControl(window.textbox, 0, 0, 9, 10)
-        window.textbox.setText(
-            "General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.\nDefinitions\nThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
+        # window = AddonDialogWindow('Terms and Conditions')
+        # # Set the window width, height and the grid resolution: 2 rows, 3 columns.
+        # window.setGeometry(800, 600, 10, 10)
 
-        # window.textbox.setText('General\nWelcome to My V')
-        # Create a button.
-        next = Button('Next')
-        # Place the label on the window grid.
-        window.placeControl(next, 9, 8, columnspan=2)
-        window.connect(next, next_page)
+        # # TextBox
+        # window.textbox = TextBox()
+        # window.placeControl(window.textbox, 0, 0, 9, 10)
+        #window.textbox.setText("General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.DefinitionsThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
 
-        prev = Button('Previous')
-        # Place the label on the window grid.
-        window.placeControl(prev, 9, 0, columnspan=2)
-        window.connect(prev, prev_page)
+        # # window.textbox.setText('General\nWelcome to My V')
+        # # Create a button.
+        # next = Button('Next')
+        # # Place the label on the window grid.
+        # window.placeControl(next, 9, 8, columnspan=2)
+        # window.connect(next, next_page)
 
-        # Create a button.
-        button = Button('I Agree')
-        button2 = Button('Do Not Agree')
+        # prev = Button('Previous')
+        # # Place the label on the window grid.
+        # window.placeControl(prev, 9, 0, columnspan=2)
+        # window.connect(prev, prev_page)
 
-        # Place the button on the window grid.
-        window.placeControl(button, 9, 3, columnspan=2)
-        window.placeControl(button2, 9, 5, columnspan=2)
+        # # Create a button.
+        # button = Button('I Agree')
+        # button2 = Button('Do Not Agree')
 
-        # Set initial focus on the button.
-        window.setFocus(button)
-        # Connect the button to a function.
-        window.connect(button, onClick_agree)
-        window.connect(button2, onClick_disAgree)
-        # Show the created window.
-        window.doModal()
+        # # Place the button on the window grid.
+        # window.placeControl(button, 9, 3, columnspan=2)
+        # window.placeControl(button2, 9, 5, columnspan=2)
+
+        # # Set initial focus on the button.
+        # window.setFocus(button)
+        # # Connect the button to a function.
+        # window.connect(button, onClick_agree)
+        # window.connect(button2, onClick_disAgree)
+        # # Show the created window.
+        # window.doModal()
     elif content == 'true':
         global isAgree
         isAgree = True
@@ -391,7 +418,6 @@ def get_categories(id, page):
                 dp_type = 'show'
 
                 for categories in jsonObj:
-
                     try:    # The last item of Json only contains the one element in array with key as "ID" so causing the issue
 
                         plugin.log.info('{0}'.format(categories['is_playable']))
@@ -581,8 +607,14 @@ def get_categories(id, page):
                                       'replace_context_menu': True
                                   }]
                                   
+                    if categories['id'] != -1:
+                        if categories['top_level_parent'] == '1':
+                            dp_type = 'movie'
+                        elif categories['top_level_parent'] == '3':
+                            dp_type = 'show'
+                        
                     if dp_created == False:
-                        dp.create("Please wait while "+dp_type+" list is cached","","")
+                        dp.create("Please wait while "+dp_type+" list is loaded","","")
                         dp_created = True
                                   
                     done_count = done_count + 1
@@ -910,8 +942,15 @@ def search(category):
                                       'replace_context_menu': True
                                   }]
                                   
+
+                    if categories['id'] != -1:
+                        if categories['top_level_parent'] == '1':
+                            dp_type = 'movie'
+                        elif categories['top_level_parent'] == '3':
+                            dp_type = 'show'
+                                  
                     if dp_created == False:
-                        dp.create("Please wait while "+dp_type+" list is cached","","")
+                        dp.create("Please wait while "+dp_type+" list is loaded","","")
                         dp_created = True
                               
                     done_count = done_count + 1
@@ -1119,8 +1158,14 @@ def get_azlist(key, page, category):
                                   'replace_context_menu': True
                               }]
 
+                if results['id'] != -1:
+                    if results['top_level_parent'] == '1':
+                        dp_type = 'movie'
+                    elif results['top_level_parent'] == '3':
+                        dp_type = 'show'
+                    
                 if dp_created == False:
-                    dp.create("Please wait while "+dp_type+" list is cached","","")
+                    dp.create("Please wait while "+dp_type+" list is loaded","","")
                     dp_created = True
                               
                 done_count = done_count + 1
@@ -1218,8 +1263,14 @@ def mostpopular(page, category):
                                   'replace_context_menu': True
                               }]
 
+                if results['id'] != -1:
+                    if results['top_level_parent'] == '1':
+                        dp_type = 'movie'
+                    elif results['top_level_parent'] == '3':
+                        dp_type = 'show'
+                    
                 if dp_created == False:
-                    dp.create("Please wait while "+dp_type+" list is cached","","")
+                    dp.create("Please wait while "+dp_type+" list is loaded","","")
                     dp_created = True
                               
                 done_count = done_count + 1
