@@ -60,7 +60,7 @@ DB = 'sqlite'
 __translated__ = xbmc.translatePath("special://database")
 DB_DIR = os.path.join(__translated__, 'myvideolibrary.db')
 plugin.log.info('DB_DIR: ' + DB_DIR)
-mvl_view_mode = 58
+mvl_view_mode = 59
 mvl_tvshow_title = ''
 isAgree = False
 
@@ -68,6 +68,8 @@ isAgree = False
 @plugin.route('/')
 def index():
     global Main_cat
+    global mvl_view_mode
+
     try:
     
         file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'advancedsettings.xml')
@@ -586,7 +588,7 @@ def get_categories(id, page):
                                   }]
                                   
                     if dp_created == False:
-                        dp.create("Please wait while "+dp_type+" list is cached","","")
+                        dp.create("Please wait while "+dp_type+" list is loaded","","")
                         dp_created = True
                                   
                     done_count = done_count + 1
@@ -857,7 +859,7 @@ def search(category):
                                   }]
                                   
                     if dp_created == False:
-                        dp.create("Please wait while "+dp_type+" list is cached","","")
+                        dp.create("Please wait while "+dp_type+" list is loaded","","")
                         dp_created = True
                               
                     done_count = done_count + 1
@@ -1066,7 +1068,7 @@ def get_azlist(key, page, category):
                               }]
 
                 if dp_created == False:
-                    dp.create("Please wait while "+dp_type+" list is cached","","")
+                    dp.create("Please wait while "+dp_type+" list is loaded","","")
                     dp_created = True
                               
                 done_count = done_count + 1
@@ -1164,7 +1166,7 @@ def mostpopular(page, category):
                               }]
 
                 if dp_created == False:
-                    dp.create("Please wait while "+dp_type+" list is cached","","")
+                    dp.create("Please wait while "+dp_type+" list is loaded","","")
                     dp_created = True
                               
                 done_count = done_count + 1
