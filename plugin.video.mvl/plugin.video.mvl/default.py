@@ -205,17 +205,38 @@ def prev_page():
         plugin.log.info("clicked")
         curr_page = 5
 
-class TextBox:
+class FullWindow(xbmcgui.Window):
+
+    """An abstract class to define window event processing."""
+
+    def onAction(self, action):
+        """
+        Catch button actions.
+        Note that, despite being compared to an integer,
+        action is an instance of xbmcgui.Action class.
+        """
+        print '~~~~~~~~~~~~ Action'
+
+    def onClick(self, control):
+        """
+        Catch activated controls.
+        Control is an instance of xbmcgui.Control class.
+        """
+        print '~~~~~~~~~~~~ Control'
+        
+class TextBoxx:
     # constants
     WINDOW = 10147
     CONTROL_LABEL = 1
     CONTROL_TEXTBOX = 5
+    CONTROL_BUTTON_1 = 10
+    CONTROL_BUTTON_2 = 11
 
     def __init__(self, *args, **kwargs):
         # activate the text viewer window
         xbmc.executebuiltin("ActivateWindow(%d)" % ( self.WINDOW, ))
         # get window
-        self.win = xbmcgui.Window(self.WINDOW)
+        self.win = FullWindow(self.WINDOW)#xbmcgui.Window(self.WINDOW)
         # give window time to initialize
         xbmc.sleep(1000)
         self.setControls()
@@ -230,7 +251,47 @@ class TextBox:
         text = f.read()
         self.win.getControl(self.CONTROL_TEXTBOX).setText(text)
         
+        self.win.getControl(self.CONTROL_BUTTON_1).setLabel('Agree')
+        self.win.getControl(self.CONTROL_BUTTON_2).setLabel('Disagree')
         
+        self.win.getControl(self.CONTROL_BUTTON_1).setVisible(True)
+        self.win.getControl(self.CONTROL_BUTTON_2).setVisible(True)
+        
+class TermsAndConditions(xbmcgui.WindowDialog):
+    
+    def __init__(self):
+        # xbmc.executebuiltin("ActivateWindow(%d)" % ( 10147 ))  
+        # self.win = xbmcgui.Window(10147)
+        # TEST = "This is a test"
+        
+        self.setProperty('width', '300')
+        self.setProperty('height', '800')
+        
+        self.image0 = xbmcgui.ControlImage(360, 20, 700, 700, "dialogs/DialogBG.png")
+        self.addControl(self.image0)
+        
+        self.label0 = xbmcgui.ControlLabel(460, 60, 200, 100, " Terms & Conditions ", "font13", "0xFF00FF00" )
+        self.addControl(self.label0)
+        
+        self.textbox0 = xbmcgui.ControlTextBox(0, 150, 500, 650)
+        self.addControl(self.textbox0)
+        
+        self.button0 = xbmcgui.ControlButton(350, 500, 250, 50, " Agree here ")
+        self.addControl(self.button0)
+
+    def onAction(self, action):
+        if action == 10:
+            self.close()
+
+    def onControl(self, control):
+        # if control == self.button0: 
+            # self.message('you pushed theoooo button')
+        self.message('you pushed the button')
+
+    def message(self, message):
+        dialog = xbmcgui.Dialog()
+        dialog.ok(" Message ", message)
+
 def check_condition():
     macAddress = usrsettings.getSetting('mac_address')
     global curr_page
@@ -242,14 +303,20 @@ def check_condition():
     # f = opener.open(req)
     #reading content fetched from the url
     # content = f.read()
-    content = 'true'
+    content = 'false'
     #converting to json object
     plugin.log.info(url)
     plugin.log.info(content)
     if content == 'false':
         global window
         
-        TextBox()
+        # tc = TermsAndConditions()
+        # tc = MyClass()
+        # tc.doModal()
+        # del tc
+        #mydisplay.doModal()
+        
+        TextBoxx()
 
         # window = AddonDialogWindow('Terms and Conditions')
         # # Set the window width, height and the grid resolution: 2 rows, 3 columns.
@@ -257,8 +324,11 @@ def check_condition():
 
         # # TextBox
         # window.textbox = TextBox()
-        # window.placeControl(window.textbox, 0, 0, 9, 10)
-        #window.textbox.setText("General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.DefinitionsThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
+        # window.placeControl(window.textbox, 0, 0, 300, 8)
+        ##window.textbox.setText("General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.DefinitionsThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
+
+        # window.scrollbar = ScrollBar()
+        # window.placeControl(window.scrollbar, 0, 9, 300, 1)
 
         # # window.textbox.setText('General\nWelcome to My V')
         # # Create a button.
@@ -287,6 +357,7 @@ def check_condition():
         # window.connect(button2, onClick_disAgree)
         # # Show the created window.
         # window.doModal()
+        
     elif content == 'true':
         global isAgree
         isAgree = True

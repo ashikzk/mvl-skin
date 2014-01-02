@@ -24,7 +24,7 @@
         <posx>424</posx>
         <posy>150</posy>
         <width>1070</width>
-        <height>840</height>
+        <height>790</height>
         <font>InfoPlot</font>
         <align>justify</align>
       </control>
@@ -32,7 +32,7 @@
         <posx>1523</posx>
         <posy>150</posy>
         <width>36</width>
-        <height>840</height>
+        <height>790</height>
         <texturesliderbackground>-</texturesliderbackground>
         <texturesliderbar>-</texturesliderbar>
         <texturesliderbarfocus>-</texturesliderbarfocus>
@@ -43,6 +43,27 @@
         <onleft>close</onleft>
         <onright>close</onright>
       </control>
+      <control type="button" id="10" description="Agree">
+		<visible></visible>
+        <posx>700</posx>
+        <posy>950</posy>
+        <height>60</height>
+        <width>250</width>
+        <label></label>
+        <align>center</align>
+        <pulseonselect>true</pulseonselect>
+      </control>
+      <control type="button" id="11" description="Disagree">
+		<visible></visible>
+        <posx>980</posx>
+        <posy>950</posy>
+        <height>60</height>
+        <width>250</width>
+        <label></label>
+        <align>center</align>
+        <pulseonselect>true</pulseonselect>
+      </control>
+	  
     </control>
   </controls>
 </window>
