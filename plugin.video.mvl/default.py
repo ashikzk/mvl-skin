@@ -1,6 +1,4 @@
 from xbmcswift2 import Plugin, xbmcgui, xbmc, xbmcaddon, xbmcplugin, actions
-from pyxbmct.addonwindow import *
-
 import urllib2
 import time
 import simplejson as json
@@ -11,7 +9,7 @@ import xbmcvfs
 import xbmcaddon
 import xbmcplugin
 from t0mm0.common.addon import Addon
-#import re
+import re
 import sys
 import os
 #import resources.htmlcleaner
@@ -127,7 +125,7 @@ def index():
 
 
 def onClick_disAgree():
-    window.close()
+    # window.close()
     sys_exit()
 
 
@@ -141,157 +139,75 @@ def onClick_agree():
     f = opener.open(req)
 
     isAgree = True
-    window.close()
+    # window.close()
 
 
-def next_page():
-    global curr_page
-    if curr_page == 1:
-        window.textbox.setText(
-            "Relationship\nThe relationship between you (the user) and us (MVL) is that we provide you with access to the referencing material and media contained within our site, which is provided to you on a purely non commercial basis and is, therefore, not that of customer and supplier.\nContent\nOther than descriptive material about the movies, MVL does not host, provide, archive, store, or distribute media of any kind, and acts merely as an index (or directory) of media posted by other webmasters on the internet, which is completely outside of our control. In general, we cannot and do not attempt to control, censor, or block any indexed material that may be considered offensive, abusive, libelous, obnoxious, inaccurate, deceptive, unlawful or otherwise distressing and neither do we accept responsibility for this content or the consequences of such content being made available.  Sometimes we do block referenced material because a third party asserts superior rights or for other legitimate reasons.  We are not responsible for your use of referenced material or your access to referenced material. ")
-        plugin.log.info("clicked")
-        curr_page = 2
-    elif curr_page == 2:
-        window.textbox.setText(
-            "Material may be inappropriately described or subject to restrictions such as copyright, licensing and other limitations and it is the sole responsibility of those having access to such material to comply with any or all lawful obligations arising from such material coming into their possession and, thus mitigate any alleged transgression. All users warrant that they are 18 years of age or older, and, therefore, qualified to enter into this agreement either as an individual or as a corporate entity. All users undertake to comply with applicable laws and observe the rights inherent in any copyright material whilst upholding the rights of any copyright owner. All users are advised to use caution, discretion, common sense and personal judgment when using My Video Library.com or any references detailed within the directory and to respect the wishes of others who may value freedom, as consenting adults equal to (or possibly superior to) your own personal preferences.\nQuality Of Service\nMVL does not provide commercial services and there are no actual or implied guarantees as to the availability of service or the speed, operation or function of this website, which is offered on a basis to those who choose to comply with the terms and conditions detailed within and access the \'free\' content of this website.")
-        plugin.log.info("clicked")
-        curr_page = 3
-    elif curr_page == 3:
-        window.textbox.setText(
-            "SOME JURISDICTIONS PROVIDE FOR CERTAIN WARRANTIES, LIKE THE IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. TO THE EXTENT PERMITTED BY LAW, WE EXCLUDE ALL WARRANTIES. \nIndemnification.\nYou, as a user of the website, agree to indemnify, defend, and hold MVL harmless from any and all liability, claims, actions, expenses (including attorneys\' fees and costs) that MVL may have relating to or arising from (a) your use of (or consequences of your use of) the website, or (b) any allegation that your use of the referenced material violates the trademark, copyright or other intellectual property rights of any third party.\nPrivacy\nThis website will comply with the requirements of any law enforcement or other officials, courts, or others with a legitimate interest in the official investigation or enforcement of applicable law.\nThe protection of the rights of others is important to MVL, and this extends to your adherence to intellectual property law, the rights of others to enjoy freedom from slander, libel, defamation, provocation, harassment, discrimination of any kind or any other action that may be deemed offensive by the individual concerned.")
-        plugin.log.info("clicked")
-        curr_page = 4
-    elif curr_page == 4:
-        window.textbox.setText(
-            "MVL is committed to protecting your privacy. MVL does not sell, trade or rent your personal information to any other companies. MVL will not collect any personal information about you except when you specifically and knowingly provide such information when registering for the website.\nBy using our website, you consent to the collection and use of this information by MVL. If we decide to change our privacy policy, we will post any changes to this page so that you are aware of which information we collect, how we use it, and under which circumstances we disclose it.\nIntellectual Property - General\nMVL respects the rights of others, and prohibits the use of referenced material for any purpose other than that for which it is intended (where such use is lawful and free of civil liability or other constraint) and in such circumstances where possession of such material may have any adverse financial, prejudicial or any other effect on any other third party.\nIf you believe in good faith your work has been copied in a way that constitutes copyright infringement, or that your intellectual property rights have been otherwise violated, please provide the following to MVL\'s Copyright Agent:\nA description of the copyrighted work or intellectual property that you claim has been infringed, or if multiple works, a listing of such works.")
-        plugin.log.info("clicked")
-        curr_page = 5
-    elif curr_page == 5:
-        window.textbox.setText(
-            "Identification of the referenced material that is claimed to be infringing or to be the subject of infringing activity and that is to be removed or access to which is to be disabled, and information reasonably sufficient to permit MVL to locate the referenced material;\nInformation reasonably sufficient for MVL to contact you: name, address, phone number and email address;\nA statement, made by you, that you have a good faith belief that the disputed use of the material is not authorized by the copyright owner, its agent or the law;\nA statement by you, made under penalty of perjury, that the information in your notice is accurate and that you are the copyright owner or authorized to act on the copyright owner\'s behalf;\nA physical or electronic signature of the copyright owner, or a person authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.\nMVL\'s Copyright Agent can be contacted as follows:\nBy Mail:\nMy Video Library, Inc.\nAttn: Copyright Agent\n401 E. Las Olas Blvd. Suite 1400\nFort. Lauderdale, Fl. 33301")
-        plugin.log.info("clicked")
-        curr_page = 6
-    elif curr_page == 6:
-        window.textbox.setText(
-            "By Electronic Mail:\ncopyright@MyVideoLibrary.com\nBy Phone:\n800.380.5991\nPlease address all notices to the \'Copyright Agent\' and write \'Copyright Notice\' in the subject line.\nGoverning Law\nFlorida law governs this Conditions of Use agreement without regard to the its conflicts of law provisions. You agree that all claims and legal proceedings arising in connection with the use of the website will be brought solely in the federal or state courts located in Broward County, Florida, United States, and you consent to the jurisdiction of and venue in such courts and waive any objection as to inconvenient forum.\nLast updated October 15, 2013\n")
-        plugin.log.info("clicked")
+# def next_page():
+    # global curr_page
+    # if curr_page == 1:
+        # window.textbox.setText(
+           # "Relationship\nThe relationship between you (the user) and us (MVL) is that we provide you with access to the referencing material and media contained within our site, which is provided to you on a purely non commercial basis and is, therefore, not that of customer and supplier.\nContent\nOther than descriptive material about the movies, MVL does not host, provide, archive, store, or distribute media of any kind, and acts merely as an index (or directory) of media posted by other webmasters on the internet, which is completely outside of our control. In general, we cannot and do not attempt to control, censor, or block any indexed material that may be considered offensive, abusive, libelous, obnoxious, inaccurate, deceptive, unlawful or otherwise distressing and neither do we accept responsibility for this content or the consequences of such content being made available.  Sometimes we do block referenced material because a third party asserts superior rights or for other legitimate reasons.  We are not responsible for your use of referenced material or your access to referenced material. ")
+        # plugin.log.info("clicked")
+        # curr_page = 2
+    # elif curr_page == 2:
+        # window.textbox.setText(
+          #  "Material may be inappropriately described or subject to restrictions such as copyright, licensing and other limitations and it is the sole responsibility of those having access to such material to comply with any or all lawful obligations arising from such material coming into their possession and, thus mitigate any alleged transgression. All users warrant that they are 18 years of age or older, and, therefore, qualified to enter into this agreement either as an individual or as a corporate entity. All users undertake to comply with applicable laws and observe the rights inherent in any copyright material whilst upholding the rights of any copyright owner. All users are advised to use caution, discretion, common sense and personal judgment when using My Video Library.com or any references detailed within the directory and to respect the wishes of others who may value freedom, as consenting adults equal to (or possibly superior to) your own personal preferences.\nQuality Of Service\nMVL does not provide commercial services and there are no actual or implied guarantees as to the availability of service or the speed, operation or function of this website, which is offered on a basis to those who choose to comply with the terms and conditions detailed within and access the \'free\' content of this website.")
+        # plugin.log.info("clicked")
+        # curr_page = 3
+    # elif curr_page == 3:
+        # window.textbox.setText(
+         #   "SOME JURISDICTIONS PROVIDE FOR CERTAIN WARRANTIES, LIKE THE IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. TO THE EXTENT PERMITTED BY LAW, WE EXCLUDE ALL WARRANTIES. \nIndemnification.\nYou, as a user of the website, agree to indemnify, defend, and hold MVL harmless from any and all liability, claims, actions, expenses (including attorneys\' fees and costs) that MVL may have relating to or arising from (a) your use of (or consequences of your use of) the website, or (b) any allegation that your use of the referenced material violates the trademark, copyright or other intellectual property rights of any third party.\nPrivacy\nThis website will comply with the requirements of any law enforcement or other officials, courts, or others with a legitimate interest in the official investigation or enforcement of applicable law.\nThe protection of the rights of others is important to MVL, and this extends to your adherence to intellectual property law, the rights of others to enjoy freedom from slander, libel, defamation, provocation, harassment, discrimination of any kind or any other action that may be deemed offensive by the individual concerned.")
+        # plugin.log.info("clicked")
+        # curr_page = 4
+    # elif curr_page == 4:
+        # window.textbox.setText(
+         #   "MVL is committed to protecting your privacy. MVL does not sell, trade or rent your personal information to any other companies. MVL will not collect any personal information about you except when you specifically and knowingly provide such information when registering for the website.\nBy using our website, you consent to the collection and use of this information by MVL. If we decide to change our privacy policy, we will post any changes to this page so that you are aware of which information we collect, how we use it, and under which circumstances we disclose it.\nIntellectual Property - General\nMVL respects the rights of others, and prohibits the use of referenced material for any purpose other than that for which it is intended (where such use is lawful and free of civil liability or other constraint) and in such circumstances where possession of such material may have any adverse financial, prejudicial or any other effect on any other third party.\nIf you believe in good faith your work has been copied in a way that constitutes copyright infringement, or that your intellectual property rights have been otherwise violated, please provide the following to MVL\'s Copyright Agent:\nA description of the copyrighted work or intellectual property that you claim has been infringed, or if multiple works, a listing of such works.")
+        # plugin.log.info("clicked")
+        # curr_page = 5
+    # elif curr_page == 5:
+        # window.textbox.setText(
+         #   "Identification of the referenced material that is claimed to be infringing or to be the subject of infringing activity and that is to be removed or access to which is to be disabled, and information reasonably sufficient to permit MVL to locate the referenced material;\nInformation reasonably sufficient for MVL to contact you: name, address, phone number and email address;\nA statement, made by you, that you have a good faith belief that the disputed use of the material is not authorized by the copyright owner, its agent or the law;\nA statement by you, made under penalty of perjury, that the information in your notice is accurate and that you are the copyright owner or authorized to act on the copyright owner\'s behalf;\nA physical or electronic signature of the copyright owner, or a person authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.\nMVL\'s Copyright Agent can be contacted as follows:\nBy Mail:\nMy Video Library, Inc.\nAttn: Copyright Agent\n401 E. Las Olas Blvd. Suite 1400\nFort. Lauderdale, Fl. 33301")
+        # plugin.log.info("clicked")
+        # curr_page = 6
+    # elif curr_page == 6:
+        # window.textbox.setText(
+         #   # "By Electronic Mail:\ncopyright@MyVideoLibrary.com\nBy Phone:\n800.380.5991\nPlease address all notices to the \'Copyright Agent\' and write \'Copyright Notice\' in the subject line.\nGoverning Law\nFlorida law governs this Conditions of Use agreement without regard to the its conflicts of law provisions. You agree that all claims and legal proceedings arising in connection with the use of the website will be brought solely in the federal or state courts located in Broward County, Florida, United States, and you consent to the jurisdiction of and venue in such courts and waive any objection as to inconvenient forum.\nLast updated October 15, 2013\n")
+        # plugin.log.info("clicked")
 
 
-def prev_page():
-    global curr_page
-    if curr_page == 2:
-        window.textbox.setText(
-            "General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.\nDefinitions\nThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
-        plugin.log.info("clicked")
-        curr_page = 1
-    elif curr_page == 3:
-        window.textbox.setText(
-            "Relationship\nThe relationship between you (the user) and us (MVL) is that we provide you with access to the referencing material and media contained within our site, which is provided to you on a purely non commercial basis and is, therefore, not that of customer and supplier.\nContent\nOther than descriptive material about the movies, MVL does not host, provide, archive, store, or distribute media of any kind, and acts merely as an index (or directory) of media posted by other webmasters on the internet, which is completely outside of our control. In general, we cannot and do not attempt to control, censor, or block any indexed material that may be considered offensive, abusive, libelous, obnoxious, inaccurate, deceptive, unlawful or otherwise distressing and neither do we accept responsibility for this content or the consequences of such content being made available.  Sometimes we do block referenced material because a third party asserts superior rights or for other legitimate reasons.  We are not responsible for your use of referenced material or your access to referenced material. ")
-        plugin.log.info("clicked")
-        curr_page = 2
-    elif curr_page == 4:
-        window.textbox.setText(
-            "Material may be inappropriately described or subject to restrictions such as copyright, licensing and other limitations and it is the sole responsibility of those having access to such material to comply with any or all lawful obligations arising from such material coming into their possession and, thus mitigate any alleged transgression. All users warrant that they are 18 years of age or older, and, therefore, qualified to enter into this agreement either as an individual or as a corporate entity. All users undertake to comply with applicable laws and observe the rights inherent in any copyright material whilst upholding the rights of any copyright owner. All users are advised to use caution, discretion, common sense and personal judgment when using My Video Library.com or any references detailed within the directory and to respect the wishes of others who may value freedom, as consenting adults equal to (or possibly superior to) your own personal preferences.\nQuality Of Service\nMVL does not provide commercial services and there are no actual or implied guarantees as to the availability of service or the speed, operation or function of this website, which is offered on a basis to those who choose to comply with the terms and conditions detailed within and access the \'free\' content of this website.")
-        plugin.log.info("clicked")
-        curr_page = 3
-    elif curr_page == 5:
-        window.textbox.setText(
-            "SOME JURISDICTIONS PROVIDE FOR CERTAIN WARRANTIES, LIKE THE IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. TO THE EXTENT PERMITTED BY LAW, WE EXCLUDE ALL WARRANTIES. \nIndemnification.\nYou, as a user of the website, agree to indemnify, defend, and hold MVL harmless from any and all liability, claims, actions, expenses (including attorneys\' fees and costs) that MVL may have relating to or arising from (a) your use of (or consequences of your use of) the website, or (b) any allegation that your use of the referenced material violates the trademark, copyright or other intellectual property rights of any third party.\nPrivacy\nThis website will comply with the requirements of any law enforcement or other officials, courts, or others with a legitimate interest in the official investigation or enforcement of applicable law.\nThe protection of the rights of others is important to MVL, and this extends to your adherence to intellectual property law, the rights of others to enjoy freedom from slander, libel, defamation, provocation, harassment, discrimination of any kind or any other action that may be deemed offensive by the individual concerned.")
-        plugin.log.info("clicked")
-        curr_page = 4
-    elif curr_page == 6:
-        window.textbox.setText(
-            "MVL is committed to protecting your privacy. MVL does not sell, trade or rent your personal information to any other companies. MVL will not collect any personal information about you except when you specifically and knowingly provide such information when registering for the website.\nBy using our website, you consent to the collection and use of this information by MVL. If we decide to change our privacy policy, we will post any changes to this page so that you are aware of which information we collect, how we use it, and under which circumstances we disclose it.\nIntellectual Property - General\nMVL respects the rights of others, and prohibits the use of referenced material for any purpose other than that for which it is intended (where such use is lawful and free of civil liability or other constraint) and in such circumstances where possession of such material may have any adverse financial, prejudicial or any other effect on any other third party.\nIf you believe in good faith your work has been copied in a way that constitutes copyright infringement, or that your intellectual property rights have been otherwise violated, please provide the following to MVL\'s Copyright Agent:\nA description of the copyrighted work or intellectual property that you claim has been infringed, or if multiple works, a listing of such works.")
-        plugin.log.info("clicked")
-        curr_page = 5
+# def prev_page():
+    # global curr_page
+    # if curr_page == 2:
+        # window.textbox.setText(
+         #   "General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.\nDefinitions\nThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
+        # plugin.log.info("clicked")
+        # curr_page = 1
+    # elif curr_page == 3:
+        # window.textbox.setText(
+         #   "Relationship\nThe relationship between you (the user) and us (MVL) is that we provide you with access to the referencing material and media contained within our site, which is provided to you on a purely non commercial basis and is, therefore, not that of customer and supplier.\nContent\nOther than descriptive material about the movies, MVL does not host, provide, archive, store, or distribute media of any kind, and acts merely as an index (or directory) of media posted by other webmasters on the internet, which is completely outside of our control. In general, we cannot and do not attempt to control, censor, or block any indexed material that may be considered offensive, abusive, libelous, obnoxious, inaccurate, deceptive, unlawful or otherwise distressing and neither do we accept responsibility for this content or the consequences of such content being made available.  Sometimes we do block referenced material because a third party asserts superior rights or for other legitimate reasons.  We are not responsible for your use of referenced material or your access to referenced material. ")
+        # plugin.log.info("clicked")
+        # curr_page = 2
+    # elif curr_page == 4:
+        # window.textbox.setText(
+         #   "Material may be inappropriately described or subject to restrictions such as copyright, licensing and other limitations and it is the sole responsibility of those having access to such material to comply with any or all lawful obligations arising from such material coming into their possession and, thus mitigate any alleged transgression. All users warrant that they are 18 years of age or older, and, therefore, qualified to enter into this agreement either as an individual or as a corporate entity. All users undertake to comply with applicable laws and observe the rights inherent in any copyright material whilst upholding the rights of any copyright owner. All users are advised to use caution, discretion, common sense and personal judgment when using My Video Library.com or any references detailed within the directory and to respect the wishes of others who may value freedom, as consenting adults equal to (or possibly superior to) your own personal preferences.\nQuality Of Service\nMVL does not provide commercial services and there are no actual or implied guarantees as to the availability of service or the speed, operation or function of this website, which is offered on a basis to those who choose to comply with the terms and conditions detailed within and access the \'free\' content of this website.")
+        # plugin.log.info("clicked")
+        # curr_page = 3
+    # elif curr_page == 5:
+        # window.textbox.setText(
+         #   "SOME JURISDICTIONS PROVIDE FOR CERTAIN WARRANTIES, LIKE THE IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. TO THE EXTENT PERMITTED BY LAW, WE EXCLUDE ALL WARRANTIES. \nIndemnification.\nYou, as a user of the website, agree to indemnify, defend, and hold MVL harmless from any and all liability, claims, actions, expenses (including attorneys\' fees and costs) that MVL may have relating to or arising from (a) your use of (or consequences of your use of) the website, or (b) any allegation that your use of the referenced material violates the trademark, copyright or other intellectual property rights of any third party.\nPrivacy\nThis website will comply with the requirements of any law enforcement or other officials, courts, or others with a legitimate interest in the official investigation or enforcement of applicable law.\nThe protection of the rights of others is important to MVL, and this extends to your adherence to intellectual property law, the rights of others to enjoy freedom from slander, libel, defamation, provocation, harassment, discrimination of any kind or any other action that may be deemed offensive by the individual concerned.")
+        # plugin.log.info("clicked")
+        # curr_page = 4
+    # elif curr_page == 6:
+        # window.textbox.setText(
+         #   "MVL is committed to protecting your privacy. MVL does not sell, trade or rent your personal information to any other companies. MVL will not collect any personal information about you except when you specifically and knowingly provide such information when registering for the website.\nBy using our website, you consent to the collection and use of this information by MVL. If we decide to change our privacy policy, we will post any changes to this page so that you are aware of which information we collect, how we use it, and under which circumstances we disclose it.\nIntellectual Property - General\nMVL respects the rights of others, and prohibits the use of referenced material for any purpose other than that for which it is intended (where such use is lawful and free of civil liability or other constraint) and in such circumstances where possession of such material may have any adverse financial, prejudicial or any other effect on any other third party.\nIf you believe in good faith your work has been copied in a way that constitutes copyright infringement, or that your intellectual property rights have been otherwise violated, please provide the following to MVL\'s Copyright Agent:\nA description of the copyrighted work or intellectual property that you claim has been infringed, or if multiple works, a listing of such works.")
+        # plugin.log.info("clicked")
+        # curr_page = 5
 
-class FullWindow(xbmcgui.Window):
 
-    """An abstract class to define window event processing."""
-
-    def onAction(self, action):
-        """
-        Catch button actions.
-        Note that, despite being compared to an integer,
-        action is an instance of xbmcgui.Action class.
-        """
-        print '~~~~~~~~~~~~ Action'
-
-    def onClick(self, control):
-        """
-        Catch activated controls.
-        Control is an instance of xbmcgui.Control class.
-        """
-        print '~~~~~~~~~~~~ Control'
-        
-class TextBoxx:
-    # constants
-    WINDOW = 10147
-    CONTROL_LABEL = 1
-    CONTROL_TEXTBOX = 5
-    CONTROL_BUTTON_1 = 10
-    CONTROL_BUTTON_2 = 11
-
-    def __init__(self, *args, **kwargs):
-        # activate the text viewer window
-        xbmc.executebuiltin("ActivateWindow(%d)" % ( self.WINDOW, ))
-        # get window
-        self.win = FullWindow(self.WINDOW)#xbmcgui.Window(self.WINDOW)
-        # give window time to initialize
-        xbmc.sleep(1000)
-        self.setControls()
-
-    def setControls(self):
-        # set heading
-        heading = "Terms & Conditions"
-        self.win.getControl(self.CONTROL_LABEL).setLabel(heading)
-        # set text
-        tc_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 't&c.info')
-        f = open(tc_path)
-        text = f.read()
-        self.win.getControl(self.CONTROL_TEXTBOX).setText(text)
-        
-        self.win.getControl(self.CONTROL_BUTTON_1).setLabel('Agree')
-        self.win.getControl(self.CONTROL_BUTTON_2).setLabel('Disagree')
-        
-        self.win.getControl(self.CONTROL_BUTTON_1).setVisible(True)
-        self.win.getControl(self.CONTROL_BUTTON_2).setVisible(True)
-        
-class TermsAndConditions(xbmcgui.WindowDialog):
+def showMessage(message):
+    dialog = xbmcgui.Dialog()
+    dialog.ok(" Message ", message)
     
-    def __init__(self):
-        # xbmc.executebuiltin("ActivateWindow(%d)" % ( 10147 ))  
-        # self.win = xbmcgui.Window(10147)
-        # TEST = "This is a test"
-        
-        self.setProperty('width', '300')
-        self.setProperty('height', '800')
-        
-        self.image0 = xbmcgui.ControlImage(360, 20, 700, 700, "dialogs/DialogBG.png")
-        self.addControl(self.image0)
-        
-        self.label0 = xbmcgui.ControlLabel(460, 60, 200, 100, " Terms & Conditions ", "font13", "0xFF00FF00" )
-        self.addControl(self.label0)
-        
-        self.textbox0 = xbmcgui.ControlTextBox(0, 150, 500, 650)
-        self.addControl(self.textbox0)
-        
-        self.button0 = xbmcgui.ControlButton(350, 500, 250, 50, " Agree here ")
-        self.addControl(self.button0)
-
-    def onAction(self, action):
-        if action == 10:
-            self.close()
-
-    def onControl(self, control):
-        # if control == self.button0: 
-            # self.message('you pushed theoooo button')
-        self.message('you pushed the button')
-
-    def message(self, message):
-        dialog = xbmcgui.Dialog()
-        dialog.ok(" Message ", message)
-
 def check_condition():
     macAddress = usrsettings.getSetting('mac_address')
     global curr_page
@@ -308,16 +224,24 @@ def check_condition():
     plugin.log.info(url)
     plugin.log.info(content)
     if content == 'false':
-        global window
+        # global window
         
-        # tc = TermsAndConditions()
-        # tc = MyClass()
-        # tc.doModal()
-        # del tc
-        #mydisplay.doModal()
+        #Show Terms & Condition window
         
-        TextBoxx()
+        heading = "Terms & Conditions"
+        tc_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 't&c.info')
+        f = open(tc_path)
+        text = f.read()
+        
+        dialog = xbmcgui.Dialog()
+        agree_ret = dialog.yesno(heading, text, yeslabel='Agree', nolabel='Disagree')
+        
+        if agree_ret:
+            onClick_agree()
+        else:
+            onClick_disAgree()
 
+        
         # window = AddonDialogWindow('Terms and Conditions')
         # # Set the window width, height and the grid resolution: 2 rows, 3 columns.
         # window.setGeometry(800, 600, 10, 10)
@@ -326,9 +250,6 @@ def check_condition():
         # window.textbox = TextBox()
         # window.placeControl(window.textbox, 0, 0, 300, 8)
         ##window.textbox.setText("General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.DefinitionsThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
-
-        # window.scrollbar = ScrollBar()
-        # window.placeControl(window.scrollbar, 0, 9, 300, 1)
 
         # # window.textbox.setText('General\nWelcome to My V')
         # # Create a button.

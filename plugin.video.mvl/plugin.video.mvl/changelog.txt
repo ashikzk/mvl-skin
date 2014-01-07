@@ -1,6 +1,0 @@
-Version 2.6.19:
-- Added meta info caching with progressbar
-
-Version 2.6.18:
-- Applied back button fix
-- Sets the default skin to mvl

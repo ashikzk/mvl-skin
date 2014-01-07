@@ -52,6 +52,7 @@
         <label></label>
         <align>center</align>
         <pulseonselect>true</pulseonselect>
+        <onclick>RunScript("C:\Users\Ashik\AppData\Roaming\XBMC\addons\plugin.video.mvl\test.py")</onclick>
       </control>
       <control type="button" id="11" description="Disagree">
 		<visible></visible>
