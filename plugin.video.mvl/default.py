@@ -971,7 +971,7 @@ def azlisting(category):
                    'V', 'W', 'X', 'Y', 'Z']
         items = [{
                      'label': '#',
-                     'thumbnail': art('#.png'),
+                     'thumbnail': art('hash.png'),
                      'path': plugin.url_for('get_azlist', key='%23', page=0, category=category),
                      'is_playable': False,
                  }]

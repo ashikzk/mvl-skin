@@ -1,4 +1,4 @@
-<addon id="skin.mvl" version="1.0.23" name="mvlSkin" provider-name="Heurixtics">
+<addon id="skin.mvl" version="1.0.24" name="mvlSkin" provider-name="Heurixtics">
   <requires>
     <import addon="xbmc.gui" version="4.0.0"/>
     <import addon="script.favourites" version="3.2.0"/>
