@@ -1,6 +1,8 @@
 from xbmcswift2 import Plugin, xbmcgui, xbmc, xbmcaddon, xbmcplugin, actions
 import urllib2
 import time
+from datetime import datetime
+import calendar
 import simplejson as json
 import urllib
 import urllib2
@@ -16,6 +18,7 @@ import os
 import traceback
 from metahandler import metahandlers
 from metahandler import metacontainers
+from operator import itemgetter
 
 _MVL = Addon('plugin.video.mvl', sys.argv)
 plugin = Plugin()
@@ -356,7 +359,10 @@ def show_root():
     internet_info.close()
     sys_exit()
 
-
+@plugin.route('/do_nothing/')
+def do_nothing():
+    return None
+    
 @plugin.route('/categories/<id>/<page>')
 def get_categories(id, page):
     #import resources.htmlcleaner
@@ -408,6 +414,36 @@ def get_categories(id, page):
                 done_count = 0
                 dp_created = False
                 dp_type = 'show'
+                
+                #sort categories according to release_date
+                release_date_count = 0
+                for categories in jsonObj:
+                    if 'release_date' not in categories:
+                        categories['release_date'] = '-1'
+                    elif categories['release_date'] is not None and len(categories['release_date']) == 10:
+                        #make sure we have valid date format                        
+                        try:
+                            mydate = datetime.strptime(categories['release_date'], '%Y-%m-%d')
+                        except TypeError:
+                            mydate = datetime(*(time.strptime(categories['release_date'], '%Y-%m-%d')[0:6]))                   
+                        
+                        categories['release_group'] = '[COLOR blue]'+calendar.month_name[mydate.month] + ', ' + str(mydate.year)+'[/COLOR]'
+                        release_date_count = 1
+                        
+                if release_date_count == 0:
+                    for categories in jsonObj:
+                        if 'release_date' not in categories:
+                            categories['release_date'] = '-1'
+                        elif categories['release_date'] is not None and len(categories['release_date']) == 4:
+                            #make sure we have valid date format                        
+                            categories['release_group'] = '[COLOR blue]'+categories['release_date']+'[/COLOR]'
+                            release_date_count = 1
+
+                jsonObj.sort(key=lambda x: x['release_date'], reverse=True)
+                
+                # print jsonObj
+                
+                last_release_group = ''
 
                 for categories in jsonObj:
                     try:    # The last item of Json only contains the one element in array with key as "ID" so causing the issue
@@ -429,6 +465,20 @@ def get_categories(id, page):
                                   'is_playable': False,
                                   }]
 
+                    ####
+                    #add an extra item for the release month + year combo
+                    if 'release_group' in categories:
+                        if categories['release_group'] != last_release_group:
+                            last_release_group = categories['release_group']
+                            
+                            items += [{
+                                          'label': categories['release_group'],
+                                          'path': plugin.url_for('do_nothing'),
+                                          'is_playable': False                                             
+                                      }]
+                            
+                    ####
+                    
                     #categories['id'] is -1 when more categories are present and next page option should be displayed
                     if categories['id'] == -1:
                         items += [{
@@ -562,7 +612,8 @@ def get_categories(id, page):
                                 mvl_plot = mvl_meta['plot']
                         except:
                             mvl_plot = categories['synopsis'].encode('utf-8')
-
+                            
+                        
                         items += [{
                                       'thumbnail': thumbnail_url,
                                       'properties': {
@@ -643,6 +694,8 @@ def get_categories(id, page):
                 #plugin.log.info(items)
                 
                 dp.close()
+                
+
             
             return items
         except IOError:
