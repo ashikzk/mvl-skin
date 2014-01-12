@@ -408,6 +408,7 @@ def get_categories(id, page):
             f = opener.open(req)
             content = f.read()
             items = []
+            image_on_off = ''
             
             if content:
                 jsonObj = json.loads(content)
@@ -416,6 +417,7 @@ def get_categories(id, page):
                 plugin.log.info(jsonObj)
                 if jsonObj[0]['top_level_parent'] == jsonObj[0]['parent_id']:
                     is_search_category = True
+                    image_on_off = '_off'
 
                 item_count = len(jsonObj)
                 done_count = 0
@@ -434,7 +436,7 @@ def get_categories(id, page):
                         except TypeError:
                             mydate = datetime(*(time.strptime(categories['release_date'], '%Y-%m-%d')[0:6]))                   
                         
-                        categories['release_group'] = '[COLOR blue]'+calendar.month_name[mydate.month] + ', ' + str(mydate.year)+'[/COLOR]'
+                        categories['release_group'] = '[COLOR Blue]'+calendar.month_name[mydate.month] + ', ' + str(mydate.year)+'[/COLOR]'
                         release_date_count = 1
                         
                 if release_date_count == 0:
@@ -468,7 +470,7 @@ def get_categories(id, page):
                         items += [{
                                   'label': 'Search',
                                   'path': plugin.url_for('search', category=parent_id),
-                                  'thumbnail': art('search.png'),
+                                  'thumbnail': art('search'+image_on_off+'.png'),
                                   'is_playable': False,
                                   }]
 
@@ -564,7 +566,7 @@ def get_categories(id, page):
                                           'label': '{0}'.format(categories['title']),
                                           'path': plugin.url_for('get_categories', id=categories['id'], page=0),
                                           'is_playable': False,
-                                          'thumbnail': art('{0}.png'.format(categories['title'].lower())),
+                                          'thumbnail': art('{0}{1}.png'.format(categories['title'].lower(), image_on_off)),
                                           'context_menu': [(
                                                                'Add to Favourites',
                                                                'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
@@ -680,7 +682,7 @@ def get_categories(id, page):
                     items += [{
                                   'label': 'A-Z Listings',
                                   'path': plugin.url_for('azlisting', category=parent_id),
-                                  'thumbnail': art('A-Z.png'),
+                                  'thumbnail': art('A-Z'+image_on_off+'.png'),
                                   'is_playable': False,
                               }]
                     #Most Popular & Favortite are commented out on Client's request for now
