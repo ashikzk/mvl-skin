@@ -207,9 +207,9 @@ def onClick_agree():
         # curr_page = 5
 
 
-def showMessage(message):
+def showMessage(heading, message):
     dialog = xbmcgui.Dialog()
-    dialog.ok(" Message ", message)
+    dialog.ok(heading, message)
     
 def check_condition():
     macAddress = usrsettings.getSetting('mac_address')
@@ -332,26 +332,33 @@ def check_internet():
 
 
 def dialog_msg():
-    global internet_info
-    internet_info = AddonDialogWindow('INTERNET CONNECTION ISSUE')
-    # Set the window width, height and the grid resolution: 2 rows, 3 columns.
-    internet_info.setGeometry(450, 200, 6, 6)
 
-    # TextBox
-    internet_info.textbox = TextBox()
-    internet_info.placeControl(internet_info.textbox, 0, 0, 5, 6)
-    internet_info.textbox.setText(
-        "An error has occured communicating with MyVideoLibrary server. Please check that you are connected to internet through wi-fi")
+    heading = "INTERNET CONNECTION ISSUE"
+    text = "An error has occured communicating with MyVideoLibrary server. Please check that you are connected to internet through wi-fi"
+        
+    #show message is a dialog window
+    showMessage(heading, text)
+    
+    # global internet_info
+    # internet_info = AddonDialogWindow('INTERNET CONNECTION ISSUE')
+    # # Set the window width, height and the grid resolution: 2 rows, 3 columns.
+    # internet_info.setGeometry(450, 200, 6, 6)
 
-    # Create a button.
-    okay = Button('OK')
+    # # TextBox
+    # internet_info.textbox = TextBox()
+    # internet_info.placeControl(internet_info.textbox, 0, 0, 5, 6)
+    # internet_info.textbox.setText(
+        # "An error has occured communicating with MyVideoLibrary server. Please check that you are connected to internet through wi-fi")
 
-    # Place the label on the window grid.
-    internet_info.placeControl(okay, 4, 2, columnspan=2, rowspan=2)
-    internet_info.setFocus(okay)
-    internet_info.connect(okay, show_root)
-    # Show the created window.
-    internet_info.doModal()
+    # # Create a button.
+    # okay = Button('OK')
+
+    # # Place the label on the window grid.
+    # internet_info.placeControl(okay, 4, 2, columnspan=2, rowspan=2)
+    # internet_info.setFocus(okay)
+    # internet_info.connect(okay, show_root)
+    # # Show the created window.
+    # internet_info.doModal()
 
 
 def show_root():
