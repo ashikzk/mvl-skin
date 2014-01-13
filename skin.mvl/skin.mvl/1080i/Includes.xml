@@ -2116,7 +2116,7 @@
       <label>Get Update</label>
       <thumb fallback="special://skin/backgrounds/mvl_bg.jpg">$INFO[Skin.String(Weather.Background)]</thumb>
       <!--onclick>XBMC.UpdateAddonRepos()</onclick-->
-      <onclick>XBMC.RunScript("C:\Users\ashik\AppData\Roaming\XBMC\addons\plugin.video.mvl\script_update.py")</onclick>
+      <onclick>XBMC.RunScript("special://home\addons\plugin.video.mvl\script_update.py")</onclick>
     </item>
     <!--item id="10" description="Settings">
       <visible>!Skin.HasSetting(Settings.Hide)</visible>

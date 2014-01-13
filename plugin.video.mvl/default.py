@@ -112,6 +112,8 @@ def index():
         items = []
 
         if isAgree == True:
+            show_notification()
+        
             plugin.log.info("here is dialog")
             #creating items from json object
             for categories in jsonObj:
@@ -125,6 +127,22 @@ def index():
 
     except IOError:
         xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
+
+def show_notification():
+    url = server_url + "/api/index.php/api/notification_api/getNotification"
+    plugin.log.info(url)
+    req = urllib2.Request(url)
+    opener = urllib2.build_opener()
+    f = opener.open(req)
+    #reading content fetched from the url
+    content = f.read()
+    #converting to json object
+    jsonObj = json.loads(content)
+
+    message = jsonObj['message']
+    
+    if message != '':
+        showMessage('Notification', message)
 
 
 def onClick_disAgree():
