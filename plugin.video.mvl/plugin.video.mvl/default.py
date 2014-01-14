@@ -435,7 +435,7 @@ def get_categories(id, page):
                 plugin.log.info(jsonObj)
                 if jsonObj[0]['top_level_parent'] == jsonObj[0]['parent_id']:
                     is_search_category = True
-                    image_on_off = '_off'
+                    image_on_off = '_on'
 
                 item_count = len(jsonObj)
                 done_count = 0
