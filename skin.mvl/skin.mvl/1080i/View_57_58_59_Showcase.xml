@@ -90,7 +90,7 @@
     <include>PosterThumb</include>
   </include>
   <include name="MusicShowcaseThumbDimensions">
-    <posx>-150</posx>
+    <posx>80</posx>
     <posy>144</posy>
     <width>297</width>
     <height>297</height>
@@ -342,6 +342,7 @@
         </control>
       </control>
       <control type="scrollbar" id="60">
+		<visible>False</visible>
         <animation effect="slide" start="0,0" end="0,-3" time="150">Focus</animation>
         <!--<animation effect="slide" start="0,0" end="0,-90" time="350" easing="out" condition="Control.HasFocus(7000)">Conditional</animation>-->
         <posx>90</posx>
@@ -365,7 +366,7 @@
         <visible>![[container.content(MusicVideos) + Window.IsActive(myvideonav.xml)] | container.content(movies) | container.content(tvshows) | container.content(seasons) | container.content(episodes)]</visible>
         <animation effect="slide" easing="out" start="0,0" end="0,800" time="350" delay="0" center="120,350" reversible="true" condition="Control.HasFocus(7000)">Conditional</animation>
         <animation effect="slide" easing="out" start="0,0" end="0,60" time="350" delay="0" center="120,350" reversible="true" condition="Skin.HasSetting(Music_Info)">Conditional</animation>
-        <posx>-174</posx>
+        <posx>-404</posx>
         <posy>546</posy>
         <width>2268</width>
         <height>660</height>
@@ -482,6 +483,7 @@
         </control>
       </control>
       <control type="scrollbar" id="60">
+		<visible>False</visible>
         <animation effect="slide" start="0,0" end="0,-3" time="150">Focus</animation>
         <!--<animation effect="slide" start="0,0" end="0,-90" time="350" easing="out" condition="Control.HasFocus(7000)">Conditional</animation>-->
         <posx>90</posx>
