@@ -51,7 +51,7 @@
         <height>72</height>
         <scroll>false</scroll>
         <label>$INFO[ListItem.Label]</label>
-        <textcolor>FF339d24</textcolor>
+        <textcolor>FF1F6C15</textcolor>
       </control>
       <control type="label">
         <posx>1120</posx>
@@ -102,7 +102,7 @@
         <height>72</height>
         <width>520</width>
         <label>$INFO[ListItem.Label]</label>
-        <textcolor>FF339d24</textcolor>
+        <textcolor>FF1F6C15</textcolor>
       </control>
       <include>ListWatchedOverlay</include>
     </focusedlayout>

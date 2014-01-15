@@ -761,7 +761,7 @@ def get_videos(id, thumbnail):
             for urls in jsonObj:
                 count += 1
                 items += [{
-                              'label': '{0} Source {1}'.format(content, count),
+                              'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR]'.format(content, count),
                               'thumbnail': thumbnail,
                               'path': plugin.url_for('play_video', url=urls['URL']),
                               'is_playable': True,

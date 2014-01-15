@@ -68,6 +68,7 @@ isAgree = False
 def index():
     global Main_cat
     try:
+        print 'INDEX DEF'
     
         file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'advancedsettings.xml')
         found = False
@@ -411,7 +412,7 @@ def get_categories(id, page):
             main_category_check = False
             is_search_category = False
             top_level_parent = 0
-            page_limit_cat = 50
+            page_limit_cat = 30
             xbmcplugin.setContent(pluginhandle, 'Movies')
             plugin.log.info(id)
             plugin.log.info(page)
@@ -435,7 +436,7 @@ def get_categories(id, page):
                 plugin.log.info(jsonObj)
                 if jsonObj[0]['top_level_parent'] == jsonObj[0]['parent_id']:
                     is_search_category = True
-                    image_on_off = '_on'
+                    image_on_off = '_off'
 
                 item_count = len(jsonObj)
                 done_count = 0
@@ -463,7 +464,7 @@ def get_categories(id, page):
                             categories['release_date'] = '-1'
                         elif categories['release_date'] is not None and len(categories['release_date']) == 4:
                             #make sure we have valid date format                        
-                            categories['release_group'] = '[COLOR blue]'+categories['release_date']+'[/COLOR]'
+                            categories['release_group'] = '[COLOR Blue]'+categories['release_date']+'[/COLOR]'
                             release_date_count = 1
 
                 jsonObj.sort(key=lambda x: x['release_date'], reverse=True)
@@ -760,7 +761,7 @@ def get_videos(id, thumbnail):
             for urls in jsonObj:
                 count += 1
                 items += [{
-                              'label': '{0} Source {1}'.format(content, count),
+                              'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR]'.format(content, count),
                               'thumbnail': thumbnail,
                               'path': plugin.url_for('play_video', url=urls['URL']),
                               'is_playable': True,
@@ -865,6 +866,12 @@ def search(category):
         try:
 
             search_string = plugin.keyboard(heading=('search'))
+            
+            #if nothing was typed, return without doing anything
+            if search_string is None or search_string == '' :
+                mvl_view_mode = 59
+                return
+                
             url = server_url + "/api/index.php/api/categories_api/searchVideos"
 
             plugin.log.info(url)
@@ -1071,7 +1078,7 @@ def azlisting(category):
 def get_azlist(key, page, category):
     global mvl_view_mode
     mvl_view_mode = 50
-    page_limit_az = 50
+    page_limit_az = 30
     try:
 
         dp = xbmcgui.DialogProgress()
@@ -1266,7 +1273,7 @@ def mostpopular(page, category):
 
         dp = xbmcgui.DialogProgress()
         
-        page_limit_mp = 50
+        page_limit_mp = 30
     
         url = server_url + "/api/index.php/api/categories_api/getMostPopular?limit={0}&page={1}&category={2}".format(page_limit_mp, page, category)
         plugin.log.info(url)
