@@ -129,6 +129,7 @@ def index():
     except IOError:
         # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
         dialog_msg()
+        sys_exit()
 
 def show_notification():
 
@@ -351,7 +352,20 @@ def get_categories(id, page):
                             categories['release_group'] = '[COLOR Blue]'+categories['release_date']+'[/COLOR]'
                             release_date_count = 1
 
-                jsonObj.sort(key=lambda x: x['release_date'], reverse=True)
+                if release_date_count == 0:
+                    for categories in jsonObj:
+                        if 'release_date' not in categories:
+                            categories['release_date'] = '-1'
+                        elif categories['release_date'] is not None and len(categories['release_date']) == 4:
+                            #make sure we have valid date format                        
+                            categories['release_group'] = '[COLOR Blue]'+categories['release_date']+'[/COLOR]'
+                            release_date_count = 1
+                            
+                #if release_date_count is still 0, it means no entry has a release date
+                #no need to sort then
+                #otherwise sort in Desc order by release date
+                if release_date_count == 1:
+                    jsonObj.sort(key=lambda x: x['release_date'], reverse=True)
                 
                 # print jsonObj
                 
@@ -678,10 +692,14 @@ def play_video(url):
         mvl_view_mode = 50
         #if login is successful then selected item will be resolved using urlresolver and played
         if login_check():
-            hostedurl = urlresolver.HostedMediaFile(url).resolve()
-            plugin.log.info(url)
-            plugin.log.info(hostedurl)
-            plugin.set_resolved_url(hostedurl)
+            try:
+                hostedurl = urlresolver.HostedMediaFile(url).resolve()
+                plugin.log.info(url)
+                plugin.log.info(hostedurl)
+                plugin.set_resolved_url(hostedurl)
+            except:
+                mvl_view_mode = 50
+                showMessage('Error loading video', 'This source will not play. Please pick another.')
         else:
             pass
     else:
