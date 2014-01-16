@@ -68,7 +68,8 @@ isAgree = False
 def index():
     global Main_cat
     try:
-        print 'INDEX DEF'
+        #set view mode first so that whatever happens, it doesn't change
+        mvl_view_mode = 58
     
         file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'advancedsettings.xml')
         found = False
@@ -97,7 +98,6 @@ def index():
         #global isAgree
         check_condition()
         #creating the database if not exists
-        mvl_view_mode = 58
         init_database()
         #creating a context menu
         #url used to get main categories from server
@@ -127,24 +127,29 @@ def index():
             return items
 
     except IOError:
-        xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
+        # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
+        dialog_msg()
 
 def show_notification():
-    url = server_url + "/api/index.php/api/notification_api/getNotification"
-    plugin.log.info(url)
-    req = urllib2.Request(url)
-    opener = urllib2.build_opener()
-    f = opener.open(req)
-    #reading content fetched from the url
-    content = f.read()
-    #converting to json object
-    jsonObj = json.loads(content)
 
-    message = jsonObj['message']
-    
-    if message != '':
-        showMessage('Notification', message)
+    try:
+        url = server_url + "/api/index.php/api/notification_api/getNotification"
+        plugin.log.info(url)
+        req = urllib2.Request(url)
+        opener = urllib2.build_opener()
+        f = opener.open(req)
+        #reading content fetched from the url
+        content = f.read()
+        #converting to json object
+        jsonObj = json.loads(content)
 
+        message = jsonObj['message']
+        
+        if message != '':
+            showMessage('Notification', message)
+    except:
+        #do nothing
+        message = ''
 
 def onClick_disAgree():
     # window.close()
@@ -159,73 +164,10 @@ def onClick_agree():
     req = urllib2.Request(url)
     opener = urllib2.build_opener()
     f = opener.open(req)
-
+    
     isAgree = True
-    # window.close()
 
-
-# def next_page():
-    # global curr_page
-    # if curr_page == 1:
-        # window.textbox.setText(
-           # "Relationship\nThe relationship between you (the user) and us (MVL) is that we provide you with access to the referencing material and media contained within our site, which is provided to you on a purely non commercial basis and is, therefore, not that of customer and supplier.\nContent\nOther than descriptive material about the movies, MVL does not host, provide, archive, store, or distribute media of any kind, and acts merely as an index (or directory) of media posted by other webmasters on the internet, which is completely outside of our control. In general, we cannot and do not attempt to control, censor, or block any indexed material that may be considered offensive, abusive, libelous, obnoxious, inaccurate, deceptive, unlawful or otherwise distressing and neither do we accept responsibility for this content or the consequences of such content being made available.  Sometimes we do block referenced material because a third party asserts superior rights or for other legitimate reasons.  We are not responsible for your use of referenced material or your access to referenced material. ")
-        # plugin.log.info("clicked")
-        # curr_page = 2
-    # elif curr_page == 2:
-        # window.textbox.setText(
-          #  "Material may be inappropriately described or subject to restrictions such as copyright, licensing and other limitations and it is the sole responsibility of those having access to such material to comply with any or all lawful obligations arising from such material coming into their possession and, thus mitigate any alleged transgression. All users warrant that they are 18 years of age or older, and, therefore, qualified to enter into this agreement either as an individual or as a corporate entity. All users undertake to comply with applicable laws and observe the rights inherent in any copyright material whilst upholding the rights of any copyright owner. All users are advised to use caution, discretion, common sense and personal judgment when using My Video Library.com or any references detailed within the directory and to respect the wishes of others who may value freedom, as consenting adults equal to (or possibly superior to) your own personal preferences.\nQuality Of Service\nMVL does not provide commercial services and there are no actual or implied guarantees as to the availability of service or the speed, operation or function of this website, which is offered on a basis to those who choose to comply with the terms and conditions detailed within and access the \'free\' content of this website.")
-        # plugin.log.info("clicked")
-        # curr_page = 3
-    # elif curr_page == 3:
-        # window.textbox.setText(
-         #   "SOME JURISDICTIONS PROVIDE FOR CERTAIN WARRANTIES, LIKE THE IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. TO THE EXTENT PERMITTED BY LAW, WE EXCLUDE ALL WARRANTIES. \nIndemnification.\nYou, as a user of the website, agree to indemnify, defend, and hold MVL harmless from any and all liability, claims, actions, expenses (including attorneys\' fees and costs) that MVL may have relating to or arising from (a) your use of (or consequences of your use of) the website, or (b) any allegation that your use of the referenced material violates the trademark, copyright or other intellectual property rights of any third party.\nPrivacy\nThis website will comply with the requirements of any law enforcement or other officials, courts, or others with a legitimate interest in the official investigation or enforcement of applicable law.\nThe protection of the rights of others is important to MVL, and this extends to your adherence to intellectual property law, the rights of others to enjoy freedom from slander, libel, defamation, provocation, harassment, discrimination of any kind or any other action that may be deemed offensive by the individual concerned.")
-        # plugin.log.info("clicked")
-        # curr_page = 4
-    # elif curr_page == 4:
-        # window.textbox.setText(
-         #   "MVL is committed to protecting your privacy. MVL does not sell, trade or rent your personal information to any other companies. MVL will not collect any personal information about you except when you specifically and knowingly provide such information when registering for the website.\nBy using our website, you consent to the collection and use of this information by MVL. If we decide to change our privacy policy, we will post any changes to this page so that you are aware of which information we collect, how we use it, and under which circumstances we disclose it.\nIntellectual Property - General\nMVL respects the rights of others, and prohibits the use of referenced material for any purpose other than that for which it is intended (where such use is lawful and free of civil liability or other constraint) and in such circumstances where possession of such material may have any adverse financial, prejudicial or any other effect on any other third party.\nIf you believe in good faith your work has been copied in a way that constitutes copyright infringement, or that your intellectual property rights have been otherwise violated, please provide the following to MVL\'s Copyright Agent:\nA description of the copyrighted work or intellectual property that you claim has been infringed, or if multiple works, a listing of such works.")
-        # plugin.log.info("clicked")
-        # curr_page = 5
-    # elif curr_page == 5:
-        # window.textbox.setText(
-         #   "Identification of the referenced material that is claimed to be infringing or to be the subject of infringing activity and that is to be removed or access to which is to be disabled, and information reasonably sufficient to permit MVL to locate the referenced material;\nInformation reasonably sufficient for MVL to contact you: name, address, phone number and email address;\nA statement, made by you, that you have a good faith belief that the disputed use of the material is not authorized by the copyright owner, its agent or the law;\nA statement by you, made under penalty of perjury, that the information in your notice is accurate and that you are the copyright owner or authorized to act on the copyright owner\'s behalf;\nA physical or electronic signature of the copyright owner, or a person authorized to act on behalf of the owner of an exclusive right that is allegedly infringed.\nMVL\'s Copyright Agent can be contacted as follows:\nBy Mail:\nMy Video Library, Inc.\nAttn: Copyright Agent\n401 E. Las Olas Blvd. Suite 1400\nFort. Lauderdale, Fl. 33301")
-        # plugin.log.info("clicked")
-        # curr_page = 6
-    # elif curr_page == 6:
-        # window.textbox.setText(
-         #   # "By Electronic Mail:\ncopyright@MyVideoLibrary.com\nBy Phone:\n800.380.5991\nPlease address all notices to the \'Copyright Agent\' and write \'Copyright Notice\' in the subject line.\nGoverning Law\nFlorida law governs this Conditions of Use agreement without regard to the its conflicts of law provisions. You agree that all claims and legal proceedings arising in connection with the use of the website will be brought solely in the federal or state courts located in Broward County, Florida, United States, and you consent to the jurisdiction of and venue in such courts and waive any objection as to inconvenient forum.\nLast updated October 15, 2013\n")
-        # plugin.log.info("clicked")
-
-
-# def prev_page():
-    # global curr_page
-    # if curr_page == 2:
-        # window.textbox.setText(
-         #   "General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.\nDefinitions\nThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
-        # plugin.log.info("clicked")
-        # curr_page = 1
-    # elif curr_page == 3:
-        # window.textbox.setText(
-         #   "Relationship\nThe relationship between you (the user) and us (MVL) is that we provide you with access to the referencing material and media contained within our site, which is provided to you on a purely non commercial basis and is, therefore, not that of customer and supplier.\nContent\nOther than descriptive material about the movies, MVL does not host, provide, archive, store, or distribute media of any kind, and acts merely as an index (or directory) of media posted by other webmasters on the internet, which is completely outside of our control. In general, we cannot and do not attempt to control, censor, or block any indexed material that may be considered offensive, abusive, libelous, obnoxious, inaccurate, deceptive, unlawful or otherwise distressing and neither do we accept responsibility for this content or the consequences of such content being made available.  Sometimes we do block referenced material because a third party asserts superior rights or for other legitimate reasons.  We are not responsible for your use of referenced material or your access to referenced material. ")
-        # plugin.log.info("clicked")
-        # curr_page = 2
-    # elif curr_page == 4:
-        # window.textbox.setText(
-         #   "Material may be inappropriately described or subject to restrictions such as copyright, licensing and other limitations and it is the sole responsibility of those having access to such material to comply with any or all lawful obligations arising from such material coming into their possession and, thus mitigate any alleged transgression. All users warrant that they are 18 years of age or older, and, therefore, qualified to enter into this agreement either as an individual or as a corporate entity. All users undertake to comply with applicable laws and observe the rights inherent in any copyright material whilst upholding the rights of any copyright owner. All users are advised to use caution, discretion, common sense and personal judgment when using My Video Library.com or any references detailed within the directory and to respect the wishes of others who may value freedom, as consenting adults equal to (or possibly superior to) your own personal preferences.\nQuality Of Service\nMVL does not provide commercial services and there are no actual or implied guarantees as to the availability of service or the speed, operation or function of this website, which is offered on a basis to those who choose to comply with the terms and conditions detailed within and access the \'free\' content of this website.")
-        # plugin.log.info("clicked")
-        # curr_page = 3
-    # elif curr_page == 5:
-        # window.textbox.setText(
-         #   "SOME JURISDICTIONS PROVIDE FOR CERTAIN WARRANTIES, LIKE THE IMPLIED WARRANTY OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. TO THE EXTENT PERMITTED BY LAW, WE EXCLUDE ALL WARRANTIES. \nIndemnification.\nYou, as a user of the website, agree to indemnify, defend, and hold MVL harmless from any and all liability, claims, actions, expenses (including attorneys\' fees and costs) that MVL may have relating to or arising from (a) your use of (or consequences of your use of) the website, or (b) any allegation that your use of the referenced material violates the trademark, copyright or other intellectual property rights of any third party.\nPrivacy\nThis website will comply with the requirements of any law enforcement or other officials, courts, or others with a legitimate interest in the official investigation or enforcement of applicable law.\nThe protection of the rights of others is important to MVL, and this extends to your adherence to intellectual property law, the rights of others to enjoy freedom from slander, libel, defamation, provocation, harassment, discrimination of any kind or any other action that may be deemed offensive by the individual concerned.")
-        # plugin.log.info("clicked")
-        # curr_page = 4
-    # elif curr_page == 6:
-        # window.textbox.setText(
-         #   "MVL is committed to protecting your privacy. MVL does not sell, trade or rent your personal information to any other companies. MVL will not collect any personal information about you except when you specifically and knowingly provide such information when registering for the website.\nBy using our website, you consent to the collection and use of this information by MVL. If we decide to change our privacy policy, we will post any changes to this page so that you are aware of which information we collect, how we use it, and under which circumstances we disclose it.\nIntellectual Property - General\nMVL respects the rights of others, and prohibits the use of referenced material for any purpose other than that for which it is intended (where such use is lawful and free of civil liability or other constraint) and in such circumstances where possession of such material may have any adverse financial, prejudicial or any other effect on any other third party.\nIf you believe in good faith your work has been copied in a way that constitutes copyright infringement, or that your intellectual property rights have been otherwise violated, please provide the following to MVL\'s Copyright Agent:\nA description of the copyrighted work or intellectual property that you claim has been infringed, or if multiple works, a listing of such works.")
-        # plugin.log.info("clicked")
-        # curr_page = 5
-
-
+    
 def showMessage(heading, message):
     dialog = xbmcgui.Dialog()
     dialog.ok(heading, message)
@@ -246,10 +188,7 @@ def check_condition():
     plugin.log.info(url)
     plugin.log.info(content)
     if content == 'false':
-        # global window
-        
         #Show Terms & Condition window
-        
         heading = "Terms & Conditions"
         tc_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 't&c.info')
         f = open(tc_path)
@@ -262,44 +201,6 @@ def check_condition():
             onClick_agree()
         else:
             onClick_disAgree()
-
-        
-        # window = AddonDialogWindow('Terms and Conditions')
-        # # Set the window width, height and the grid resolution: 2 rows, 3 columns.
-        # window.setGeometry(800, 600, 10, 10)
-
-        # # TextBox
-        # window.textbox = TextBox()
-        # window.placeControl(window.textbox, 0, 0, 300, 8)
-        ##window.textbox.setText("General\nWelcome to My Video Library, Inc.\'s search engine. My Video Library (herein MVL) provides its website services to you subject to the following conditions. If you visit My Video Library.com, use other MVL services or applications, you accept these conditions. Please read them carefully.Your use and access to the MVL website and your use of the services are strictly conditioned upon your confirmation that you comply fully with our terms and conditions of use. By accessing and using MyVideoLibrary.com or otherwise using this website, you signify your unequivocal acceptance of these and any other conditions and terms prevailing at this or at any future time.  You agree to adhere to the terms and conditions of use detailed herein without evasion, equivocation or reservation of any kind, in the knowledge that failure to comply with the terms and conditions will result in suspension or denial of your access to the website and potential legal and civil penalties.DefinitionsThe term \'the website\' applies to the site (MyVideoLibrary.com), its staff, administration, owners, agents, representatives, suppliers and partners. The term \'the user\' applies to any website visitor who wishes to use the website once arriving at MyVideoLibrary.com.")
-
-        # # window.textbox.setText('General\nWelcome to My V')
-        # # Create a button.
-        # next = Button('Next')
-        # # Place the label on the window grid.
-        # window.placeControl(next, 9, 8, columnspan=2)
-        # window.connect(next, next_page)
-
-        # prev = Button('Previous')
-        # # Place the label on the window grid.
-        # window.placeControl(prev, 9, 0, columnspan=2)
-        # window.connect(prev, prev_page)
-
-        # # Create a button.
-        # button = Button('I Agree')
-        # button2 = Button('Do Not Agree')
-
-        # # Place the button on the window grid.
-        # window.placeControl(button, 9, 3, columnspan=2)
-        # window.placeControl(button2, 9, 5, columnspan=2)
-
-        # # Set initial focus on the button.
-        # window.setFocus(button)
-        # # Connect the button to a function.
-        # window.connect(button, onClick_agree)
-        # window.connect(button2, onClick_disAgree)
-        # # Show the created window.
-        # window.doModal()
         
     elif content == 'true':
         global isAgree
@@ -325,8 +226,8 @@ def get_mac_address():
         else:
             return local_mac_address
     except IOError:
-        xbmc.executebuiltin(
-            'Notification(Mac Address Not Available,MVL Could not get the MAC Address,5000,/script.hellow.world.png)')
+        # xbmc.executebuiltin('Notification(Mac Address Not Available,MVL Could not get the MAC Address,5000,/script.hellow.world.png)')
+        showMessage('Error','Mac Address Not Available, MVL Could not get the MAC Address')
 
     # xbmc.executebuiltin('Notification(MAC_Flag Check1,{0},2000)'.format(cache.get("mac_address_flag")))
     # xbmc.executebuiltin('Notification(MAC_Address Check1,{0},2000)'.format(usrsettings.getSetting('mac_address')))
@@ -357,29 +258,8 @@ def dialog_msg():
         
     #show message is a dialog window
     showMessage(heading, text)
+
     
-    # global internet_info
-    # internet_info = AddonDialogWindow('INTERNET CONNECTION ISSUE')
-    # # Set the window width, height and the grid resolution: 2 rows, 3 columns.
-    # internet_info.setGeometry(450, 200, 6, 6)
-
-    # # TextBox
-    # internet_info.textbox = TextBox()
-    # internet_info.placeControl(internet_info.textbox, 0, 0, 5, 6)
-    # internet_info.textbox.setText(
-        # "An error has occured communicating with MyVideoLibrary server. Please check that you are connected to internet through wi-fi")
-
-    # # Create a button.
-    # okay = Button('OK')
-
-    # # Place the label on the window grid.
-    # internet_info.placeControl(okay, 4, 2, columnspan=2, rowspan=2)
-    # internet_info.setFocus(okay)
-    # internet_info.connect(okay, show_root)
-    # # Show the created window.
-    # internet_info.doModal()
-
-
 def show_root():
     global internet_info
     internet_info.close()
@@ -393,10 +273,14 @@ def do_nothing():
 def get_categories(id, page):
     #import resources.htmlcleaner
     #import re
+    global mvl_view_mode
 
     if check_internet():
-        global mvl_view_mode
         global mvl_tvshow_title
+        
+        #save current view mode in case any error occurs and we need to remain on the same page
+        prev_view_mode = mvl_view_mode
+        
         try:
 
             dp = xbmcgui.DialogProgress()
@@ -405,7 +289,7 @@ def get_categories(id, page):
                 mvl_view_mode = 50
             elif id in ('1', '3'):  # if these are immediate childs of Top Level parents then view should be set as Fan Art
                 mvl_view_mode = 59
-                # else:
+            # else:
                 # mvl_view_mode = 59
 
             parent_id = id
@@ -722,17 +606,27 @@ def get_categories(id, page):
                 #plugin.log.info(items)
                 
                 dp.close()
-                
-
             
             return items
-        except IOError:
-            xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+        # except IOError:
+            # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
         except Exception, e:
-            xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
-            plugin.log.info(e)
-            traceback.print_exc()
+            if id in ('1', '3'):  # if we were on 1st page, then the viewmode should remain to 58 as an error has occured and we haven't got any data for next screen
+                mvl_view_mode = 58
+            elif id in ('23', '104916', '112504', '32', '104917', '366042'):
+                mvl_view_mode = 59
+            
+                
+            # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+            dialog_msg()
+            # plugin.log.info(e)
+            # traceback.print_exc()
     else:
+        if id in ('1', '3'):  # if we were on 1st page, then the viewmode should remain to 58 as an error has occured and we haven't got any data for next screen
+            mvl_view_mode = 58
+        elif id in ('23', '104916', '112504', '32', '104917', '366042'):
+            mvl_view_mode = 59
+            
         dialog_msg()
 
 
@@ -769,7 +663,8 @@ def get_videos(id, thumbnail):
 
             return items
         except IOError:
-            xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
+            # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
+            dialog_msg()
     else:
         dialog_msg()
 
@@ -777,8 +672,9 @@ def get_videos(id, thumbnail):
 
 @plugin.route('/play_video/<url>')
 def play_video(url):
+    global mvl_view_mode
+    
     if check_internet():
-        global mvl_view_mode
         mvl_view_mode = 50
         #if login is successful then selected item will be resolved using urlresolver and played
         if login_check():
@@ -789,6 +685,7 @@ def play_video(url):
         else:
             pass
     else:
+        mvl_view_mode = 50
         dialog_msg()
 
 def create_meta(video_type, title, year, thumb):
@@ -849,19 +746,20 @@ def login_check():
             if row['status'] == 1:
                 return True
             else:
-                xbmc.executebuiltin('Notification(License Limit Reached,' + row['message'] + ')')
+                # xbmc.executebuiltin('Notification(License Limit Reached,' + row['message'] + ')')
+                showMessage('Error', 'License Limit Reached, '+ row['message'])
                 return False
     except IOError:
-        xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
+        # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
+        dialog_msg()
     pass
 
 
 @plugin.route('/search/<category>/')
 def search(category):
+    global mvl_view_mode
 
     if check_internet():
-
-        global mvl_view_mode
         
         try:
 
@@ -886,7 +784,8 @@ def search(category):
             f = urllib2.urlopen(req)
             response = f.read()
             if response == '0':
-                xbmc.executebuiltin('Notification(Sorry,No Videos Found Matching Your Query,5000,/error.png)')
+                # xbmc.executebuiltin('Notification(Sorry,No Videos Found Matching Your Query,5000,/error.png)')
+                showMessage('No result found', 'Sorry, No Videos Found Matching Your Query')
                 mvl_view_mode = 59
 
             else:
@@ -1042,8 +941,10 @@ def search(category):
                 
                 return items
         except IOError:
-            xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+            # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+            dialog_msg()
     else:
+        mvl_view_mode = 59
         dialog_msg()
 
 
@@ -1051,8 +952,9 @@ def search(category):
 
 @plugin.route('/azlisting/<category>/')
 def azlisting(category):
+    global mvl_view_mode
+    
     if check_internet():
-        global mvl_view_mode
         mvl_view_mode = 50
         Indices = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
                    'V', 'W', 'X', 'Y', 'Z']
@@ -1071,6 +973,7 @@ def azlisting(category):
                       }]
         return items
     else:
+        mvl_view_mode = 59
         dialog_msg()
 
 
@@ -1260,9 +1163,11 @@ def get_azlist(key, page, category):
             
             return items
         else:
-            xbmc.executebuiltin('Notification(Sorry,No Videos Available In this Category,5000,/error.png)')
+            # xbmc.executebuiltin('Notification(Sorry,No Videos Available In this Category,5000,/error.png)')
+            showMessage('No result found', 'Sorry, No Videos Available In this Category')
     except IOError:
-        xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+        # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+        dialog_msg()
 
 
 @plugin.route('/mostpopular/<page>/<category>/')
@@ -1362,9 +1267,11 @@ def mostpopular(page, category):
             
             return items
         else:
-            xbmc.executebuiltin('Notification(Sorry,No Videos Available In this Category,5000,/error.png)')
+            # xbmc.executebuiltin('Notification(Sorry,No Videos Available In this Category,5000,/error.png)')
+            showMessage('No result found', 'Sorry, No Videos Available In this Category')
     except IOError:
-        xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+        # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+        dialog_msg()
 
 
 def init_database():
@@ -1394,8 +1301,8 @@ def save_favourite(id, title, thumbnail, isplayable, category):
         db.commit()
         db.close()
     except:
-        xbmc.executebuiltin(
-            'Notification(Database Error,Please contact software provider,5000,/script.hellow.world.png)')
+        # xbmc.executebuiltin('Notification(Database Error, Please contact software provider,5000,/script.hellow.world.png)')
+        showMessage('Database Error', 'Please contact software provider') 
 
 
 @plugin.route('/remove_favourite/<id>/<title>/<category>')
