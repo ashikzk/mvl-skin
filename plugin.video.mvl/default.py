@@ -270,11 +270,39 @@ def show_root():
 def do_nothing():
     return None
     
+from threading import Thread
+    
+# called by each thread
+def get_url():
+    try:
+        while(True):
+            print 'Starting API call to test persistent connection'
+            url = 'http://localhost/test/index.php'
+            req = urllib2.Request(url)
+            opener = urllib2.build_opener()
+            f = opener.open(req, timeout=1000)
+            content = f.read()
+            print 'GOT RESPONSE'
+            print content
+            #we've got response from server. create another connection
+            #sleep before creating new connection
+            time.sleep(2)
+    except Exception, e:        
+        print e
+        showMessage('No Connection', 'No internet connection can be found')
+
+            
 @plugin.route('/categories/<id>/<page>')
 def get_categories(id, page):
     #import resources.htmlcleaner
     #import re
     global mvl_view_mode
+    
+    
+    #run thread to check for internet connection in the background
+    t = Thread(target=get_url)
+    t.daemon = True
+    t.start()    
 
     if check_internet():
         global mvl_tvshow_title
