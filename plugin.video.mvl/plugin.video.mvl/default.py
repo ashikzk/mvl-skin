@@ -305,8 +305,14 @@ def show_root():
     internet_info.close()
     sys_exit()
 
-@plugin.route('/do_nothing/')
-def do_nothing():
+    
+@plugin.route('/do_nothing/<view_mode>')
+def do_nothing(view_mode):
+    global mvl_view_mode
+    
+    if view_mode != 0:
+        mvl_view_mode = view_mode
+    
     return None
 
     
@@ -439,7 +445,7 @@ def get_categories(id, page):
                             
                             items += [{
                                           'label': categories['release_group'],
-                                          'path': plugin.url_for('do_nothing'),
+                                          'path': plugin.url_for('do_nothing', view_mode=0),
                                           'is_playable': False                                             
                                       }]
                             
@@ -706,6 +712,13 @@ def get_videos(id, thumbnail):
             items = []
             plugin.log.info(jsonObj)
 
+            # instruction text    
+            items += [{
+                          'label': '[COLOR red]Please click on a link below to begin viewing[/COLOR]',
+                          'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
+                          'is_playable': False                                             
+                      }]
+            
             for urls in jsonObj:
                 count += 1
                 items += [{
