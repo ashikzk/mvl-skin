@@ -20,6 +20,9 @@ from metahandler import metahandlers
 from metahandler import metacontainers
 from operator import itemgetter
 
+from threading import Thread
+
+
 _MVL = Addon('plugin.video.mvl', sys.argv)
 plugin = Plugin()
 pluginhandle = int(sys.argv[1])
@@ -67,6 +70,10 @@ isAgree = False
 @plugin.route('/')
 def index():
     global Main_cat
+    
+    #run thread to check for internet connection in the background
+    setup_internet_check()
+    
     try:
         #set view mode first so that whatever happens, it doesn't change
         mvl_view_mode = 58
@@ -131,6 +138,37 @@ def index():
         dialog_msg()
         sys_exit()
 
+        
+def setup_internet_check():
+    t = Thread(target=check_internet_connection)
+    t.daemon = True
+    t.start()
+        
+# called by each thread
+def check_internet_connection():
+    try:
+        while(True):
+            print 'Starting outbound call to test internet connection'
+            url = 'http://www.google.com'
+            response = urllib2.urlopen(url, timeout=1)
+            # req = urllib2.Request(url)
+            # opener = urllib2.build_opener()
+            # f = opener.open(req)
+            # content = f.read()
+            print 'GOT RESPONSE'
+            # print xbmc.abortRequested
+            #we've got response from server. create another connection
+            #sleep before creating new connection
+            time.sleep(10)
+    except Exception, e:        
+        print e
+        # showMessage('No Connection', 'No internet connection can be found')
+        dialog_msg()
+        #now setup another thread to continue checking internet connection
+        time.sleep(10)
+        setup_internet_check()
+
+        
 def show_notification():
 
     try:
@@ -255,7 +293,8 @@ def check_internet():
 def dialog_msg():
 
     heading = "INTERNET CONNECTION ISSUE"
-    text = "An error has occured communicating with MyVideoLibrary server. Please check that you are connected to internet through wi-fi"
+    # text = "An error has occured communicating with MyVideoLibrary server. Please check that you are connected to internet through wi-fi"
+    text = "Your internet connection has been lost. Please wait a few minutes and try again. If the error persists you may wish to contact your Internet Service Provider."
         
     #show message is a dialog window
     showMessage(heading, text)
@@ -269,40 +308,13 @@ def show_root():
 @plugin.route('/do_nothing/')
 def do_nothing():
     return None
-    
-from threading import Thread
-    
-# called by each thread
-def get_url():
-    try:
-        while(True):
-            print 'Starting API call to test persistent connection'
-            url = 'http://localhost/test/index.php'
-            req = urllib2.Request(url)
-            opener = urllib2.build_opener()
-            f = opener.open(req, timeout=1000)
-            content = f.read()
-            print 'GOT RESPONSE'
-            print content
-            #we've got response from server. create another connection
-            #sleep before creating new connection
-            time.sleep(2)
-    except Exception, e:        
-        print e
-        showMessage('No Connection', 'No internet connection can be found')
 
-            
+    
 @plugin.route('/categories/<id>/<page>')
 def get_categories(id, page):
     #import resources.htmlcleaner
     #import re
     global mvl_view_mode
-    
-    
-    #run thread to check for internet connection in the background
-    t = Thread(target=get_url)
-    t.daemon = True
-    t.start()    
 
     if check_internet():
         global mvl_tvshow_title
