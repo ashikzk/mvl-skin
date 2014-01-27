@@ -2014,9 +2014,10 @@
       <visible>!Skin.HasSetting(Videos.Hide)</visible>
       <label>Media</label>
       <thumb fallback="special://skin/backgrounds/mvl_bg.jpg">$INFO[Skin.String(Videos.Background)]</thumb>
+      <onclick>Container.SetViewMode(58)</onclick>
       <onclick>XBMC.RunAddon(plugin.video.mvl)</onclick>
 	  <!--onclick>XBMC.ActivateWindow(Videos)</onclick-->
-	  <onfocus>Container.SetViewMode(50)</onfocus>
+	  <onfocus>Container.SetViewMode(58)</onfocus>
     </item>
     <!--item id="24" description="Custom.4">
       <visible>!IsEmpty(Skin.String(CustomHome.4.Path))</visible>

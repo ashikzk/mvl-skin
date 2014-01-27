@@ -150,7 +150,7 @@
       <visible>Control.IsVisible(50)</visible>
       <control type="list" id="50">
         <viewtype label="535">List</viewtype>
-        <posx>710</posx>
+        <posx>685</posx>
         <posy>406</posy>
         <width>1210</width>
         <height>648</height>
@@ -163,17 +163,17 @@
         <include>List_Layout</include>
       </control>
       <control type="scrollbar" id="60">
-        <animation effect="slide" start="0,0" end="-8,0" time="150">Focus</animation>
-        <animation effect="slide" start="-8,0" end="0,0" time="300">UnFocus</animation>
-        <posx>20r</posx>
-        <posy>480</posy>
-        <width>36</width>
-        <height>576</height>
-        <texturesliderbackground>-</texturesliderbackground>
+        <animation effect="slide" start="0,0" end="0,0" time="150">Focus</animation>
+        <animation effect="slide" start="0,0" end="0,0" time="300">UnFocus</animation>
+        <posx>35r</posx>
+        <posy>320</posy>
+        <width>25</width>
+        <height>800</height>
+        <texturesliderbackground>sc/ScrollBarV.png</texturesliderbackground>
         <texturesliderbar>-</texturesliderbar>
         <texturesliderbarfocus>-</texturesliderbarfocus>
-        <textureslidernib border="18">sc/skin-scroll-vertical.png</textureslidernib>
-        <textureslidernibfocus border="18">sc/skin-scroll-verticalfo.png</textureslidernibfocus>
+        <textureslidernib border="18">sc/ScrollBarV_bar.png</textureslidernib>
+        <textureslidernibfocus border="18">sc/ScrollBarV_bar_focus.png</textureslidernibfocus>
         <showonepage>false</showonepage>
         <orientation>vertical</orientation>
         <onleft>50</onleft>
