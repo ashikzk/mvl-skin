@@ -6,7 +6,6 @@ import calendar
 import simplejson as json
 import urllib
 import urllib2
-import urlresolver
 import xbmcvfs
 import xbmcaddon
 import xbmcplugin
@@ -14,12 +13,12 @@ from t0mm0.common.addon import Addon
 import re
 import sys
 import os
-#import resources.htmlcleaner
 import traceback
+
 from metahandler import metahandlers
 from metahandler import metacontainers
-from operator import itemgetter
 
+from operator import itemgetter
 from threading import Thread
 
 
@@ -348,6 +347,17 @@ def get_categories(id, page):
             plugin.log.info(id)
             plugin.log.info(page)
             plugin.log.info(page_limit_cat)
+            
+            
+            #freeze UI by showing a busy dialog
+            # xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+            # xbmc.executebuiltin( "ActivateWindow(busydialog)" )
+
+            # #wait for 30 seconds
+            # time.sleep(10)
+
+            # #make everything normal
+            # xbmc.executebuiltin( "Dialog.Close(busydialog)" )
             
             url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id={0}&page={1}&limit={2}".format(id, 
                                                                                                                          page,
@@ -746,6 +756,10 @@ def play_video(url):
         #if login is successful then selected item will be resolved using urlresolver and played
         if login_check():
             try:
+                #first import urlresolver
+                #as this takes a while, we'll be importing it only when required
+                import urlresolver
+    
                 hostedurl = urlresolver.HostedMediaFile(url).resolve()
                 plugin.log.info(url)
                 plugin.log.info(hostedurl)
