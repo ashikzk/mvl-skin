@@ -151,7 +151,7 @@
       <control type="list" id="50">
         <viewtype label="535">List</viewtype>
         <posx>680</posx>
-        <posy>406</posy>
+        <posy>390</posy>
         <width>1210</width>
         <height>648</height>
         <pagecontrol>60</pagecontrol>
@@ -165,15 +165,15 @@
       <control type="scrollbar" id="60">
         <animation effect="slide" start="0,0" end="0,0" time="150">Focus</animation>
         <animation effect="slide" start="0,0" end="0,0" time="300">UnFocus</animation>
-        <posx>40r</posx><!-- <posx>40r</posx> -->
-        <posy>320</posy>
-        <width>35</width>
-        <height>800</height>
-        <texturesliderbackground aligny="top">sc/ScrollBarV.png</texturesliderbackground>
-        <texturesliderbar></texturesliderbar>
-        <texturesliderbarfocus></texturesliderbarfocus>
-        <textureslidernib border="0">sc/ScrollBarV_bar.png</textureslidernib>
-        <textureslidernibfocus border="0">sc/ScrollBarV_bar_focus.png</textureslidernibfocus>
+        <posx>40r</posx>
+        <posy>392</posy>
+        <width>25</width>
+        <height>640</height>
+        <texturesliderbackground>sc/ScrollBarV-new.png</texturesliderbackground>
+        <texturesliderbar>sc/ScrollBarV_bar.png</texturesliderbar>
+        <texturesliderbarfocus>sc/ScrollBarV_bar_focus.png</texturesliderbarfocus>
+        <textureslidernib></textureslidernib>
+        <textureslidernibfocus></textureslidernibfocus>
         <showonepage>false</showonepage>
         <orientation>vertical</orientation>
         <onleft>50</onleft>

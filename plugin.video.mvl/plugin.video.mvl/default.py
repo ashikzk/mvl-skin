@@ -75,7 +75,7 @@ def index():
     global Main_cat
     
     #run thread to check for internet connection in the background
-    # setup_internet_check()
+    setup_internet_check()
     
     try:
         #set view mode first so that whatever happens, it doesn't change
@@ -118,6 +118,9 @@ def index():
         f = opener.open(req)
         #reading content fetched from the url
         content = f.read()
+        
+        hide_busy_dialog()
+        
         #converting to json object
         jsonObj = json.loads(content)
         items = []
@@ -135,7 +138,7 @@ def index():
                               'thumbnail': art('{0}.png'.format(categories['title'].lower())),
                           }]
                           
-            hide_busy_dialog()
+            # hide_busy_dialog()
             return items
 
     except IOError:
@@ -320,6 +323,8 @@ def do_nothing(view_mode):
     
     if view_mode != 0:
         mvl_view_mode = view_mode
+    
+    hide_busy_dialog()
     
     return None
 
@@ -879,7 +884,8 @@ def search(category):
             #if nothing was typed, return without doing anything
             if search_string is None or search_string == '' :
                 mvl_view_mode = 59
-                return
+                hide_busy_dialog()
+                return None
                 
             url = server_url + "/api/index.php/api/categories_api/searchVideos"
 
