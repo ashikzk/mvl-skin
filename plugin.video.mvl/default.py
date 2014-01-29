@@ -1,3 +1,8 @@
+#hide any existing loading and show system busy dialog to freeze the screen
+xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+xbmc.executebuiltin( "ActivateWindow(busydialog)" )
+
+
 from xbmcswift2 import Plugin, xbmcgui, xbmc, xbmcaddon, xbmcplugin, actions
 import urllib2
 import time
@@ -20,7 +25,6 @@ from metahandler import metacontainers
 
 from operator import itemgetter
 from threading import Thread
-
 
 _MVL = Addon('plugin.video.mvl', sys.argv)
 plugin = Plugin()
@@ -71,7 +75,7 @@ def index():
     global Main_cat
     
     #run thread to check for internet connection in the background
-    setup_internet_check()
+    # setup_internet_check()
     
     try:
         #set view mode first so that whatever happens, it doesn't change
@@ -130,11 +134,14 @@ def index():
                               'is_playable': False,
                               'thumbnail': art('{0}.png'.format(categories['title'].lower())),
                           }]
+                          
+            hide_busy_dialog()
             return items
 
     except IOError:
         # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
         dialog_msg()
+        hide_busy_dialog()
         sys_exit()
 
         
@@ -158,13 +165,13 @@ def check_internet_connection():
             # print xbmc.abortRequested
             #we've got response from server. create another connection
             #sleep before creating new connection
-            time.sleep(10)
+            time.sleep(20)
     except Exception, e:        
         print e
         # showMessage('No Connection', 'No internet connection can be found')
         dialog_msg()
         #now setup another thread to continue checking internet connection
-        time.sleep(10)
+        time.sleep(20)
         setup_internet_check()
 
         
@@ -298,6 +305,8 @@ def dialog_msg():
     #show message is a dialog window
     showMessage(heading, text)
 
+def hide_busy_dialog():
+    xbmc.executebuiltin( "Dialog.Close(busydialog)" )
     
 def show_root():
     global internet_info
@@ -321,6 +330,12 @@ def get_categories(id, page):
     #import re
     global mvl_view_mode
 
+    # showMessage('he he', str(mvl_view_mode))
+    
+    mvl_view_mode = 58
+    # hide_busy_dialog()
+    # return None
+
     if check_internet():
         global mvl_tvshow_title
         
@@ -330,13 +345,6 @@ def get_categories(id, page):
         try:
 
             dp = xbmcgui.DialogProgress()
-            
-            if id in ('23', '32'): # if the Parent ID is Genres for TV or Movies then view should be set as "List" mode
-                mvl_view_mode = 50
-            elif id in ('1', '3'):  # if these are immediate childs of Top Level parents then view should be set as Fan Art
-                mvl_view_mode = 59
-            # else:
-                # mvl_view_mode = 59
 
             parent_id = id
             main_category_check = False
@@ -676,6 +684,19 @@ def get_categories(id, page):
                 #plugin.log.info(items)
                 
                 dp.close()
+
+                
+            #we should set the view_mode as last thing in this method
+            #because if user cancels his action and goes back before the api response
+            #the view_mode will still be changed otherwise
+            if id in ('23', '32'): # if the Parent ID is Genres for TV or Movies then view should be set as "List" mode
+                mvl_view_mode = 50
+            elif id in ('1', '3'):  # if these are immediate childs of Top Level parents then view should be set as Fan Art
+                mvl_view_mode = 59
+            # else:
+                # mvl_view_mode = 59
+                
+            hide_busy_dialog()
             
             return items
         # except IOError:
@@ -685,10 +706,10 @@ def get_categories(id, page):
                 mvl_view_mode = 58
             elif id in ('23', '104916', '112504', '32', '104917', '366042'):
                 mvl_view_mode = 59
-            
                 
             # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
             dialog_msg()
+            hide_busy_dialog()
             # plugin.log.info(e)
             # traceback.print_exc()
     else:
@@ -696,8 +717,10 @@ def get_categories(id, page):
             mvl_view_mode = 58
         elif id in ('23', '104916', '112504', '32', '104917', '366042'):
             mvl_view_mode = 59
-            
+                
+        #show error message
         dialog_msg()
+        hide_busy_dialog()
 
 
 @plugin.route('/get_videos/<id>/<thumbnail>/')
@@ -738,12 +761,15 @@ def get_videos(id, thumbnail):
                               'is_playable': True,
                           }]
 
+            hide_busy_dialog()
             return items
         except IOError:
             # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
             dialog_msg()
+            hide_busy_dialog()
     else:
         dialog_msg()
+        hide_busy_dialog()
 
 
 
@@ -1024,13 +1050,16 @@ def search(category):
                         
                 dp.close()
                 
+                hide_busy_dialog()
                 return items
         except IOError:
             # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
             dialog_msg()
+            hide_busy_dialog()
     else:
         mvl_view_mode = 59
         dialog_msg()
+        hide_busy_dialog()
 
 
 
@@ -1056,10 +1085,13 @@ def azlisting(category):
                           'path': plugin.url_for('get_azlist', key=index, page=0, category=category),
                           'is_playable': False,
                       }]
+                      
+        hide_busy_dialog()
         return items
     else:
         mvl_view_mode = 59
         dialog_msg()
+        hide_busy_dialog()
 
 
 @plugin.route('/get_azlist/<key>/<page>/<category>/')
@@ -1246,13 +1278,16 @@ def get_azlist(key, page, category):
             
             dp.close()
             
+            hide_busy_dialog()
             return items
         else:
             # xbmc.executebuiltin('Notification(Sorry,No Videos Available In this Category,5000,/error.png)')
             showMessage('No result found', 'Sorry, No Videos Available In this Category')
+            hide_busy_dialog()
     except IOError:
         # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
         dialog_msg()
+        hide_busy_dialog()
 
 
 @plugin.route('/mostpopular/<page>/<category>/')
@@ -1350,13 +1385,16 @@ def mostpopular(page, category):
             
             dp.close()
             
+            hide_busy_dialog()
             return items
         else:
             # xbmc.executebuiltin('Notification(Sorry,No Videos Available In this Category,5000,/error.png)')
             showMessage('No result found', 'Sorry, No Videos Available In this Category')
+            hide_busy_dialog()
     except IOError:
         # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
         dialog_msg()
+        hide_busy_dialog()
 
 
 def init_database():
@@ -1448,6 +1486,7 @@ def get_favourites(category):
                           'replace_context_menu': True
                       }]
     db.close()
+    hide_busy_dialog()
     return items
 
 
