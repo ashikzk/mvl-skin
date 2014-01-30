@@ -164,7 +164,7 @@ def check_internet_connection():
             # opener = urllib2.build_opener()
             # f = opener.open(req)
             # content = f.read()
-            print 'GOT RESPONSE'
+            # print 'GOT RESPONSE'
             # print xbmc.abortRequested
             #we've got response from server. create another connection
             #sleep before creating new connection
@@ -798,11 +798,14 @@ def play_video(url):
             except:
                 mvl_view_mode = 50
                 showMessage('Error loading video', 'This source will not play. Please pick another.')
+                hide_busy_dialog()
         else:
+            hide_busy_dialog()
             pass
     else:
         mvl_view_mode = 50
         dialog_msg()
+        hide_busy_dialog()
 
 def create_meta(video_type, title, year, thumb):
     try:
