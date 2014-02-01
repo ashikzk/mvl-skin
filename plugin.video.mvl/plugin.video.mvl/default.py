@@ -794,6 +794,9 @@ def play_video(url):
                 hostedurl = urlresolver.HostedMediaFile(url).resolve()
                 plugin.log.info(url)
                 plugin.log.info(hostedurl)
+                
+                hide_busy_dialog()
+                
                 plugin.set_resolved_url(hostedurl)
             except:
                 mvl_view_mode = 50
