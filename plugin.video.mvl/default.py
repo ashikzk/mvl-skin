@@ -6,7 +6,6 @@ xbmc.executebuiltin( "ActivateWindow(busydialog)" )
 from xbmcswift2 import Plugin, xbmcgui, xbmc, xbmcaddon, xbmcplugin, actions
 import urllib2
 import time
-from datetime import datetime
 import calendar
 import simplejson as json
 import urllib
@@ -25,6 +24,14 @@ from metahandler import metacontainers
 
 from operator import itemgetter
 from threading import Thread
+
+#Patch Locale for android devices
+def getlocale(*args, **kwargs):
+    return (None, None)
+import locale
+locale.getlocale=getlocale
+from datetime import datetime
+
 
 _MVL = Addon('plugin.video.mvl', sys.argv)
 plugin = Plugin()
@@ -75,7 +82,7 @@ def index():
     global Main_cat
     
     #run thread to check for internet connection in the background
-    setup_internet_check()
+    # setup_internet_check()
     
     try:
         #set view mode first so that whatever happens, it doesn't change
@@ -326,6 +333,8 @@ def do_nothing(view_mode):
     
     hide_busy_dialog()
     
+    # plugin.end_of_directory(succeeded=False, update_listing=False)
+    
     return None
 
     
@@ -348,8 +357,6 @@ def get_categories(id, page):
         prev_view_mode = mvl_view_mode
         
         try:
-
-            dp = xbmcgui.DialogProgress()
 
             parent_id = id
             main_category_check = False
@@ -387,13 +394,15 @@ def get_categories(id, page):
                 jsonObj = json.loads(content)
                 totalCats = len(jsonObj)
                 plugin.log.info('total categories-->%s' % totalCats)
-                plugin.log.info(jsonObj)
+                # plugin.log.info(jsonObj)
                 if jsonObj[0]['top_level_parent'] == jsonObj[0]['parent_id']:
                     is_search_category = True
                     image_on_off = '_off'
 
                 item_count = len(jsonObj)
                 done_count = 0
+                
+                dp = xbmcgui.DialogProgress()
                 dp_created = False
                 dp_type = 'show'
                 
@@ -408,6 +417,8 @@ def get_categories(id, page):
                             mydate = datetime.strptime(categories['release_date'], '%Y-%m-%d')
                         except TypeError:
                             mydate = datetime(*(time.strptime(categories['release_date'], '%Y-%m-%d')[0:6]))                   
+                        except Exception,e:
+                            print e
                         
                         categories['release_group'] = '[COLOR Blue]'+calendar.month_name[mydate.month] + ', ' + str(mydate.year)+'[/COLOR]'
                         release_date_count = 1
@@ -469,6 +480,7 @@ def get_categories(id, page):
                             items += [{
                                           'label': categories['release_group'],
                                           'path': plugin.url_for('do_nothing', view_mode=0),
+                                          # 'path': 'plugin://plugin.video.mvl/',
                                           'is_playable': False                                             
                                       }]
                             
@@ -884,7 +896,6 @@ def search(category):
     if check_internet():
         
         try:
-
             search_string = plugin.keyboard(heading=('search'))
             
             #if nothing was typed, return without doing anything
@@ -1068,6 +1079,12 @@ def search(category):
             # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
             dialog_msg()
             hide_busy_dialog()
+            
+        except Exception,e:
+            mvl_view_mode = 59
+            hide_busy_dialog()
+            return None
+            
     else:
         mvl_view_mode = 59
         dialog_msg()
@@ -1453,8 +1470,8 @@ def remove_favourite(id, title, category):
 
 
 def sys_exit():
+    plugin.finish(succeeded=True)
     xbmc.executebuiltin("XBMC.ActivateWindow(Home)")
-    return exit
 
 
 @plugin.route('/get_favourites/<category>/')
