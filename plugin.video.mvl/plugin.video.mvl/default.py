@@ -921,6 +921,7 @@ def search(category):
                 # xbmc.executebuiltin('Notification(Sorry,No Videos Found Matching Your Query,5000,/error.png)')
                 showMessage('No result found', 'Sorry, No Videos Found Matching Your Query')
                 mvl_view_mode = 59
+                hide_busy_dialog()
 
             else:
                 mvl_view_mode = 50
@@ -1302,8 +1303,8 @@ def get_azlist(key, page, category):
                 if dp.iscanceled():
                     break
                 
-            plugin.log.info('itemcheck')
-            plugin.log.info(items)
+            # plugin.log.info('itemcheck')
+            # plugin.log.info(items)
             
             dp.close()
             
