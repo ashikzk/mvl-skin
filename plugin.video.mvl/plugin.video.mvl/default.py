@@ -82,7 +82,7 @@ def index():
     global Main_cat
     
     #run thread to check for internet connection in the background
-    # setup_internet_check()
+    setup_internet_check()
     
     try:
         #set view mode first so that whatever happens, it doesn't change
@@ -167,14 +167,6 @@ def check_internet_connection():
             print 'Starting outbound call to test internet connection'
             url = 'http://www.google.com'
             response = urllib2.urlopen(url, timeout=1)
-            # req = urllib2.Request(url)
-            # opener = urllib2.build_opener()
-            # f = opener.open(req)
-            # content = f.read()
-            # print 'GOT RESPONSE'
-            # print xbmc.abortRequested
-            #we've got response from server. create another connection
-            #sleep before creating new connection
             time.sleep(20)
     except Exception, e:        
         print e
