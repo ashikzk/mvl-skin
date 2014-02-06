@@ -81,6 +81,10 @@ isAgree = False
 def index():
     global Main_cat
     
+    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'quit_log.dat')
+    f = open(file_path, 'w')
+    f.close()
+    
     #run thread to check for internet connection in the background
     setup_internet_check()
     
@@ -159,21 +163,51 @@ def setup_internet_check():
     t = Thread(target=check_internet_connection)
     t.daemon = True
     t.start()
-        
+     
+def check_quit_log():
+    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'quit_log.dat')
+    f = open(file_path, 'r')
+    r = f.read()
+    f.close()
+    
+    # print "check quit log = " + str(r)
+    
+    if r:
+        return True
+    else:
+        return False
+
+     
 # called by each thread
 def check_internet_connection():
+    sleep_time = 20
+    
     try:
         while(True):
             print 'Starting outbound call to test internet connection'
             url = 'http://www.google.com'
             response = urllib2.urlopen(url, timeout=1)
-            time.sleep(20)
+            count = sleep_time
+            while count:
+                count = count - 1
+                time.sleep(1)
+                
+                if check_quit_log():
+                    return
+                    
     except Exception, e:        
         print e
         # showMessage('No Connection', 'No internet connection can be found')
         dialog_msg()
         #now setup another thread to continue checking internet connection
-        time.sleep(20)
+        count = sleep_time
+        while count:
+            count = count - 1
+            time.sleep(1)
+            
+            if check_quit_log():
+                return
+        
         setup_internet_check()
 
         
@@ -1120,7 +1154,7 @@ def azlisting(category):
 def get_azlist(key, page, category):
     global mvl_view_mode
     mvl_view_mode = 50
-    page_limit_az = 30
+    page_limit_az = 200
     try:
 
         dp = xbmcgui.DialogProgress()

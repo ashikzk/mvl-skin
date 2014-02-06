@@ -90,7 +90,7 @@
     <include>PosterThumb</include>
   </include>
   <include name="MusicShowcaseThumbDimensions">
-    <posx>80</posx>
+    <posx>10</posx>
     <posy>144</posy>
     <width>297</width>
     <height>297</height>
@@ -366,7 +366,7 @@
         <visible>![[container.content(MusicVideos) + Window.IsActive(myvideonav.xml)] | container.content(movies) | container.content(tvshows) | container.content(seasons) | container.content(episodes)]</visible>
         <animation effect="slide" easing="out" start="0,0" end="0,800" time="350" delay="0" center="120,350" reversible="true" condition="Control.HasFocus(7000)">Conditional</animation>
         <animation effect="slide" easing="out" start="0,0" end="0,60" time="350" delay="0" center="120,350" reversible="true" condition="Skin.HasSetting(Music_Info)">Conditional</animation>
-        <posx>-404</posx>
+        <posx>-334</posx>
         <posy>546</posy>
         <width>2268</width>
         <height>660</height>

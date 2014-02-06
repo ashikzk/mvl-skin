@@ -2129,7 +2129,7 @@
       <visible>!Skin.HasSetting(Quit.Hide)</visible>
       <label fallback="13009">Quit</label>
       <thumb fallback="special://skin/backgrounds/mvl_bg.jpg">$INFO[Skin.String(Quit.Background)]</thumb>
-      <onclick>XBMC.Quit()</onclick>
+      <onclick>XBMC.RunScript("special://home\addons\plugin.video.mvl\script_quit.py")</onclick>
     </item>
   </include>
   <include name="Home.Submenu.Items">
