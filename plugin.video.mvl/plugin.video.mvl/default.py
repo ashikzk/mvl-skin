@@ -228,9 +228,13 @@ def show_notification():
         
         if message != '':
             showMessage('Notification', message)
+            sys_exit()
+            return True
     except:
         #do nothing
         message = ''
+        
+    return False
 
 def onClick_disAgree():
     # window.close()
@@ -379,6 +383,8 @@ def get_categories(id, page):
     if check_internet():
         global mvl_tvshow_title
         
+        show_notification()
+        
         #save current view mode in case any error occurs and we need to remain on the same page
         prev_view_mode = mvl_view_mode
         
@@ -505,8 +511,8 @@ def get_categories(id, page):
                             
                             items += [{
                                           'label': categories['release_group'],
-                                          'path': plugin.url_for('do_nothing', view_mode=0),
-                                          # 'path': 'plugin://plugin.video.mvl/',
+                                          # 'path': plugin.url_for('do_nothing', view_mode=0),
+                                          'path': 'XBMC.Container.Refresh()',
                                           'is_playable': False                                             
                                       }]
                             
@@ -769,6 +775,8 @@ def get_categories(id, page):
 @plugin.route('/get_videos/<id>/<thumbnail>/')
 def get_videos(id, thumbnail):
     if check_internet():
+        show_notification()    
+        
         global mvl_view_mode
         mvl_view_mode = 50
         try:
@@ -821,6 +829,8 @@ def play_video(url):
     global mvl_view_mode
     
     if check_internet():
+        show_notification()    
+        
         mvl_view_mode = 50
         #if login is successful then selected item will be resolved using urlresolver and played
         if login_check():
@@ -921,69 +931,140 @@ def search(category):
 
     if check_internet():
         
-        try:
-            search_string = plugin.keyboard(heading=('search'))
-            
-            #if nothing was typed, return without doing anything
-            if search_string is None or search_string == '' :
-                mvl_view_mode = 59
-                hide_busy_dialog()
-                return None
+        if not show_notification():
+        
+            try:
+                search_string = plugin.keyboard(heading=('search'))
                 
-            url = server_url + "/api/index.php/api/categories_api/searchVideos"
+                #if nothing was typed, return without doing anything
+                if search_string is None or search_string == '' :
+                    mvl_view_mode = 59
+                    hide_busy_dialog()
+                    return None
 
-            plugin.log.info(url)
-            data = urllib.urlencode({'keywords': '{0}'.format(search_string), 'category': '{0}'.format(category)})
-            req = urllib2.Request(url, data)
-            plugin.log.info("search url")
-            plugin.log.info(data)
-            plugin.log.info(url)
-            
-            dp = xbmcgui.DialogProgress()
+                url = server_url + "/api/index.php/api/categories_api/searchVideos"
 
-            f = urllib2.urlopen(req)
-            response = f.read()
-            if response == '0':
-                # xbmc.executebuiltin('Notification(Sorry,No Videos Found Matching Your Query,5000,/error.png)')
-                showMessage('No result found', 'Sorry, No Videos Found Matching Your Query')
-                mvl_view_mode = 59
-                hide_busy_dialog()
-
-            else:
-                mvl_view_mode = 50
-                jsonObj = json.loads(response)
-                plugin.log.info(jsonObj)
-                items = []
-                item_count = len(jsonObj)
-                done_count = 0
-                dp_created = False
-                dp_type = 'show'
+                plugin.log.info(url)
+                data = urllib.urlencode({'keywords': '{0}'.format(search_string), 'category': '{0}'.format(category)})
+                req = urllib2.Request(url, data)
+                plugin.log.info("search url")
+                plugin.log.info(data)
+                plugin.log.info(url)
                 
-                for categories in jsonObj:
-                    if categories['is_playable'] == 'False':
-                        if categories['top_level_parent'] == '3' and categories['parent_id'] not in ('32', '3'):  # Parsing the TV Shows Titles & Seasons only:      # if TV Series fetch there fan art
-                            tmpTitle = categories['title'].encode('utf-8')
-                            mvl_meta = ''
-                            if tmpTitle == "Season 1":
-                                tmpSeasons = []
-                                mvl_view_mode = 50
-                                # for i in range(totalCats):
-                                # tmpSeasons.append( i )
-                                #plugin.log.info('season found')
-                                #mvl_meta = __metaget__.get_seasons(mvl_tvshow_title, '', tmpSeasons)
-                            else:
-                                mvl_meta = create_meta('tvshow', categories['title'].encode('utf-8'), '', '')
-                                mvl_tvshow_title = categories['title'].encode('utf-8')
+                dp = xbmcgui.DialogProgress()
 
-                            dp_type = 'show'
+                f = urllib2.urlopen(req)
+                response = f.read()
+                if response == '0':
+                    # xbmc.executebuiltin('Notification(Sorry,No Videos Found Matching Your Query,5000,/error.png)')
+                    showMessage('No result found', 'Sorry, No Videos Found Matching Your Query')
+                    mvl_view_mode = 59
+                    hide_busy_dialog()
 
+                else:
+                    mvl_view_mode = 50
+                    jsonObj = json.loads(response)
+                    plugin.log.info(jsonObj)
+                    items = []
+                    item_count = len(jsonObj)
+                    done_count = 0
+                    dp_created = False
+                    dp_type = 'show'
+                    
+                    for categories in jsonObj:
+                        if categories['is_playable'] == 'False':
+                            if categories['top_level_parent'] == '3' and categories['parent_id'] not in ('32', '3'):  # Parsing the TV Shows Titles & Seasons only:      # if TV Series fetch there fan art
+                                tmpTitle = categories['title'].encode('utf-8')
+                                mvl_meta = ''
+                                if tmpTitle == "Season 1":
+                                    tmpSeasons = []
+                                    mvl_view_mode = 50
+                                    # for i in range(totalCats):
+                                    # tmpSeasons.append( i )
+                                    #plugin.log.info('season found')
+                                    #mvl_meta = __metaget__.get_seasons(mvl_tvshow_title, '', tmpSeasons)
+                                else:
+                                    mvl_meta = create_meta('tvshow', categories['title'].encode('utf-8'), '', '')
+                                    mvl_tvshow_title = categories['title'].encode('utf-8')
+
+                                dp_type = 'show'
+
+                                plugin.log.info('meta data-> %s' % mvl_meta)
+                                thumbnail_url = ''
+                                try:
+                                    if mvl_meta['cover_url']:
+                                        thumbnail_url = mvl_meta['cover_url']
+                                except:
+                                    thumbnail_url = ''
+
+                                fanart_url = ''
+                                try:
+                                    if mvl_meta['backdrop_url']:
+                                        fanart_url = mvl_meta['backdrop_url']
+                                except:
+                                    fanart_url = ''
+
+                                mvl_plot = ''
+                                try:
+                                    if mvl_meta['plot']:
+                                        mvl_plot = mvl_meta['plot']
+                                except:
+                                    mvl_plot = ''
+
+                                items += [{
+                                              'label': '{0}'.format(categories['title'].encode('utf-8')),
+                                              'path': plugin.url_for('get_categories', id=categories['id'], page=0),
+                                              'is_playable': False,
+                                              'thumbnail': thumbnail_url,
+                                              'properties': {
+                                                  'fanart_image': fanart_url,
+                                              },
+                                              'context_menu': [(
+                                                                   'Add to Favourites',
+                                                                   'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                                                                                         id=categories['id'],
+                                                                                                         title=categories['title'].encode('utf-8'),
+                                                                                                         thumbnail="None",
+                                                                                                         isplayable="False",
+                                                                                                         category=categories['top_level_parent'])
+                                                               )],
+                                              'replace_context_menu': True
+                                          }]
+
+                            else:                    
+                                items += [{
+                                              'label': '{0}'.format(categories['title'].encode('utf-8')),
+                                              'path': plugin.url_for('get_categories', id=categories['id'], page=0),
+                                              'is_playable': False,
+                                              'thumbnail': art('{0}.png'.format(categories['title'].lower())),
+                                              'context_menu': [(
+                                                                   'Add to Favourites',
+                                                                   'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                                                                                         id=categories['id'],
+                                                                                                         title=categories['title'],
+                                                                                                         thumbnail="None",
+                                                                                                         isplayable="False",
+                                                                                                         category=category)
+                                                               )],
+                                              'replace_context_menu': True
+                                          }]
+                        elif categories['is_playable'] == 'True':
+                            categories['title'] = categories['title'].encode('utf-8')
+                            thumbnail_url = categories['thumbnail']
+
+                            dp_type = 'movie'
+                            
+                            mvl_img = thumbnail_url
+                            mvl_meta = create_meta('movie', categories['title'], '', thumbnail_url)
                             plugin.log.info('meta data-> %s' % mvl_meta)
                             thumbnail_url = ''
                             try:
                                 if mvl_meta['cover_url']:
                                     thumbnail_url = mvl_meta['cover_url']
                             except:
-                                thumbnail_url = ''
+                                thumbnail_url = thumbnail_url
+                            if thumbnail_url == '':
+                                thumbnail_url = art('image-not-available.png')
 
                             fanart_url = ''
                             try:
@@ -992,16 +1073,9 @@ def search(category):
                             except:
                                 fanart_url = ''
 
-                            mvl_plot = ''
-                            try:
-                                if mvl_meta['plot']:
-                                    mvl_plot = mvl_meta['plot']
-                            except:
-                                mvl_plot = ''
-
                             items += [{
-                                          'label': '{0}'.format(categories['title'].encode('utf-8')),
-                                          'path': plugin.url_for('get_categories', id=categories['id'], page=0),
+                                          'label': '{0}'.format(categories['title']),
+                                          'path': plugin.url_for('get_videos', id=categories['video_id'], thumbnail="None"),
                                           'is_playable': False,
                                           'thumbnail': thumbnail_url,
                                           'properties': {
@@ -1011,106 +1085,44 @@ def search(category):
                                                                'Add to Favourites',
                                                                'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                      id=categories['id'],
-                                                                                                     title=categories['title'].encode('utf-8'),
-                                                                                                     thumbnail="None",
-                                                                                                     isplayable="False",
-                                                                                                     category=categories['top_level_parent'])
-                                                           )],
-                                          'replace_context_menu': True
-                                      }]
-
-                        else:                    
-                            items += [{
-                                          'label': '{0}'.format(categories['title'].encode('utf-8')),
-                                          'path': plugin.url_for('get_categories', id=categories['id'], page=0),
-                                          'is_playable': False,
-                                          'thumbnail': art('{0}.png'.format(categories['title'].lower())),
-                                          'context_menu': [(
-                                                               'Add to Favourites',
-                                                               'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                     id=categories['id'],
                                                                                                      title=categories['title'],
                                                                                                      thumbnail="None",
-                                                                                                     isplayable="False",
+                                                                                                     isplayable="True",
                                                                                                      category=category)
                                                            )],
                                           'replace_context_menu': True
                                       }]
-                    elif categories['is_playable'] == 'True':
-                        categories['title'] = categories['title'].encode('utf-8')
-                        thumbnail_url = categories['thumbnail']
+                                      
 
-                        dp_type = 'movie'
-                        
-                        mvl_img = thumbnail_url
-                        mvl_meta = create_meta('movie', categories['title'], '', thumbnail_url)
-                        plugin.log.info('meta data-> %s' % mvl_meta)
-                        thumbnail_url = ''
-                        try:
-                            if mvl_meta['cover_url']:
-                                thumbnail_url = mvl_meta['cover_url']
-                        except:
-                            thumbnail_url = thumbnail_url
-                        if thumbnail_url == '':
-                            thumbnail_url = art('image-not-available.png')
-
-                        fanart_url = ''
-                        try:
-                            if mvl_meta['backdrop_url']:
-                                fanart_url = mvl_meta['backdrop_url']
-                        except:
-                            fanart_url = ''
-
-                        items += [{
-                                      'label': '{0}'.format(categories['title']),
-                                      'path': plugin.url_for('get_videos', id=categories['video_id'], thumbnail="None"),
-                                      'is_playable': False,
-                                      'thumbnail': thumbnail_url,
-                                      'properties': {
-                                          'fanart_image': fanart_url,
-                                      },
-                                      'context_menu': [(
-                                                           'Add to Favourites',
-                                                           'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                 id=categories['id'],
-                                                                                                 title=categories['title'],
-                                                                                                 thumbnail="None",
-                                                                                                 isplayable="True",
-                                                                                                 category=category)
-                                                       )],
-                                      'replace_context_menu': True
-                                  }]
+                        if categories['id'] != -1:
+                            if categories['top_level_parent'] == '1':
+                                dp_type = 'movie'
+                            elif categories['top_level_parent'] == '3':
+                                dp_type = 'show'
+                                      
+                        if dp_created == False:
+                            dp.create("Please wait while "+dp_type+" list is loaded","","")
+                            dp_created = True
                                   
+                        done_count = done_count + 1
+                        dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
-                    if categories['id'] != -1:
-                        if categories['top_level_parent'] == '1':
-                            dp_type = 'movie'
-                        elif categories['top_level_parent'] == '3':
-                            dp_type = 'show'
-                                  
-                    if dp_created == False:
-                        dp.create("Please wait while "+dp_type+" list is loaded","","")
-                        dp_created = True
-                              
-                    done_count = done_count + 1
-                    dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
-
-                    if dp.iscanceled():
-                        break                                 
-                        
-                dp.close()
-                
+                        if dp.iscanceled():
+                            break                                 
+                            
+                    dp.close()
+                    
+                    hide_busy_dialog()
+                    return items
+            except IOError:
+                # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+                dialog_msg()
                 hide_busy_dialog()
-                return items
-        except IOError:
-            # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
-            dialog_msg()
-            hide_busy_dialog()
-            
-        except Exception,e:
-            mvl_view_mode = 59
-            hide_busy_dialog()
-            return None
+                
+            except Exception,e:
+                mvl_view_mode = 59
+                hide_busy_dialog()
+                return None
             
     else:
         mvl_view_mode = 59
@@ -1125,6 +1137,9 @@ def azlisting(category):
     global mvl_view_mode
     
     if check_internet():
+    
+        show_notification()    
+        
         mvl_view_mode = 50
         Indices = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U',
                    'V', 'W', 'X', 'Y', 'Z']
@@ -1155,193 +1170,203 @@ def get_azlist(key, page, category):
     global mvl_view_mode
     mvl_view_mode = 50
     page_limit_az = 200
-    try:
-
-        dp = xbmcgui.DialogProgress()
     
-        url = server_url + "/api/index.php/api/categories_api/getAZList?key={0}&limit={1}&page={2}&category={3}".format(
-            key, page_limit_az, page, category)
-        plugin.log.info("here is the url")
-        plugin.log.info(url)
-        req = urllib2.Request(url)
-        opener = urllib2.build_opener()
-        f = opener.open(req)
-        content = f.read()
-        if content != '0':
-            jsonObj = json.loads(content)
-            items = []
-            item_count = len(jsonObj)
-            done_count = 0
-            dp_created = False
-            dp_type = 'show'
-                       
-            for results in jsonObj:
-                if results['id'] == -1:
-                    items += [{
-                                  'label': 'Next >>',
-                                  'path': plugin.url_for('get_azlist', key=key, page=(int(page) + 1),
-                                                         category=category),
-                                  'thumbnail': art('next.png'),
-                                  'is_playable': False,
-                              }]
-                elif results['is_playable'] == 'False':
-                    if results['parent_id'] not in ('32', '23'):  # if not Genres then show them
-                        if results['top_level_parent'] == '3':      # if TV Series fetch there fan art
-                            tmpTitle = results['title'].encode('utf-8')
+    if check_internet():
+    
+        show_notification()    
+    
+        try:
 
-                            mvl_meta = ''
-                            if tmpTitle == "Season 1":
-                                tmpSeasons = []
-                                mvl_view_mode = 50
-                                # for i in range(totalCats):
-                                # tmpSeasons.append( i )
-                                #plugin.log.info('season found')
-                                #mvl_meta = __metaget__.get_seasons(mvl_tvshow_title, '', tmpSeasons)
-                            else:
-                                mvl_meta = create_meta('tvshow', results['title'].encode('utf-8'), '', '')
-                                mvl_tvshow_title = results['title'].encode('utf-8')
+            dp = xbmcgui.DialogProgress()
+        
+            url = server_url + "/api/index.php/api/categories_api/getAZList?key={0}&limit={1}&page={2}&category={3}".format(
+                key, page_limit_az, page, category)
+            plugin.log.info("here is the url")
+            plugin.log.info(url)
+            req = urllib2.Request(url)
+            opener = urllib2.build_opener()
+            f = opener.open(req)
+            content = f.read()
+            if content != '0':
+                jsonObj = json.loads(content)
+                items = []
+                item_count = len(jsonObj)
+                done_count = 0
+                dp_created = False
+                dp_type = 'show'
+                           
+                for results in jsonObj:
+                    if results['id'] == -1:
+                        items += [{
+                                      'label': 'Next >>',
+                                      'path': plugin.url_for('get_azlist', key=key, page=(int(page) + 1),
+                                                             category=category),
+                                      'thumbnail': art('next.png'),
+                                      'is_playable': False,
+                                  }]
+                    elif results['is_playable'] == 'False':
+                        if results['parent_id'] not in ('32', '23'):  # if not Genres then show them
+                            if results['top_level_parent'] == '3':      # if TV Series fetch there fan art
+                                tmpTitle = results['title'].encode('utf-8')
 
-                            dp_type = 'show'
+                                mvl_meta = ''
+                                if tmpTitle == "Season 1":
+                                    tmpSeasons = []
+                                    mvl_view_mode = 50
+                                    # for i in range(totalCats):
+                                    # tmpSeasons.append( i )
+                                    #plugin.log.info('season found')
+                                    #mvl_meta = __metaget__.get_seasons(mvl_tvshow_title, '', tmpSeasons)
+                                else:
+                                    mvl_meta = create_meta('tvshow', results['title'].encode('utf-8'), '', '')
+                                    mvl_tvshow_title = results['title'].encode('utf-8')
 
-                            plugin.log.info('meta data-> %s' % mvl_meta)
-                            thumbnail_url = ''
-                            try:
-                                if mvl_meta['cover_url']:
-                                    thumbnail_url = mvl_meta['cover_url']
-                            except:
+                                dp_type = 'show'
+
+                                plugin.log.info('meta data-> %s' % mvl_meta)
                                 thumbnail_url = ''
+                                try:
+                                    if mvl_meta['cover_url']:
+                                        thumbnail_url = mvl_meta['cover_url']
+                                except:
+                                    thumbnail_url = ''
 
-                            fanart_url = ''
-                            try:
-                                if mvl_meta['backdrop_url']:
-                                    fanart_url = mvl_meta['backdrop_url']
-                            except:
                                 fanart_url = ''
+                                try:
+                                    if mvl_meta['backdrop_url']:
+                                        fanart_url = mvl_meta['backdrop_url']
+                                except:
+                                    fanart_url = ''
 
-                            mvl_plot = ''
-                            try:
-                                if mvl_meta['plot']:
-                                    mvl_plot = mvl_meta['plot']
-                            except:
                                 mvl_plot = ''
+                                try:
+                                    if mvl_meta['plot']:
+                                        mvl_plot = mvl_meta['plot']
+                                except:
+                                    mvl_plot = ''
 
-                            items += [{
-                                          'label': '{0}'.format(results['title'].encode('utf-8')),
-                                          'path': plugin.url_for('get_categories', id=results['id'], page=0),
-                                          'is_playable': False,
-                                          'thumbnail': thumbnail_url,
-                                          'properties': {
-                                              'fanart_image': fanart_url,
-                                          },
-                                          'context_menu': [(
-                                                               'Add to Favourites',
-                                                               'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                     id=results['id'],
-                                                                                                     title=results[
-                                                                                                         'title'].encode(
-                                                                                                         'utf-8'),
-                                                                                                     thumbnail="None",
-                                                                                                     isplayable="False",
-                                                                                                     category=results[
-                                                                                                         'top_level_parent'])
-                                                           )],
-                                          'replace_context_menu': True
-                                      }]
+                                items += [{
+                                              'label': '{0}'.format(results['title'].encode('utf-8')),
+                                              'path': plugin.url_for('get_categories', id=results['id'], page=0),
+                                              'is_playable': False,
+                                              'thumbnail': thumbnail_url,
+                                              'properties': {
+                                                  'fanart_image': fanart_url,
+                                              },
+                                              'context_menu': [(
+                                                                   'Add to Favourites',
+                                                                   'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                                                                                         id=results['id'],
+                                                                                                         title=results[
+                                                                                                             'title'].encode(
+                                                                                                             'utf-8'),
+                                                                                                         thumbnail="None",
+                                                                                                         isplayable="False",
+                                                                                                         category=results[
+                                                                                                             'top_level_parent'])
+                                                               )],
+                                              'replace_context_menu': True
+                                          }]
 
-                        else:
-                            items += [{
-                                          'label': '{0}'.format(results['title'].encode('utf-8')),
-                                          'path': plugin.url_for('get_categories', id=results['id'], page=0),
-                                          'is_playable': False,
-                                          'thumbnail': art('{0}.png'.format(results['title'].lower())),
-                                          'context_menu': [(
-                                                               'Add to Favourites',
-                                                               'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                     id=results['id'],
-                                                                                                     title=results[
-                                                                                                         'title'].encode(
-                                                                                                         'utf-8'),
-                                                                                                     thumbnail="None",
-                                                                                                     isplayable="False",
-                                                                                                     category=category)
-                                                           )],
-                                          'replace_context_menu': True
-                                      }]
+                            else:
+                                items += [{
+                                              'label': '{0}'.format(results['title'].encode('utf-8')),
+                                              'path': plugin.url_for('get_categories', id=results['id'], page=0),
+                                              'is_playable': False,
+                                              'thumbnail': art('{0}.png'.format(results['title'].lower())),
+                                              'context_menu': [(
+                                                                   'Add to Favourites',
+                                                                   'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                                                                                         id=results['id'],
+                                                                                                         title=results[
+                                                                                                             'title'].encode(
+                                                                                                             'utf-8'),
+                                                                                                         thumbnail="None",
+                                                                                                         isplayable="False",
+                                                                                                         category=category)
+                                                               )],
+                                              'replace_context_menu': True
+                                          }]
 
-                elif results['is_playable'] == 'True':
-                    results['title'] = results['title'].encode('utf-8')
-                    thumbnail_url = results['thumbnail']
-                    
-                    dp_type = 'movie'
-
-                    mvl_img = thumbnail_url
-                    mvl_meta = create_meta('movie', results['title'].encode('utf-8'), '', thumbnail_url)
-                    plugin.log.info('meta data-> %s' % mvl_meta)
-                    thumbnail_url = ''
-                    try:
-                        if mvl_meta['cover_url']:
-                            thumbnail_url = mvl_meta['cover_url']
-                    except:
-                        thumbnail_url = thumbnail_url
-
-                    fanart_url = ''
-                    try:
-                        if mvl_meta['backdrop_url']:
-                            fanart_url = mvl_meta['backdrop_url']
-                    except:
-                        fanart_url = ''
-                    items += [{
-                                  'label': '{0}'.format(results['title'].encode('utf-8')),
-                                  'path': plugin.url_for('get_videos', id=results['video_id'],
-                                                         thumbnail=results['thumbnail']),
-                                  'thumbnail': thumbnail_url,
-                                  'properties': {
-                                      'fanart_image': fanart_url,
-                                  },
-                                  'is_playable': False,
-                                  'context_menu': [(
-                                                       'Add to Favourites',
-                                                       'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                             id=results['video_id'],
-                                                                                             title=results[
-                                                                                                 'title'].encode(
-                                                                                                 'utf-8'),
-                                                                                             thumbnail="None",
-                                                                                             isplayable="True",
-                                                                                             category=category)
-                                                   )],
-                                  'replace_context_menu': True
-                              }]
-
-                if results['id'] != -1:
-                    if results['top_level_parent'] == '1':
+                    elif results['is_playable'] == 'True':
+                        results['title'] = results['title'].encode('utf-8')
+                        thumbnail_url = results['thumbnail']
+                        
                         dp_type = 'movie'
-                    elif results['top_level_parent'] == '3':
-                        dp_type = 'show'
-                    
-                if dp_created == False:
-                    dp.create("Please wait while "+dp_type+" list is loaded","","")
-                    dp_created = True
-                              
-                done_count = done_count + 1
-                dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
-                if dp.iscanceled():
-                    break
+                        mvl_img = thumbnail_url
+                        mvl_meta = create_meta('movie', results['title'].encode('utf-8'), '', thumbnail_url)
+                        plugin.log.info('meta data-> %s' % mvl_meta)
+                        thumbnail_url = ''
+                        try:
+                            if mvl_meta['cover_url']:
+                                thumbnail_url = mvl_meta['cover_url']
+                        except:
+                            thumbnail_url = thumbnail_url
+
+                        fanart_url = ''
+                        try:
+                            if mvl_meta['backdrop_url']:
+                                fanart_url = mvl_meta['backdrop_url']
+                        except:
+                            fanart_url = ''
+                        items += [{
+                                      'label': '{0}'.format(results['title'].encode('utf-8')),
+                                      'path': plugin.url_for('get_videos', id=results['video_id'],
+                                                             thumbnail=results['thumbnail']),
+                                      'thumbnail': thumbnail_url,
+                                      'properties': {
+                                          'fanart_image': fanart_url,
+                                      },
+                                      'is_playable': False,
+                                      'context_menu': [(
+                                                           'Add to Favourites',
+                                                           'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                                                                                 id=results['video_id'],
+                                                                                                 title=results[
+                                                                                                     'title'].encode(
+                                                                                                     'utf-8'),
+                                                                                                 thumbnail="None",
+                                                                                                 isplayable="True",
+                                                                                                 category=category)
+                                                       )],
+                                      'replace_context_menu': True
+                                  }]
+
+                    if results['id'] != -1:
+                        if results['top_level_parent'] == '1':
+                            dp_type = 'movie'
+                        elif results['top_level_parent'] == '3':
+                            dp_type = 'show'
+                        
+                    if dp_created == False:
+                        dp.create("Please wait while "+dp_type+" list is loaded","","")
+                        dp_created = True
+                                  
+                    done_count = done_count + 1
+                    dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+
+                    if dp.iscanceled():
+                        break
+                    
+                # plugin.log.info('itemcheck')
+                # plugin.log.info(items)
                 
-            # plugin.log.info('itemcheck')
-            # plugin.log.info(items)
-            
-            dp.close()
-            
+                dp.close()
+                
+                hide_busy_dialog()
+                return items
+            else:
+                # xbmc.executebuiltin('Notification(Sorry,No Videos Available In this Category,5000,/error.png)')
+                showMessage('No result found', 'Sorry, No Videos Available In this Category')
+                hide_busy_dialog()
+        except IOError:
+            # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+            dialog_msg()
             hide_busy_dialog()
-            return items
-        else:
-            # xbmc.executebuiltin('Notification(Sorry,No Videos Available In this Category,5000,/error.png)')
-            showMessage('No result found', 'Sorry, No Videos Available In this Category')
-            hide_busy_dialog()
-    except IOError:
-        # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
+            
+    else:
+        mvl_view_mode = 59
         dialog_msg()
         hide_busy_dialog()
 
@@ -1497,6 +1522,7 @@ def remove_favourite(id, title, category):
 
 
 def sys_exit():
+    hide_busy_dialog()
     plugin.finish(succeeded=True)
     xbmc.executebuiltin("XBMC.ActivateWindow(Home)")
 
