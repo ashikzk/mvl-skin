@@ -85,9 +85,6 @@ def index():
     f = open(file_path, 'w')
     f.close()
     
-    #run thread to check for internet connection in the background
-    setup_internet_check()
-    
     try:
         #set view mode first so that whatever happens, it doesn't change
         mvl_view_mode = 58
@@ -112,45 +109,54 @@ def index():
             file.write('</lookandfeel>\n')
             file.write('</advancedsettings>\n')
             file.close()
-            xbmc.executebuiltin('RestartApp')
-            return
-    
-        # Create a window instance.
-        #global isAgree
-        check_condition()
-        #creating the database if not exists
-        init_database()
-        #creating a context menu
-        #url used to get main categories from server
-        url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id=0&limit={0}&page=1".format(page_limit)
-        plugin.log.info(url)
-        req = urllib2.Request(url)
-        opener = urllib2.build_opener()
-        f = opener.open(req)
-        #reading content fetched from the url
-        content = f.read()
+            
+            hide_busy_dialog()
+            
+            xbmc.executebuiltin('RestartApp()')
+            
+            return None
+        else:
+            #if we have found the settings, then this is not the first run
+            #we are good to go
+            #run thread to check for internet connection in the background
+            setup_internet_check()
         
-        hide_busy_dialog()
-        
-        #converting to json object
-        jsonObj = json.loads(content)
-        items = []
+            # Create a window instance.
+            #global isAgree
+            check_condition()
+            #creating the database if not exists
+            init_database()
+            #creating a context menu
+            #url used to get main categories from server
+            url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id=0&limit={0}&page=1".format(page_limit)
+            plugin.log.info(url)
+            req = urllib2.Request(url)
+            opener = urllib2.build_opener()
+            f = opener.open(req)
+            #reading content fetched from the url
+            content = f.read()
+            
+            hide_busy_dialog()
+            
+            #converting to json object
+            jsonObj = json.loads(content)
+            items = []
 
-        if isAgree == True:
-            show_notification()
-        
-            plugin.log.info("here is dialog")
-            #creating items from json object
-            for categories in jsonObj:
-                items += [{
-                              'label': '{0}'.format(categories['title']),
-                              'path': plugin.url_for('get_categories', id=categories['id'], page=0),
-                              'is_playable': False,
-                              'thumbnail': art('{0}.png'.format(categories['title'].lower())),
-                          }]
-                          
-            # hide_busy_dialog()
-            return items
+            if isAgree == True:
+                show_notification()
+            
+                plugin.log.info("here is dialog")
+                #creating items from json object
+                for categories in jsonObj:
+                    items += [{
+                                  'label': '{0}'.format(categories['title']),
+                                  'path': plugin.url_for('get_categories', id=categories['id'], page=0),
+                                  'is_playable': False,
+                                  'thumbnail': art('{0}.png'.format(categories['title'].lower())),
+                              }]
+                              
+                # hide_busy_dialog()
+                return items
 
     except IOError:
         # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
@@ -444,7 +450,8 @@ def get_categories(id, page):
                     if 'release_date' not in categories:
                         categories['release_date'] = '-1'
                     elif categories['release_date'] is not None and len(categories['release_date']) == 10:
-                        #make sure we have valid date format                        
+                        #we seem to have got a proper date string
+                        #make sure we have a valid date format                        
                         try:
                             mydate = datetime.strptime(categories['release_date'], '%Y-%m-%d')
                         except TypeError:
@@ -452,16 +459,20 @@ def get_categories(id, page):
                         except Exception,e:
                             print e
                         
-                        categories['release_group'] = '[COLOR Blue]'+calendar.month_name[mydate.month] + ', ' + str(mydate.year)+'[/COLOR]'
+                        #put the release_group title in <Month, Year> format
+                        categories['release_group'] = '[COLOR FF2261B4]'+calendar.month_name[mydate.month] + ', ' + str(mydate.year)+'[/COLOR]'
                         release_date_count = 1
                         
                 if release_date_count == 0:
+                    #release_date_count is still 0, meaning we haven't got any release_date in proper date format
+                    #let's see if we can find any release_date with only year string
                     for categories in jsonObj:
                         if 'release_date' not in categories:
                             categories['release_date'] = '-1'
                         elif categories['release_date'] is not None and len(categories['release_date']) == 4:
-                            #make sure we have valid date format                        
-                            categories['release_group'] = '[COLOR Blue]'+categories['release_date']+'[/COLOR]'
+                            #we seem to have got a year string
+                            #put the release_group title in <Year> format
+                            categories['release_group'] = '[COLOR FF2261B4]'+categories['release_date']+'[/COLOR]'
                             release_date_count = 1
 
                 if release_date_count == 0:
@@ -470,7 +481,7 @@ def get_categories(id, page):
                             categories['release_date'] = '-1'
                         elif categories['release_date'] is not None and len(categories['release_date']) == 4:
                             #make sure we have valid date format                        
-                            categories['release_group'] = '[COLOR Blue]'+categories['release_date']+'[/COLOR]'
+                            categories['release_group'] = '[COLOR FF2261B4]'+categories['release_date']+'[/COLOR]'
                             release_date_count = 1
                             
                 #if release_date_count is still 0, it means no entry has a release date
@@ -511,8 +522,8 @@ def get_categories(id, page):
                             
                             items += [{
                                           'label': categories['release_group'],
-                                          # 'path': plugin.url_for('do_nothing', view_mode=0),
-                                          'path': 'XBMC.Container.Refresh()',
+                                          'path': plugin.url_for('do_nothing', view_mode=0),
+                                          # 'path': 'XBMC.Container.Refresh()',
                                           'is_playable': False                                             
                                       }]
                             
@@ -798,11 +809,11 @@ def get_videos(id, thumbnail):
 
             # instruction text    
             items += [{
-                          'label': '[COLOR red]Please click on a link below to begin viewing[/COLOR]',
+                          'label': '[COLOR FFFF0000]Please click on a link below to begin viewing[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
                           'is_playable': False                                             
                       }]
-            
+
             for urls in jsonObj:
                 count += 1
                 items += [{
@@ -845,7 +856,13 @@ def play_video(url):
                 
                 hide_busy_dialog()
                 
-                plugin.set_resolved_url(hostedurl)
+                if str(hostedurl)[0] == 'h':               
+                    plugin.set_resolved_url(hostedurl)
+                else:
+                    mvl_view_mode = 50
+                    showMessage('Error loading video', 'This source will not play. Please pick another.')
+                    hide_busy_dialog()
+                    return None
             except:
                 mvl_view_mode = 50
                 showMessage('Error loading video', 'This source will not play. Please pick another.')
@@ -1257,9 +1274,7 @@ def get_azlist(key, page, category):
                                                                    'Add to Favourites',
                                                                    'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                          id=results['id'],
-                                                                                                         title=results[
-                                                                                                             'title'].encode(
-                                                                                                             'utf-8'),
+                                                                                                         title=results['title'].encode('utf-8'),
                                                                                                          thumbnail="None",
                                                                                                          isplayable="False",
                                                                                                          category=results[
@@ -1278,9 +1293,7 @@ def get_azlist(key, page, category):
                                                                    'Add to Favourites',
                                                                    'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                          id=results['id'],
-                                                                                                         title=results[
-                                                                                                             'title'].encode(
-                                                                                                             'utf-8'),
+                                                                                                         title=results['title'].encode('utf-8'),
                                                                                                          thumbnail="None",
                                                                                                          isplayable="False",
                                                                                                          category=category)
@@ -1291,11 +1304,12 @@ def get_azlist(key, page, category):
                     elif results['is_playable'] == 'True':
                         results['title'] = results['title'].encode('utf-8')
                         thumbnail_url = results['thumbnail']
-                        
+
                         dp_type = 'movie'
 
                         mvl_img = thumbnail_url
-                        mvl_meta = create_meta('movie', results['title'].encode('utf-8'), '', thumbnail_url)
+                        print "TITLE = " + results['title']
+                        mvl_meta = create_meta('movie', results['title'], '', thumbnail_url)
                         plugin.log.info('meta data-> %s' % mvl_meta)
                         thumbnail_url = ''
                         try:
@@ -1311,7 +1325,7 @@ def get_azlist(key, page, category):
                         except:
                             fanart_url = ''
                         items += [{
-                                      'label': '{0}'.format(results['title'].encode('utf-8')),
+                                      'label': '{0}'.format(results['title']),
                                       'path': plugin.url_for('get_videos', id=results['video_id'],
                                                              thumbnail=results['thumbnail']),
                                       'thumbnail': thumbnail_url,
@@ -1323,9 +1337,7 @@ def get_azlist(key, page, category):
                                                            'Add to Favourites',
                                                            'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                  id=results['video_id'],
-                                                                                                 title=results[
-                                                                                                     'title'].encode(
-                                                                                                     'utf-8'),
+                                                                                                 title=results['title'],
                                                                                                  thumbnail="None",
                                                                                                  isplayable="True",
                                                                                                  category=category)
