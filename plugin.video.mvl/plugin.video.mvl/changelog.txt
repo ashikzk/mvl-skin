@@ -1,3 +1,6 @@
+﻿Version 2.6.34:
+- "#" related all ordering issues fixed
+
 Version 2.6.33:
 - Results of "#" in Movie section are now shown in Ascending order based on “title”
 - TV series seasons are now shown in correct order

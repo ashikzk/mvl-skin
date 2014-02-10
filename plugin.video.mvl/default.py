@@ -436,6 +436,24 @@ def get_categories(id, page):
                 if jsonObj[0]['top_level_parent'] == jsonObj[0]['parent_id']:
                     is_search_category = True
                     image_on_off = '_off'
+                    
+                ###########
+                #if the items are season episodes, we need ot sort them naturally i.e. use Natural Sort for sorting
+                if jsonObj[0]['top_level_parent'] == '3' and jsonObj[0]['parent_id'] not in ('32', '3'):               
+                    for categories in jsonObj:
+                        categories['sort_key'] = categories['title'].split(' ')[0]
+                        categories['sort_key_len'] = len(categories['title'].split(' ')[0])
+                        categories['title_len'] = len(categories['title'])
+                    
+                    if jsonObj[0]['title'].split(' ')[0].lower() == 'Season'.lower():   
+                        #if items are seasons, then sort them by title length to get correct ordering                        
+                        jsonObj.sort(key=lambda x: (x['title_len']))
+                    else:
+                        #otherwise, sort by the first string of the title which should like this: 1x1, 1x2, 1x10, 1x15.....
+                        jsonObj.sort(key=lambda x: (x['sort_key_len'], x['sort_key']))
+                
+                    
+                ###########
 
                 item_count = len(jsonObj)
                 done_count = 0
@@ -1196,8 +1214,7 @@ def get_azlist(key, page, category):
 
             dp = xbmcgui.DialogProgress()
         
-            url = server_url + "/api/index.php/api/categories_api/getAZList?key={0}&limit={1}&page={2}&category={3}".format(
-                key, page_limit_az, page, category)
+            url = server_url + "/api/index.php/api/categories_api/getAZList?key={0}&limit={1}&page={2}&category={3}".format(key, page_limit_az, page, category)
             plugin.log.info("here is the url")
             plugin.log.info(url)
             req = urllib2.Request(url)
@@ -1211,6 +1228,39 @@ def get_azlist(key, page, category):
                 done_count = 0
                 dp_created = False
                 dp_type = 'show'
+                
+                ###########
+                #if the items are season episodes, we need ot sort them naturally i.e. use Natural Sort for sorting
+                if key == '%23':               
+                    for results in jsonObj:
+                        if 'title' not in results:
+                            results['title'] = '999999999'
+                        
+                        title = results['title'].split(' ')[0]
+                        title_token = ''
+                        for c in title:
+                            if c >= '0' and c <= '9':
+                                title_token += c
+                            elif c == ',':
+                                continue
+                            else:
+                                break
+                                
+                        if title_token == '':
+                            title_token = '999999999'
+                        
+                        if title_token[0] == '0':
+                            title_token = '0'
+                        
+                        results['sort_key'] = title_token
+                        results['sort_key_len'] = len(title_token)
+                    
+                    jsonObj.sort(key=lambda x: (x['sort_key_len'], x['sort_key']))
+                
+                    
+                ###########
+
+                
                            
                 for results in jsonObj:
                     if results['id'] == -1:
