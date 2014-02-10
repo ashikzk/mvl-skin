@@ -110,6 +110,23 @@ def index():
             file.write('</advancedsettings>\n')
             file.close()
             
+            #now create keymap file
+            file_path_keymap = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'keymaps', 'Keyboard.xml')
+            file = open(file_path_keymap, 'w')
+            file.write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n')
+            file.write('<keymap>\n')
+            file.write('<global>\n')
+            file.write('<keyboard>\n')
+            file.write("<F2>Skin.ToggleSetting('')</F2>\n")
+            file.write("<F3>Skin.ToggleSetting('')</F3>\n")
+            file.write("<F4>Skin.ToggleSetting('')</F4>\n")
+            file.write("<F5>Skin.ToggleSetting('')</F5>\n")
+            file.write("<F6>Skin.ToggleSetting('')</F6>\n")
+            file.write("<backslash>Skin.ToggleSetting('')</backslash>\n")
+            file.write('</keyboard>\n')
+            file.write('</global>\n')
+            file.write('</keymap>')
+                        
             hide_busy_dialog()
             
             xbmc.executebuiltin('RestartApp()')
@@ -440,15 +457,23 @@ def get_categories(id, page):
                 ###########
                 #if the items are season episodes, we need ot sort them naturally i.e. use Natural Sort for sorting
                 if jsonObj[0]['top_level_parent'] == '3' and jsonObj[0]['parent_id'] not in ('32', '3'):               
+                    is_playable = False
                     for categories in jsonObj:
-                        categories['sort_key'] = categories['title'].split(' ')[0]
-                        categories['sort_key_len'] = len(categories['title'].split(' ')[0])
-                        categories['title_len'] = len(categories['title'])
+                        if 'title' not in categories:
+                            #for the "next" entry
+                            categories['title'] = '9999999999999999999999999'
+                        
+                        categories['sort_key'] = categories['title'].strip().split(' ')[0]
+                        categories['sort_key_len'] = len(categories['title'].strip().split(' ')[0])
+                        categories['title_len'] = len(categories['title'].strip())
+                        
+                        if categories['id'] != -1 and categories['is_playable'] == 'True':
+                            is_playable = True
                     
                     if jsonObj[0]['title'].split(' ')[0].lower() == 'Season'.lower():   
                         #if items are seasons, then sort them by title length to get correct ordering                        
-                        jsonObj.sort(key=lambda x: (x['title_len']))
-                    else:
+                        jsonObj.sort(key=lambda x: (x['title_len'], x['title']))
+                    elif is_playable:
                         #otherwise, sort by the first string of the title which should like this: 1x1, 1x2, 1x10, 1x15.....
                         jsonObj.sort(key=lambda x: (x['sort_key_len'], x['sort_key']))
                 
@@ -645,16 +670,18 @@ def get_categories(id, page):
                     #inorder for the information to be displayed properly, corresponding labels should be added in skin
                     elif categories['is_playable'] == 'True':
 
+                        if categories['video_id'] == '0':
+                            #there is something wrong with this playable item. just ignore
+                            continue
+                            
                         if categories['source'] == '1':
                             thumbnail_url = categories['image_name']
                         else:
-                            thumbnail_url = server_url + '/wp-content/themes/twentytwelve/images/{0}'.format(
-                                categories['video_id'] + categories['image_name'])
+                            thumbnail_url = server_url + '/wp-content/themes/twentytwelve/images/{0}'.format(categories['video_id'] + categories['image_name'])
 
                         mvl_img = thumbnail_url
-                        mvl_meta = create_meta('movie', categories['title'].encode('utf-8'), categories['release_date'],
-                                               mvl_img)
-                        plugin.log.info('meta data-> %s' % mvl_meta)
+                        mvl_meta = create_meta('movie', categories['title'].encode('utf-8'), categories['release_date'], mvl_img)
+                        plugin.log.info('>> meta data-> %s' % mvl_meta)
                         thumbnail_url = ''
                         
                         dp_type = 'movie'
