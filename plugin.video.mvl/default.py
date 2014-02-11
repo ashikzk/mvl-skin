@@ -1,7 +1,13 @@
 #hide any existing loading and show system busy dialog to freeze the screen
 xbmc.executebuiltin( "Dialog.Close(busydialog)" )
 xbmc.executebuiltin( "ActivateWindow(busydialog)" )
-
+#save lockdown state to a file for future reference
+import os
+file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_lock.dat')
+f = open(file_path, 'w')
+f.write('true')
+f.close()
+####
 
 from xbmcswift2 import Plugin, xbmcgui, xbmc, xbmcaddon, xbmcplugin, actions
 import urllib2
@@ -16,7 +22,6 @@ import xbmcplugin
 from t0mm0.common.addon import Addon
 import re
 import sys
-import os
 import traceback
 
 from metahandler import metahandlers
@@ -89,6 +94,7 @@ def index():
         #set view mode first so that whatever happens, it doesn't change
         mvl_view_mode = 58
     
+        
         file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'advancedsettings.xml')
         found = False
         if os.path.exists(file_path):
@@ -97,8 +103,18 @@ def index():
                 if '<showparentdiritems>false</showparentdiritems>' in line:
                     found = True
             file.close()
+
+        file_path_keymap = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'keymaps', 'Keyboard.xml')
+        found_keymap = False
+        if os.path.exists(file_path_keymap):
+            file = open(file_path_keymap, 'r')
+            for line in file:
+                if "<backspace>XBMC.RunScript" in line:
+                    found_keymap = True
+            file.close()
+
             
-        if not found:
+        if not found or not found_keymap:
             file = open(file_path, 'w')
             file.write('<advancedsettings>\n')
             file.write('<filelists>\n')
@@ -111,7 +127,6 @@ def index():
             file.close()
             
             #now create keymap file
-            file_path_keymap = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'keymaps', 'Keyboard.xml')
             file = open(file_path_keymap, 'w')
             file.write('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n')
             file.write('<keymap>\n')
@@ -123,11 +138,14 @@ def index():
             file.write("<F5>Skin.ToggleSetting('')</F5>\n")
             file.write("<F6>Skin.ToggleSetting('')</F6>\n")
             file.write("<backslash>Skin.ToggleSetting('')</backslash>\n")
+            file.write("<backspace>XBMC.RunScript(special://home\\addons\plugin.video.mvl\script_backhandler.py)</backspace>\n")
             file.write('</keyboard>\n')
             file.write('</global>\n')
             file.write('</keymap>')
                         
             hide_busy_dialog()
+            
+            showMessage('Restart Required', 'Some settings have been changed. You need to restart XBMC for the changes to take effect. XBMC will now close.')
             
             xbmc.executebuiltin('RestartApp()')
             
@@ -369,7 +387,13 @@ def dialog_msg():
     showMessage(heading, text)
 
 def hide_busy_dialog():
+    #hide loadign screen
     xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+    #clear file content to release lock
+    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_lock.dat')
+    f = open(file_path, 'w')
+    f.close()
+    
     
 def show_root():
     global internet_info
