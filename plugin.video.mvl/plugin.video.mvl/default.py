@@ -1,3 +1,8 @@
+import sys
+if 'do_nothing' in sys.argv[0]:
+    #no need to do anything!
+    exit()
+
 #hide any existing loading and show system busy dialog to freeze the screen
 xbmc.executebuiltin( "Dialog.Close(busydialog)" )
 xbmc.executebuiltin( "ActivateWindow(busydialog)" )
@@ -21,7 +26,6 @@ import xbmcaddon
 import xbmcplugin
 from t0mm0.common.addon import Addon
 import re
-import sys
 import traceback
 
 from metahandler import metahandlers
@@ -145,7 +149,7 @@ def index():
                         
             hide_busy_dialog()
             
-            showMessage('Restart Required', 'Some settings have been changed. You need to restart XBMC for the changes to take effect. XBMC will now close.')
+            showMessage('Restart Required', 'Some settings have been changed. You need to restart MyVideoLibrary for the changes to take effect. MyVideoLibrary will now close.')
             
             xbmc.executebuiltin('RestartApp()')
             
@@ -590,8 +594,7 @@ def get_categories(id, page):
                             items += [{
                                           'label': categories['release_group'],
                                           'path': plugin.url_for('do_nothing', view_mode=0),
-                                          # 'path': 'XBMC.Container.Refresh()',
-                                          'is_playable': False                                             
+                                          'is_playable': True
                                       }]
                             
                     ####
@@ -880,7 +883,7 @@ def get_videos(id, thumbnail):
             items += [{
                           'label': '[COLOR FFFF0000]Please click on a link below to begin viewing[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
-                          'is_playable': False                                             
+                          'is_playable': True
                       }]
 
             for urls in jsonObj:
