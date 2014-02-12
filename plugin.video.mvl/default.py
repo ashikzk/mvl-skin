@@ -113,7 +113,7 @@ def index():
         if os.path.exists(file_path_keymap):
             file = open(file_path_keymap, 'r')
             for line in file:
-                if "<backspace>XBMC.RunScript" in line:
+                if "<F2>Skin.ToggleSetting('test')</F2>" in line:
                     found_keymap = True
             file.close()
 
@@ -136,12 +136,12 @@ def index():
             file.write('<keymap>\n')
             file.write('<global>\n')
             file.write('<keyboard>\n')
-            file.write("<F2>Skin.ToggleSetting('')</F2>\n")
-            file.write("<F3>Skin.ToggleSetting('')</F3>\n")
-            file.write("<F4>Skin.ToggleSetting('')</F4>\n")
-            file.write("<F5>Skin.ToggleSetting('')</F5>\n")
-            file.write("<F6>Skin.ToggleSetting('')</F6>\n")
-            file.write("<backslash>Skin.ToggleSetting('')</backslash>\n")
+            file.write("<F2>Skin.ToggleSetting('test')</F2>\n")
+            file.write("<F3>Skin.ToggleSetting('test')</F3>\n")
+            file.write("<F4>Skin.ToggleSetting('test')</F4>\n")
+            file.write("<F5>Skin.ToggleSetting('test')</F5>\n")
+            file.write("<F6>Skin.ToggleSetting('test')</F6>\n")
+            file.write("<backslash>Skin.ToggleSetting('test')</backslash>\n")
             file.write("<backspace>XBMC.RunScript(special://home\\addons\plugin.video.mvl\script_backhandler.py)</backspace>\n")
             file.write('</keyboard>\n')
             file.write('</global>\n')
