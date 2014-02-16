@@ -1,5 +1,5 @@
 <window>
-  <defaultcontrol>61</defaultcontrol>
+  <defaultcontrol>11</defaultcontrol>
   <include>OpenClose</include>
   <controls>
     <include>DimBG</include>

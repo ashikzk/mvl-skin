@@ -413,9 +413,7 @@ def do_nothing(view_mode):
         mvl_view_mode = view_mode
     
     hide_busy_dialog()
-    
-    # plugin.end_of_directory(succeeded=False, update_listing=False)
-    
+
     return None
 
     
@@ -596,7 +594,7 @@ def get_categories(id, page):
                                           'path': plugin.url_for('do_nothing', view_mode=0),
                                           'is_playable': True
                                       }]
-                            
+
                     ####
                     
                     #categories['id'] is -1 when more categories are present and next page option should be displayed
@@ -883,7 +881,7 @@ def get_videos(id, thumbnail):
             items += [{
                           'label': '[COLOR FFFF0000]Please click on a link below to begin viewing[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
-                          'is_playable': True
+                          'is_playable': False
                       }]
 
             for urls in jsonObj:
@@ -892,7 +890,7 @@ def get_videos(id, thumbnail):
                               'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR]'.format(content, count),
                               'thumbnail': thumbnail,
                               'path': plugin.url_for('play_video', url=urls['URL']),
-                              'is_playable': True,
+                              'is_playable': False,
                           }]
 
             hide_busy_dialog()
@@ -917,6 +915,7 @@ def play_video(url):
         mvl_view_mode = 50
         #if login is successful then selected item will be resolved using urlresolver and played
         if login_check():
+            unplayable = False
             try:
                 #first import urlresolver
                 #as this takes a while, we'll be importing it only when required
@@ -926,19 +925,28 @@ def play_video(url):
                 plugin.log.info(url)
                 plugin.log.info(hostedurl)
                 
-                hide_busy_dialog()
-                
-                if str(hostedurl)[0] == 'h':               
-                    plugin.set_resolved_url(hostedurl)
-                else:
-                    mvl_view_mode = 50
-                    showMessage('Error loading video', 'This source will not play. Please pick another.')
+                if str(hostedurl)[0] == 'h':
                     hide_busy_dialog()
-                    return None
-            except:
+                    #plugin.set_resolved_url(hostedurl)
+                    #play the resolved url manually, since we aren't using playable link
+                    playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
+                    playlist.clear()
+                    playlist.add(hostedurl)
+                    xbmc.Player().play(playlist)
+                    #return None
+                else:
+                    unplayable = True
+            except Exception, e:
+                unplayable = True
+
+            if unplayable:
+                #video not playable
+                #show error message
                 mvl_view_mode = 50
-                showMessage('Error loading video', 'This source will not play. Please pick another.')
                 hide_busy_dialog()
+                showMessage('Error loading video', 'This source will not play. Please pick another.')
+                return None
+
         else:
             hide_busy_dialog()
             pass
