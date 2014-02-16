@@ -155,10 +155,11 @@ def index():
             
             return None
         else:
+        
             #if we have found the settings, then this is not the first run
             #we are good to go
             #run thread to check for internet connection in the background
-            setup_internet_check()
+            #setup_internet_check()
         
             # Create a window instance.
             #global isAgree
@@ -881,7 +882,7 @@ def get_videos(id, thumbnail):
             items += [{
                           'label': '[COLOR FFFF0000]Please click on a link below to begin viewing[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
-                          'is_playable': False
+                          'is_playable': True
                       }]
 
             for urls in jsonObj:
@@ -920,7 +921,8 @@ def play_video(url):
                 #first import urlresolver
                 #as this takes a while, we'll be importing it only when required
                 import urlresolver
-    
+                
+                print 'Resolving.....'
                 hostedurl = urlresolver.HostedMediaFile(url).resolve()
                 plugin.log.info(url)
                 plugin.log.info(hostedurl)
