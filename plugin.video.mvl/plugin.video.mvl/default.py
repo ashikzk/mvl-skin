@@ -890,7 +890,7 @@ def get_videos(id, thumbnail):
                 items += [{
                               'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR]'.format(content, count),
                               'thumbnail': thumbnail,
-                              'path': plugin.url_for('play_video', url=urls['URL']),
+                              'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
                               'is_playable': False,
                           }]
 
@@ -906,8 +906,8 @@ def get_videos(id, thumbnail):
 
 
 
-@plugin.route('/play_video/<url>')
-def play_video(url):
+@plugin.route('/play_video/<url>/<title>')
+def play_video(url, title):
     global mvl_view_mode
     
     if check_internet():
@@ -933,7 +933,8 @@ def play_video(url):
                     #play the resolved url manually, since we aren't using playable link
                     playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
                     playlist.clear()
-                    playlist.add(hostedurl)
+                    listitem = xbmcgui.ListItem(title)
+                    playlist.add(url=hostedurl, listitem=listitem)
                     xbmc.Player().play(playlist)
                     #return None
                 else:
