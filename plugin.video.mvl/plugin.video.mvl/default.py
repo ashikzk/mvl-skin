@@ -887,8 +887,14 @@ def get_videos(id, thumbnail):
 
             for urls in jsonObj:
                 count += 1
+                source_quality = ''
+                if urls['is_hd']:
+                    source_quality = '*HD'
+                else:
+                    source_quality = '*DVD'
+
                 items += [{
-                              'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR]'.format(content, count),
+                              'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR FFFF0000]{2}[/COLOR]'.format(content, count, source_quality),
                               'thumbnail': thumbnail,
                               'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
                               'is_playable': False,
