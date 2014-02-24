@@ -829,6 +829,8 @@ def get_categories(id, page):
                 
             hide_busy_dialog()
             
+            plugin.log.info("View mode = " + str(mvl_view_mode))
+
             return items
         # except IOError:
             # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
@@ -880,7 +882,7 @@ def get_videos(id, thumbnail):
 
             # instruction text    
             items += [{
-                          'label': '[COLOR FFFF0000]Please click on a link below to begin viewing[/COLOR]',
+                          'label': '[COLOR FF834DCC]Please click on a link below to begin viewing[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
                           'is_playable': True
                       }]
@@ -890,11 +892,13 @@ def get_videos(id, thumbnail):
                 source_quality = ''
                 if urls['is_hd']:
                     source_quality = '*HD'
+                    source_color = 'FFFF0000'
                 else:
-                    source_quality = '*DVD'
+                    source_quality = 'DVD'
+                    source_color = 'FF834DCC'
 
                 items += [{
-                              'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR FFFF0000]{2}[/COLOR]'.format(content, count, source_quality),
+                              'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                               'thumbnail': thumbnail,
                               'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
                               'is_playable': False,
@@ -1056,7 +1060,7 @@ def search(category):
                 plugin.log.info("search url")
                 plugin.log.info(data)
                 plugin.log.info(url)
-                
+
                 dp = xbmcgui.DialogProgress()
 
                 f = urllib2.urlopen(req)
@@ -1068,7 +1072,9 @@ def search(category):
                     hide_busy_dialog()
 
                 else:
-                    mvl_view_mode = 50
+                    mvl_view_mode = 58
+                    xbmcplugin.setContent(pluginhandle, 'Movies')
+
                     jsonObj = json.loads(response)
                     plugin.log.info(jsonObj)
                     items = []
@@ -1179,22 +1185,41 @@ def search(category):
                             except:
                                 fanart_url = ''
 
+                            mvl_plot = ''
+                            try:
+                                if mvl_meta['plot']:
+                                    mvl_plot = mvl_meta['plot']
+                            except:
+                                mvl_plot = categories['synopsis'].encode('utf-8')
+
                             items += [{
-                                          'label': '{0}'.format(categories['title']),
-                                          'path': plugin.url_for('get_videos', id=categories['video_id'], thumbnail="None"),
-                                          'is_playable': False,
                                           'thumbnail': thumbnail_url,
                                           'properties': {
                                               'fanart_image': fanart_url,
                                           },
+                                          'label': '{0}'.format(categories['title']),
+                                          'info': {
+                                              'title': categories['title'],
+                                              'rating': categories['rating'],
+                                              'comment': categories['synopsis'].encode('utf-8'),
+                                              'Director': categories['director'].encode('utf-8'),
+                                              'Producer': categories['producer'],
+                                              'Writer': categories['writer'],
+                                              'plot': mvl_plot,
+                                              'genre': categories['sub_categories_names'],
+                                              'cast': categories['actors'].encode('utf-8'),
+                                              'year': categories['release_date']
+                                          },
+                                          'path': plugin.url_for('get_videos', id=categories['video_id'], thumbnail=thumbnail_url),
+                                          'is_playable': False,
                                           'context_menu': [(
                                                                'Add to Favourites',
                                                                'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                     id=categories['id'],
+                                                                                                     id=categories['video_id'],
                                                                                                      title=categories['title'],
-                                                                                                     thumbnail="None",
+                                                                                                     thumbnail=thumbnail_url,
                                                                                                      isplayable="True",
-                                                                                                     category=category)
+                                                                                                     category=categories['top_level_parent'])
                                                            )],
                                           'replace_context_menu': True
                                       }]
@@ -1217,7 +1242,7 @@ def search(category):
                             break                                 
                             
                     dp.close()
-                    
+
                     hide_busy_dialog()
                     return items
             except IOError:
@@ -1331,8 +1356,8 @@ def get_azlist(key, page, category):
                     
                 ###########
 
-                
-                           
+                xbmcplugin.setContent(pluginhandle, 'Movies')
+
                 for results in jsonObj:
                     if results['id'] == -1:
                         items += [{
@@ -1429,7 +1454,7 @@ def get_azlist(key, page, category):
                         dp_type = 'movie'
 
                         mvl_img = thumbnail_url
-                        print "TITLE = " + results['title']
+                        #print "TITLE = " + results['title']
                         mvl_meta = create_meta('movie', results['title'], '', thumbnail_url)
                         plugin.log.info('meta data-> %s' % mvl_meta)
                         thumbnail_url = ''
@@ -1445,23 +1470,43 @@ def get_azlist(key, page, category):
                                 fanart_url = mvl_meta['backdrop_url']
                         except:
                             fanart_url = ''
+
+                        mvl_plot = ''
+                        try:
+                            if mvl_meta['plot']:
+                                mvl_plot = mvl_meta['plot']
+                        except:
+                            mvl_plot = results['synopsis'].encode('utf-8')
+
                         items += [{
-                                      'label': '{0}'.format(results['title']),
-                                      'path': plugin.url_for('get_videos', id=results['video_id'],
-                                                             thumbnail=results['thumbnail']),
                                       'thumbnail': thumbnail_url,
                                       'properties': {
                                           'fanart_image': fanart_url,
                                       },
+                                      'label': '{0}'.format(results['title']),
+                                      'info': {
+                                          'title': results['title'],
+                                          'rating': results['rating'],
+                                          'comment': results['synopsis'].encode('utf-8'),
+                                          'Director': results['director'].encode('utf-8'),
+                                          'Producer': results['producer'],
+                                          'Writer': results['writer'],
+                                          'plot': mvl_plot,
+                                          'genre': results['sub_categories_names'],
+                                          'cast': results['actors'].encode('utf-8'),
+                                          'year': results['release_date']
+                                      },
+                                      'path': plugin.url_for('get_videos', id=results['video_id'],
+                                                             thumbnail=results['thumbnail']),
                                       'is_playable': False,
                                       'context_menu': [(
                                                            'Add to Favourites',
                                                            'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                  id=results['video_id'],
                                                                                                  title=results['title'],
-                                                                                                 thumbnail="None",
+                                                                                                 thumbnail=thumbnail_url,
                                                                                                  isplayable="True",
-                                                                                                 category=category)
+                                                                                                 category=results['top_level_parent'])
                                                        )],
                                       'replace_context_menu': True
                                   }]
