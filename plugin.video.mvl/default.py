@@ -894,7 +894,7 @@ def get_videos(id, thumbnail):
                     source_quality = '*HD'
                     source_color = 'FFFF0000'
                 else:
-                    source_quality = 'DVD'
+                    source_quality = ''
                     source_color = 'FF834DCC'
 
                 items += [{
