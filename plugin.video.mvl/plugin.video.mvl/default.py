@@ -787,7 +787,7 @@ def get_categories(id, page):
                     if dp.iscanceled():
                         break
                     
-                                  
+
 
                 if main_category_check == True:
                     #adding A-Z listing option
@@ -837,7 +837,7 @@ def get_categories(id, page):
         except Exception, e:
             if id in ('1', '3'):  # if we were on 1st page, then the viewmode should remain to 58 as an error has occured and we haven't got any data for next screen
                 mvl_view_mode = 58
-            elif id in ('23', '104916', '112504', '32', '104917', '366042'):
+            elif id in ('23', '104916', '112504', '32', '104917', '366042', '372395', '372396'):
                 mvl_view_mode = 59
                 
             # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
@@ -848,7 +848,7 @@ def get_categories(id, page):
     else:
         if id in ('1', '3'):  # if we were on 1st page, then the viewmode should remain to 58 as an error has occured and we haven't got any data for next screen
             mvl_view_mode = 58
-        elif id in ('23', '104916', '112504', '32', '104917', '366042'):
+        elif id in ('23', '104916', '112504', '32', '104917', '366042', '372395', '372396'):
             mvl_view_mode = 59
                 
         #show error message
@@ -932,7 +932,7 @@ def play_video(url, title):
                 #as this takes a while, we'll be importing it only when required
                 import urlresolver
                 
-                print 'Resolving.....'
+                # print 'Resolving.....'
                 hostedurl = urlresolver.HostedMediaFile(url).resolve()
                 plugin.log.info(url)
                 plugin.log.info(hostedurl)
@@ -990,8 +990,8 @@ def create_meta(video_type, title, year, thumb):
         if meta['cover_url'] in ('/images/noposter.jpg', ''):
             meta['cover_url'] = thumb
             
-        print 'Done TV'
-        print meta
+        # print 'Done TV'
+        # print meta
         
     except Exception, e:
         plugin.log.info('Error assigning meta data for %s %s %s' % (video_type, title, year))
