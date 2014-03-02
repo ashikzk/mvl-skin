@@ -483,7 +483,7 @@ def get_categories(id, page):
                     
                 ###########
                 #if the items are season episodes, we need ot sort them naturally i.e. use Natural Sort for sorting
-                if jsonObj[0]['top_level_parent'] == '3' and jsonObj[0]['parent_id'] not in ('32', '3'):               
+                if jsonObj[0]['top_level_parent'] == '3' and jsonObj[0]['parent_id'] not in ('32', '3'):
                     is_playable = False
                     for categories in jsonObj:
                         if 'title' not in categories:
@@ -514,53 +514,54 @@ def get_categories(id, page):
                 dp_created = False
                 dp_type = 'show'
                 
-                #sort categories according to release_date
-                release_date_count = 0
-                for categories in jsonObj:
-                    if 'release_date' not in categories:
-                        categories['release_date'] = '-1'
-                    elif categories['release_date'] is not None and len(categories['release_date']) == 10:
-                        #we seem to have got a proper date string
-                        #make sure we have a valid date format                        
-                        try:
-                            mydate = datetime.strptime(categories['release_date'], '%Y-%m-%d')
-                        except TypeError:
-                            mydate = datetime(*(time.strptime(categories['release_date'], '%Y-%m-%d')[0:6]))                   
-                        except Exception,e:
-                            print e
-                        
-                        #put the release_group title in <Month, Year> format
-                        categories['release_group'] = '[COLOR FF2261B4]'+calendar.month_name[mydate.month] + ', ' + str(mydate.year)+'[/COLOR]'
-                        release_date_count = 1
-                        
-                if release_date_count == 0:
-                    #release_date_count is still 0, meaning we haven't got any release_date in proper date format
-                    #let's see if we can find any release_date with only year string
+                #sort categories according to release_date except for <Featured> group
+                if jsonObj[0]['parent_id'] not in ('372395', '372396'):
+                    release_date_count = 0
                     for categories in jsonObj:
                         if 'release_date' not in categories:
                             categories['release_date'] = '-1'
-                        elif categories['release_date'] is not None and len(categories['release_date']) == 4:
-                            #we seem to have got a year string
-                            #put the release_group title in <Year> format
-                            categories['release_group'] = '[COLOR FF2261B4]'+categories['release_date']+'[/COLOR]'
+                        elif categories['release_date'] is not None and len(categories['release_date']) == 10:
+                            #we seem to have got a proper date string
+                            #make sure we have a valid date format
+                            try:
+                                mydate = datetime.strptime(categories['release_date'], '%Y-%m-%d')
+                            except TypeError:
+                                mydate = datetime(*(time.strptime(categories['release_date'], '%Y-%m-%d')[0:6]))
+                            except Exception,e:
+                                print e
+
+                            #put the release_group title in <Month, Year> format
+                            categories['release_group'] = '[COLOR FF2261B4]'+calendar.month_name[mydate.month] + ', ' + str(mydate.year)+'[/COLOR]'
                             release_date_count = 1
 
-                if release_date_count == 0:
-                    for categories in jsonObj:
-                        if 'release_date' not in categories:
-                            categories['release_date'] = '-1'
-                        elif categories['release_date'] is not None and len(categories['release_date']) == 4:
-                            #make sure we have valid date format                        
-                            categories['release_group'] = '[COLOR FF2261B4]'+categories['release_date']+'[/COLOR]'
-                            release_date_count = 1
-                            
-                #if release_date_count is still 0, it means no entry has a release date
-                #no need to sort then
-                #otherwise sort in Desc order by release date
-                if release_date_count == 1:
-                    jsonObj.sort(key=lambda x: x['release_date'], reverse=True)
-                
-                # print jsonObj
+                    if release_date_count == 0:
+                        #release_date_count is still 0, meaning we haven't got any release_date in proper date format
+                        #let's see if we can find any release_date with only year string
+                        for categories in jsonObj:
+                            if 'release_date' not in categories:
+                                categories['release_date'] = '-1'
+                            elif categories['release_date'] is not None and len(categories['release_date']) == 4:
+                                #we seem to have got a year string
+                                #put the release_group title in <Year> format
+                                categories['release_group'] = '[COLOR FF2261B4]'+categories['release_date']+'[/COLOR]'
+                                release_date_count = 1
+
+                    if release_date_count == 0:
+                        for categories in jsonObj:
+                            if 'release_date' not in categories:
+                                categories['release_date'] = '-1'
+                            elif categories['release_date'] is not None and len(categories['release_date']) == 4:
+                                #make sure we have valid date format
+                                categories['release_group'] = '[COLOR FF2261B4]'+categories['release_date']+'[/COLOR]'
+                                release_date_count = 1
+
+                    #if release_date_count is still 0, it means no entry has a release date
+                    #no need to sort then
+                    #otherwise sort in Desc order by release date
+                    if release_date_count == 1:
+                        jsonObj.sort(key=lambda x: x['release_date'], reverse=True)
+
+                    # print jsonObj
                 
                 last_release_group = ''
 
