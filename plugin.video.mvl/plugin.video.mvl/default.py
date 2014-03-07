@@ -883,7 +883,7 @@ def get_videos(id, thumbnail):
 
             # instruction text    
             items += [{
-                          'label': '[COLOR FFFFFF00]Please click on a link below to begin viewing * [COLOR FFFF0000]HD[/COLOR] sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed * [COLOR FFFF0000]Unusable sources are replaced weekly[/COLOR][/COLOR]',
+                          'label': '[COLOR FFFFFF00]Please click on a link below to begin viewing[/COLOR] [COLOR FFFF0000]* HD[/COLOR] [COLOR FFFFFFFF]sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed [COLOR FFFF0000]* Unusable sources[/COLOR] are replaced weekly[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
                           'is_playable': True
                       }]
