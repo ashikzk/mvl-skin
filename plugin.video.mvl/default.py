@@ -514,8 +514,8 @@ def get_categories(id, page):
                 dp_created = False
                 dp_type = 'show'
                 
-                #sort categories according to release_date except for <Featured> group
-                if jsonObj[0]['parent_id'] not in ('372395', '372396'):
+                #sort categories according to release_date except for <Featured> group and TV shows
+                if jsonObj[0]['parent_id'] not in ('372395', '372396') and jsonObj[0]['top_level_parent'] != '3':
                     release_date_count = 0
                     for categories in jsonObj:
                         if 'release_date' not in categories:
@@ -888,22 +888,28 @@ def get_videos(id, thumbnail):
                           'is_playable': True
                       }]
 
+            hd_count = 0
+            sd_count = 0
             for urls in jsonObj:
-                count += 1
                 source_quality = ''
                 if urls['is_hd']:
                     source_quality = '*HD'
                     source_color = 'FFFF0000'
+                    hd_count += 1
                 else:
                     source_quality = ''
                     source_color = 'FF834DCC'
+                    sd_count += 1
 
-                items += [{
-                              'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
-                              'thumbnail': thumbnail,
-                              'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
-                              'is_playable': False,
-                          }]
+                if (source_quality != '' and hd_count < 5) or (source_quality == '' and sd_count < 5):
+                    count += 1
+
+                    items += [{
+                                  'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
+                                  'thumbnail': thumbnail,
+                                  'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
+                                  'is_playable': False,
+                              }]
 
             hide_busy_dialog()
             return items
