@@ -783,7 +783,7 @@ def get_categories(id, page):
                         dp_created = True
                                   
                     done_count = done_count + 1
-                    dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+                    dp.update((done_count*100/item_count), str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
                     if dp.iscanceled():
                         break
@@ -883,7 +883,7 @@ def get_videos(id, thumbnail):
 
             # instruction text    
             items += [{
-                          'label': '[COLOR FF834DCC]Please click on a link below to begin viewing[/COLOR]',
+                          'label': '[COLOR FFFFFF00]Please click on a link below to begin viewing * [COLOR FFFF0000]HD[/COLOR] sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed * [COLOR FFFF0000]Unusable sources are replaced weekly[/COLOR][/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
                           'is_playable': True
                       }]
@@ -1243,7 +1243,7 @@ def search(category):
                             dp_created = True
                                   
                         done_count = done_count + 1
-                        dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+                        dp.update((done_count*100/item_count), str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
                         if dp.iscanceled():
                             break                                 
@@ -1529,7 +1529,7 @@ def get_azlist(key, page, category):
                         dp_created = True
                                   
                     done_count = done_count + 1
-                    dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+                    dp.update((done_count*100/item_count), str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
                     if dp.iscanceled():
                         break
@@ -1644,7 +1644,7 @@ def mostpopular(page, category):
                     dp_created = True
                               
                 done_count = done_count + 1
-                dp.update((done_count*100/item_count), "This wont happen next time you visit.",  str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
+                dp.update((done_count*100/item_count), str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
                 if dp.iscanceled():
                     break
