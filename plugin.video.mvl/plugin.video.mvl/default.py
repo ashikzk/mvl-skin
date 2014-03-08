@@ -877,7 +877,6 @@ def get_videos(id, thumbnail):
             opener = urllib2.build_opener()
             f = opener.open(req)
             content = f.read()
-            count = 0
             items = []
             plugin.log.info(jsonObj)
 
@@ -888,28 +887,56 @@ def get_videos(id, thumbnail):
                           'is_playable': True
                       }]
 
+
+            src_list = ['movreel', 'mightyupload', 'promptfile', 'hugefile', 'billionupload', '180upload', 'lemupload', 'gorillavid']
+
+            for urls in jsonObj:
+                src_order = 0
+                for src in src_list:
+                    if urls['URL'].find(src) >= 0:
+                        break
+                    src_order += 1
+
+                urls['src_order'] = src_order
+
+            jsonObj.sort(key=lambda x: x['src_order'])
+
+            count = 0
             hd_count = 0
-            sd_count = 0
             for urls in jsonObj:
                 source_quality = ''
                 if urls['is_hd']:
                     source_quality = '*HD'
                     source_color = 'FFFF0000'
                     hd_count += 1
-                else:
+
+                    if hd_count < 5:
+                        count += 1
+
+                        items += [{
+                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
+                                      'thumbnail': thumbnail,
+                                      'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
+                                      'is_playable': False,
+                                  }]
+
+            sd_count = 0
+            for urls in jsonObj:
+                source_quality = ''
+                if not urls['is_hd']:
                     source_quality = ''
                     source_color = 'FF834DCC'
                     sd_count += 1
 
-                if (source_quality != '' and hd_count < 5) or (source_quality == '' and sd_count < 5):
-                    count += 1
+                    if sd_count < 5:
+                        count += 1
 
-                    items += [{
-                                  'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
-                                  'thumbnail': thumbnail,
-                                  'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
-                                  'is_playable': False,
-                              }]
+                        items += [{
+                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
+                                      'thumbnail': thumbnail,
+                                      'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
+                                      'is_playable': False,
+                                  }]
 
             hide_busy_dialog()
             return items
