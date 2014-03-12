@@ -905,6 +905,10 @@ def get_videos(id, thumbnail):
             hd_count = 0
             for urls in jsonObj:
                 source_quality = ''
+                source_url = urls['URL'][urls['URL'].find('://')+3:]
+                if source_url.find('www.') != -1:
+                    source_url = source_url[source_url.find('www.')+4:]
+
                 if urls['is_hd']:
                     source_quality = '*HD'
                     source_color = 'FFFF0000'
@@ -914,7 +918,7 @@ def get_videos(id, thumbnail):
                         count += 1
 
                         items += [{
-                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
+                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR] | {4}'.format(content, count, source_color, source_quality, source_url),
                                       'thumbnail': thumbnail,
                                       'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
                                       'is_playable': False,
@@ -923,6 +927,10 @@ def get_videos(id, thumbnail):
             sd_count = 0
             for urls in jsonObj:
                 source_quality = ''
+                source_url = urls['URL'][urls['URL'].find('://')+3:]
+                if source_url.find('www.') != -1:
+                    source_url = source_url[source_url.find('www.')+4:]
+
                 if not urls['is_hd']:
                     source_quality = ''
                     source_color = 'FF834DCC'
@@ -932,7 +940,7 @@ def get_videos(id, thumbnail):
                         count += 1
 
                         items += [{
-                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
+                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR] | {4}'.format(content, count, source_color, source_quality, source_url),
                                       'thumbnail': thumbnail,
                                       'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
                                       'is_playable': False,
@@ -972,12 +980,16 @@ def play_video(url, title):
                 plugin.log.info(hostedurl)
                 
                 if str(hostedurl)[0] == 'h':
+                    source_url = url[ url.find('://')+3: ]
+                    if source_url.find('www.') != -1:
+                        source_url = source_url[source_url.find('www.')+4:]
+
                     hide_busy_dialog()
                     #plugin.set_resolved_url(hostedurl)
                     #play the resolved url manually, since we aren't using playable link
                     playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
                     playlist.clear()
-                    listitem = xbmcgui.ListItem(title)
+                    listitem = xbmcgui.ListItem('{0} | {1}'.format(title, source_url))
                     playlist.add(url=hostedurl, listitem=listitem)
                     xbmc.Player().play(playlist)
                     #return None

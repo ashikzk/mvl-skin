@@ -54,6 +54,7 @@
         <pulseonselect>true</pulseonselect>
         <onright>11</onright>
 		<onup>61</onup>
+		<ondown>61</ondown>
       </control>
       <control type="button" id="11" description="Agree">
         <visible></visible>
@@ -66,6 +67,7 @@
         <pulseonselect>true</pulseonselect>
         <onleft>10</onleft>
 		<onup>61</onup>
+		<ondown>61</ondown>
       </control>      
     </control>
   </controls>

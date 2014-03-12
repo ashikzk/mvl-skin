@@ -1,3 +1,6 @@
+1.0.34
+Added new background image
+
 1.0.13
 Removed some bugs from Skin
 
