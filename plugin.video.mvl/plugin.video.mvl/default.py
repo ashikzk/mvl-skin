@@ -918,7 +918,7 @@ def get_videos(id, thumbnail):
                         count += 1
 
                         items += [{
-                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR] | {4}'.format(content, count, source_color, source_quality, source_url),
+                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                                       'thumbnail': thumbnail,
                                       'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
                                       'is_playable': False,
@@ -940,7 +940,7 @@ def get_videos(id, thumbnail):
                         count += 1
 
                         items += [{
-                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR] | {4}'.format(content, count, source_color, source_quality, source_url),
+                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                                       'thumbnail': thumbnail,
                                       'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
                                       'is_playable': False,
@@ -989,7 +989,7 @@ def play_video(url, title):
                     #play the resolved url manually, since we aren't using playable link
                     playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
                     playlist.clear()
-                    listitem = xbmcgui.ListItem('{0} | {1}'.format(title, source_url))
+                    listitem = xbmcgui.ListItem('[COLOR FFFFFFFF]{0}[/COLOR] | [COLOR FF333333]{1}[/COLOR]'.format(title, source_url))
                     playlist.add(url=hostedurl, listitem=listitem)
                     xbmc.Player().play(playlist)
                     #return None
