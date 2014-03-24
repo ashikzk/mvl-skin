@@ -650,7 +650,7 @@ def get_categories(id, page):
                                 mvl_plot = ''
 
                             items += [{
-                                          'label': '{0}'.format(categories['title']),
+                                          'label': '{0}'.format(categories['title'].encode('utf-8')),
                                           'path': plugin.url_for('get_categories', id=categories['id'], page=0),
                                           'is_playable': False,
                                           'thumbnail': thumbnail_url,
@@ -661,12 +661,10 @@ def get_categories(id, page):
                                                                'Add to Favourites',
                                                                'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                      id=categories['id'],
-                                                                                                     title=categories[
-                                                                                                         'title'],
+                                                                                                     title=categories['title'].encode('utf-8'),
                                                                                                      thumbnail="None",
                                                                                                      isplayable="False",
-                                                                                                     category=categories[
-                                                                                                         'top_level_parent'])
+                                                                                                     category=categories['top_level_parent'])
                                                            )],
                                           'replace_context_menu': True
                                       }]
@@ -674,7 +672,7 @@ def get_categories(id, page):
                         else:
 
                             items += [{
-                                          'label': '{0}'.format(categories['title']),
+                                          'label': '{0}'.format(categories['title'].encode('utf-8')),
                                           'path': plugin.url_for('get_categories', id=categories['id'], page=0),
                                           'is_playable': False,
                                           'thumbnail': art('{0}{1}.png'.format(categories['title'].lower(), image_on_off)),
@@ -682,12 +680,10 @@ def get_categories(id, page):
                                                                'Add to Favourites',
                                                                'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                      id=categories['id'],
-                                                                                                     title=categories[
-                                                                                                         'title'],
+                                                                                                     title=categories['title'].encode('utf-8'),
                                                                                                      thumbnail="None",
                                                                                                      isplayable="False",
-                                                                                                     category=categories[
-                                                                                                         'top_level_parent'])
+                                                                                                     category=categories['top_level_parent'])
                                                            )],
                                           'replace_context_menu': True
                                       }]
@@ -761,13 +757,10 @@ def get_categories(id, page):
                                                            'Add to Favourites',
                                                            'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                  id=categories['video_id'],
-                                                                                                 title=categories[
-                                                                                                     'title'].encode(
-                                                                                                     'utf-8'),
+                                                                                                 title=categories['title'].encode('utf-8'),
                                                                                                  thumbnail=thumbnail_url,
                                                                                                  isplayable="True",
-                                                                                                 category=categories[
-                                                                                                     'top_level_parent'])
+                                                                                                 category=categories['top_level_parent'])
                                                        )],
                                       'replace_context_menu': True
                                   }]
@@ -989,7 +982,7 @@ def play_video(url, title):
                     #play the resolved url manually, since we aren't using playable link
                     playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
                     playlist.clear()
-                    listitem = xbmcgui.ListItem('[COLOR FFFFFFFF]{0}[/COLOR] | [COLOR FF333333]{1}[/COLOR]'.format(title, source_url))
+                    listitem = xbmcgui.ListItem('[COLOR FFFFFFFF]{0}[/COLOR] | [COLOR FF777777]{1}[/COLOR]'.format(title, source_url))
                     playlist.add(url=hostedurl, listitem=listitem)
                     xbmc.Player().play(playlist)
                     #return None
