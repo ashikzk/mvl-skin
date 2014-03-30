@@ -104,7 +104,8 @@ def index():
         if os.path.exists(file_path):
             file = open(file_path, 'r')
             for line in file:
-                if '<showparentdiritems>false</showparentdiritems>' in line:
+                # if '<showparentdiritems>false</showparentdiritems>' in line:
+                if '<cachemembuffersize>0</cachemembuffersize>' in line:
                     found = True
             file.close()
 
@@ -121,6 +122,9 @@ def index():
         if not found or not found_keymap:
             file = open(file_path, 'w')
             file.write('<advancedsettings>\n')
+            file.write('<network>\n')
+            file.write('<cachemembuffersize>0</cachemembuffersize>\n')
+            file.write('</network>\n')
             file.write('<filelists>\n')
             file.write('<showparentdiritems>false</showparentdiritems>\n')
             file.write('</filelists>\n')
