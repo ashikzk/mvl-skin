@@ -158,14 +158,25 @@ def index():
         
             #if we have found the settings, then this is not the first run
             #we are good to go
-            #run thread to check for internet connection in the background
-            #setup_internet_check()
-        
+
+            #Media has been clicked
+            #Check for update first before proceeding forward
+            if check_update():
+                #new update is available
+                #return to Home
+                sys_exit()
+                run_update()
+                return None
+            ##
+
+
             # Create a window instance.
             #global isAgree
             check_condition()
             #creating the database if not exists
             init_database()
+
+
             #creating a context menu
             #url used to get main categories from server
             url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id=0&limit={0}&page=1".format(page_limit)
@@ -175,16 +186,16 @@ def index():
             f = opener.open(req)
             #reading content fetched from the url
             content = f.read()
-            
+
             hide_busy_dialog()
-            
+
             #converting to json object
             jsonObj = json.loads(content)
             items = []
 
             if isAgree == True:
                 show_notification()
-            
+
                 plugin.log.info("here is dialog")
                 #creating items from json object
                 for categories in jsonObj:
@@ -194,7 +205,7 @@ def index():
                                   'is_playable': False,
                                   'thumbnail': art('{0}.png'.format(categories['title'].lower())),
                               }]
-                              
+
                 # hide_busy_dialog()
                 return items
 
@@ -204,30 +215,30 @@ def index():
         hide_busy_dialog()
         sys_exit()
 
-        
+
 def setup_internet_check():
     t = Thread(target=check_internet_connection)
     t.daemon = True
     t.start()
-     
+
 def check_quit_log():
     file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'quit_log.dat')
     f = open(file_path, 'r')
     r = f.read()
     f.close()
-    
+
     # print "check quit log = " + str(r)
-    
+
     if r:
         return True
     else:
         return False
 
-     
+
 # called by each thread
 def check_internet_connection():
     sleep_time = 20
-    
+
     try:
         while(True):
             print 'Starting outbound call to test internet connection'
@@ -237,11 +248,11 @@ def check_internet_connection():
             while count:
                 count = count - 1
                 time.sleep(1)
-                
+
                 if check_quit_log():
                     return
-                    
-    except Exception, e:        
+
+    except Exception, e:
         print e
         # showMessage('No Connection', 'No internet connection can be found')
         dialog_msg()
@@ -250,13 +261,13 @@ def check_internet_connection():
         while count:
             count = count - 1
             time.sleep(1)
-            
+
             if check_quit_log():
                 return
-        
+
         setup_internet_check()
 
-        
+
 def show_notification():
 
     try:
@@ -271,7 +282,7 @@ def show_notification():
         jsonObj = json.loads(content)
 
         message = jsonObj['message']
-        
+
         if message != '':
             showMessage('Notification', message)
             sys_exit()
@@ -279,7 +290,7 @@ def show_notification():
     except:
         #do nothing
         message = ''
-        
+
     return False
 
 def onClick_disAgree():
@@ -295,14 +306,14 @@ def onClick_agree():
     req = urllib2.Request(url)
     opener = urllib2.build_opener()
     f = opener.open(req)
-    
+
     isAgree = True
 
-    
+
 def showMessage(heading, message):
     dialog = xbmcgui.Dialog()
     dialog.ok(heading, message)
-    
+
 def check_condition():
     macAddress = usrsettings.getSetting('mac_address')
     global curr_page
@@ -324,15 +335,15 @@ def check_condition():
         tc_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 't&c.info')
         f = open(tc_path)
         text = f.read()
-        
+
         dialog = xbmcgui.Dialog()
         agree_ret = dialog.yesno(heading, text, yeslabel='Agree', nolabel='Disagree')
-        
+
         if agree_ret:
             onClick_agree()
         else:
             onClick_disAgree()
-        
+
     elif content == 'true':
         global isAgree
         isAgree = True
@@ -387,7 +398,7 @@ def dialog_msg():
     heading = "INTERNET CONNECTION ISSUE"
     # text = "An error has occured communicating with MyVideoLibrary server. Please check that you are connected to internet through wi-fi"
     text = "Your internet connection has been lost. Please wait a few minutes and try again. If the error persists you may wish to contact your Internet Service Provider."
-        
+
     #show message is a dialog window
     showMessage(heading, text)
 
@@ -398,26 +409,26 @@ def hide_busy_dialog():
     file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_lock.dat')
     f = open(file_path, 'w')
     f.close()
-    
-    
+
+
 def show_root():
     global internet_info
     internet_info.close()
     sys_exit()
 
-    
+
 @plugin.route('/do_nothing/<view_mode>')
 def do_nothing(view_mode):
     global mvl_view_mode
-    
+
     if view_mode != 0:
         mvl_view_mode = view_mode
-    
+
     hide_busy_dialog()
 
     return None
 
-    
+
 @plugin.route('/categories/<id>/<page>')
 def get_categories(id, page):
     #import resources.htmlcleaner
@@ -425,19 +436,19 @@ def get_categories(id, page):
     global mvl_view_mode
 
     # showMessage('he he', str(mvl_view_mode))
-    
+
     mvl_view_mode = 58
     # hide_busy_dialog()
     # return None
 
     if check_internet():
         global mvl_tvshow_title
-        
+
         show_notification()
-        
+
         #save current view mode in case any error occurs and we need to remain on the same page
         prev_view_mode = mvl_view_mode
-        
+
         try:
 
             parent_id = id
@@ -449,8 +460,8 @@ def get_categories(id, page):
             plugin.log.info(id)
             plugin.log.info(page)
             plugin.log.info(page_limit_cat)
-            
-            
+
+
             #freeze UI by showing a busy dialog
             # xbmc.executebuiltin( "Dialog.Close(busydialog)" )
             # xbmc.executebuiltin( "ActivateWindow(busydialog)" )
@@ -460,8 +471,8 @@ def get_categories(id, page):
 
             # #make everything normal
             # xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-            
-            url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id={0}&page={1}&limit={2}".format(id, 
+
+            url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id={0}&page={1}&limit={2}".format(id,
                                                                                                                          page,
                                                                                                                          page_limit_cat)
             plugin.log.info(url)
@@ -471,7 +482,7 @@ def get_categories(id, page):
             content = f.read()
             items = []
             image_on_off = ''
-            
+
             if content:
                 jsonObj = json.loads(content)
                 totalCats = len(jsonObj)
@@ -480,7 +491,7 @@ def get_categories(id, page):
                 if jsonObj[0]['top_level_parent'] == jsonObj[0]['parent_id']:
                     is_search_category = True
                     image_on_off = '_off'
-                    
+
                 ###########
                 #if the items are season episodes, we need ot sort them naturally i.e. use Natural Sort for sorting
                 if jsonObj[0]['top_level_parent'] == '3' and jsonObj[0]['parent_id'] not in ('32', '3'):
@@ -489,31 +500,31 @@ def get_categories(id, page):
                         if 'title' not in categories:
                             #for the "next" entry
                             categories['title'] = '9999999999999999999999999'
-                        
+
                         categories['sort_key'] = categories['title'].strip().split(' ')[0]
                         categories['sort_key_len'] = len(categories['title'].strip().split(' ')[0])
                         categories['title_len'] = len(categories['title'].strip())
-                        
+
                         if categories['id'] != -1 and categories['is_playable'] == 'True':
                             is_playable = True
-                    
-                    if jsonObj[0]['title'].split(' ')[0].lower() == 'Season'.lower():   
-                        #if items are seasons, then sort them by title length to get correct ordering                        
+
+                    if jsonObj[0]['title'].split(' ')[0].lower() == 'Season'.lower():
+                        #if items are seasons, then sort them by title length to get correct ordering
                         jsonObj.sort(key=lambda x: (x['title_len'], x['title']))
                     elif is_playable:
                         #otherwise, sort by the first string of the title which should like this: 1x1, 1x2, 1x10, 1x15.....
                         jsonObj.sort(key=lambda x: (x['sort_key_len'], x['sort_key']))
-                
-                    
+
+
                 ###########
 
                 item_count = len(jsonObj)
                 done_count = 0
-                
+
                 dp = xbmcgui.DialogProgress()
                 dp_created = False
                 dp_type = 'show'
-                
+
                 #sort categories according to release_date except for <Featured> group and TV shows
                 if jsonObj[0]['parent_id'] not in ('372395', '372396') and jsonObj[0]['top_level_parent'] != '3':
                     release_date_count = 0
@@ -562,7 +573,7 @@ def get_categories(id, page):
                         jsonObj.sort(key=lambda x: x['release_date'], reverse=True)
 
                     # print jsonObj
-                
+
                 last_release_group = ''
 
                 for categories in jsonObj:
@@ -590,7 +601,7 @@ def get_categories(id, page):
                     if 'release_group' in categories:
                         if categories['release_group'] != last_release_group:
                             last_release_group = categories['release_group']
-                            
+
                             items += [{
                                           'label': categories['release_group'],
                                           'path': plugin.url_for('do_nothing', view_mode=0),
@@ -598,7 +609,7 @@ def get_categories(id, page):
                                       }]
 
                     ####
-                    
+
                     #categories['id'] is -1 when more categories are present and next page option should be displayed
                     if categories['id'] == -1:
                         items += [{
@@ -626,7 +637,7 @@ def get_categories(id, page):
                                 mvl_tvshow_title = categories['title'].encode('utf-8')
 
                             dp_type = 'show'
-                            
+
                             plugin.log.info('meta data-> %s' % mvl_meta)
                             thumbnail_url = ''
                             try:
@@ -696,7 +707,7 @@ def get_categories(id, page):
                         if categories['video_id'] == '0':
                             #there is something wrong with this playable item. just ignore
                             continue
-                            
+
                         if categories['source'] == '1':
                             thumbnail_url = categories['image_name']
                         else:
@@ -706,9 +717,9 @@ def get_categories(id, page):
                         mvl_meta = create_meta('movie', categories['title'].encode('utf-8'), categories['release_date'], mvl_img)
                         plugin.log.info('>> meta data-> %s' % mvl_meta)
                         thumbnail_url = ''
-                        
+
                         dp_type = 'movie'
-                        
+
                         try:
                             if mvl_meta['cover_url']:
                                 thumbnail_url = mvl_meta['cover_url']
@@ -730,8 +741,8 @@ def get_categories(id, page):
                                 mvl_plot = mvl_meta['plot']
                         except:
                             mvl_plot = categories['synopsis'].encode('utf-8')
-                            
-                        
+
+
                         items += [{
                                       'thumbnail': thumbnail_url,
                                       'properties': {
@@ -764,23 +775,23 @@ def get_categories(id, page):
                                                        )],
                                       'replace_context_menu': True
                                   }]
-                                  
+
                     if categories['id'] != -1:
                         if categories['top_level_parent'] == '1':
                             dp_type = 'movie'
                         elif categories['top_level_parent'] == '3':
                             dp_type = 'show'
-                        
+
                     if dp_created == False:
                         dp.create("Please wait while "+dp_type+" list is loaded","","")
                         dp_created = True
-                                  
+
                     done_count = done_count + 1
                     dp.update((done_count*100/item_count), str(done_count)+" of "+str(item_count)+" "+dp_type+"s loaded so far.")
 
                     if dp.iscanceled():
                         break
-                    
+
 
 
                 if main_category_check == True:
@@ -807,10 +818,10 @@ def get_categories(id, page):
                     # 'is_playable': False,
                     # }]
                 #plugin.log.info(items)
-                
+
                 dp.close()
 
-                
+
             #we should set the view_mode as last thing in this method
             #because if user cancels his action and goes back before the api response
             #the view_mode will still be changed otherwise
@@ -820,9 +831,9 @@ def get_categories(id, page):
                 mvl_view_mode = 59
             # else:
                 # mvl_view_mode = 59
-                
+
             hide_busy_dialog()
-            
+
             plugin.log.info("View mode = " + str(mvl_view_mode))
 
             return items
@@ -833,7 +844,7 @@ def get_categories(id, page):
                 mvl_view_mode = 58
             elif id in ('23', '104916', '112504', '32', '104917', '366042', '372395', '372396'):
                 mvl_view_mode = 59
-                
+
             # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
             dialog_msg()
             hide_busy_dialog()
@@ -844,7 +855,7 @@ def get_categories(id, page):
             mvl_view_mode = 58
         elif id in ('23', '104916', '112504', '32', '104917', '366042', '372395', '372396'):
             mvl_view_mode = 59
-                
+
         #show error message
         dialog_msg()
         hide_busy_dialog()
@@ -853,8 +864,8 @@ def get_categories(id, page):
 @plugin.route('/get_videos/<id>/<thumbnail>/')
 def get_videos(id, thumbnail):
     if check_internet():
-        show_notification()    
-        
+        show_notification()
+
         global mvl_view_mode
         mvl_view_mode = 50
         try:
@@ -873,7 +884,7 @@ def get_videos(id, thumbnail):
             items = []
             plugin.log.info(jsonObj)
 
-            # instruction text    
+            # instruction text
             items += [{
                           'label': '[COLOR FFFFFF00]Please click on a link below to begin viewing[/COLOR] [COLOR FFFF0000]* HD[/COLOR] [COLOR FFFFFFFF]sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed [COLOR FFFF0000]* Unusable sources[/COLOR] are replaced weekly[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
@@ -954,10 +965,10 @@ def get_videos(id, thumbnail):
 @plugin.route('/play_video/<url>/<title>')
 def play_video(url, title):
     global mvl_view_mode
-    
+
     if check_internet():
-        show_notification()    
-        
+        show_notification()
+
         mvl_view_mode = 50
         #if login is successful then selected item will be resolved using urlresolver and played
         if login_check():
@@ -966,12 +977,12 @@ def play_video(url, title):
                 #first import urlresolver
                 #as this takes a while, we'll be importing it only when required
                 import urlresolver
-                
+
                 # print 'Resolving.....'
                 hostedurl = urlresolver.HostedMediaFile(url).resolve()
                 plugin.log.info(url)
                 plugin.log.info(hostedurl)
-                
+
                 if str(hostedurl)[0] == 'h':
                     source_url = url[ url.find('://')+3: ]
                     if source_url.find('www.') != -1:
@@ -1028,10 +1039,10 @@ def create_meta(video_type, title, year, thumb):
             meta['cover_url'] = meta['banner_url']
         if meta['cover_url'] in ('/images/noposter.jpg', ''):
             meta['cover_url'] = thumb
-            
+
         # print 'Done TV'
         # print meta
-        
+
     except Exception, e:
         plugin.log.info('Error assigning meta data for %s %s %s' % (video_type, title, year))
         plugin.log.info(e)
@@ -1072,6 +1083,57 @@ def login_check():
         # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
         dialog_msg()
     pass
+
+from xml.dom import minidom
+
+def check_update():
+    try:
+        #get latest version number from github repo
+        url = "https://raw.githubusercontent.com/ashikzk/mvl-skin/master/addons.xml"
+        req = urllib2.Request(url)
+        opener = urllib2.build_opener()
+        f = opener.open(req)
+        content = f.read()
+
+        xmldoc = minidom.parseString(content)
+        addonlist = xmldoc.getElementsByTagName('addon')
+        mvl_video_version_latest = addonlist[0].attributes['version'].value
+        mvl_skin_version_latest = addonlist[1].attributes['version'].value
+
+        #now get currently installed version numbers
+        #mvl video addon
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'addon.xml')
+        xmldoc = minidom.parse(file_path)
+        addon = xmldoc.getElementsByTagName('addon')[0]
+        mvl_video_version = addon.attributes['version'].value
+
+        #mvl skin
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'skin.mvl', 'addon.xml')
+        xmldoc = minidom.parse(file_path)
+        addon = xmldoc.getElementsByTagName('addon')[0]
+        mvl_skin_version = addon.attributes['version'].value
+
+        #print 'Current Version = ' + mvl_video_version + ' and ' + mvl_skin_version
+        #print 'Latest Version = ' + mvl_video_version_latest + ' and ' + mvl_skin_version_latest
+
+        if mvl_video_version == mvl_video_version_latest and mvl_skin_version == mvl_skin_version_latest:
+            #showMessage('No Update Required', 'You already have the latest version. No update is required.')
+            return False
+        else:
+            showMessage('Update Required', 'New version is available. You need to update your system before proceeding any further.')
+            return True
+
+    except IOError, e:
+        dialog_msg()
+        return False
+
+    pass
+
+
+def run_update():
+    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'script_update.py')
+    xbmc.executebuiltin("RunScript("+file_path+")")
+
 
 
 @plugin.route('/search/<category>/')
