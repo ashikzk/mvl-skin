@@ -105,7 +105,7 @@ def index():
             file = open(file_path, 'r')
             for line in file:
                 # if '<showparentdiritems>false</showparentdiritems>' in line:
-                if '<cachemembuffersize>0</cachemembuffersize>' in line:
+                if '<upnpannounce>true</upnpannounce>' in line:
                     found = True
             file.close()
 
@@ -122,6 +122,11 @@ def index():
         if not found or not found_keymap:
             file = open(file_path, 'w')
             file.write('<advancedsettings>\n')
+            file.write('<services>\n')
+            file.write('<upnpannounce>true</upnpannounce>\n')
+            file.write('<upnprenderer>true</upnprenderer>\n')
+            file.write('<upnpserver>true</upnpserver>\n')
+            file.write('</services>\n')
             file.write('<network>\n')
             file.write('<cachemembuffersize>0</cachemembuffersize>\n')
             file.write('</network>\n')
@@ -890,7 +895,8 @@ def get_videos(id, thumbnail):
 
             # instruction text
             items += [{
-                          'label': '[COLOR FFFFFF00]Please click on a link below to begin viewing[/COLOR] [COLOR FFFF0000]* HD[/COLOR] [COLOR FFFFFFFF]sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed [COLOR FFFF0000]* Unusable sources[/COLOR] are replaced weekly[/COLOR]',
+                          #'label': '[COLOR FFFFFF00]Please click on a link below to begin viewing[/COLOR] [COLOR FFFF0000]* HD[/COLOR] [COLOR FFFFFFFF]sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed [COLOR FFFF0000]* Unusable sources[/COLOR] are replaced weekly[/COLOR]',
+                          'label': '[COLOR FFC41D67]Please click on a link below to begin viewing[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
                           'is_playable': True
                       }]
@@ -910,6 +916,28 @@ def get_videos(id, thumbnail):
             jsonObj.sort(key=lambda x: x['src_order'])
 
             count = 0
+            sd_count = 0
+            for urls in jsonObj:
+                source_quality = ''
+                source_url = urls['URL'][urls['URL'].find('://')+3:]
+                if source_url.find('www.') != -1:
+                    source_url = source_url[source_url.find('www.')+4:]
+
+                if not urls['is_hd']:
+                    source_quality = '*DVD'
+                    source_color = 'FF235B9E'
+                    sd_count += 1
+
+                    if sd_count < 5:
+                        count += 1
+
+                        items += [{
+                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
+                                      'thumbnail': thumbnail,
+                                      'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
+                                      'is_playable': False,
+                                  }]
+
             hd_count = 0
             for urls in jsonObj:
                 source_quality = ''
@@ -919,7 +947,7 @@ def get_videos(id, thumbnail):
 
                 if urls['is_hd']:
                     source_quality = '*HD'
-                    source_color = 'FFFF0000'
+                    source_color = 'FFC41D67'
                     hd_count += 1
 
                     if hd_count < 5:
@@ -932,27 +960,6 @@ def get_videos(id, thumbnail):
                                       'is_playable': False,
                                   }]
 
-            sd_count = 0
-            for urls in jsonObj:
-                source_quality = ''
-                source_url = urls['URL'][urls['URL'].find('://')+3:]
-                if source_url.find('www.') != -1:
-                    source_url = source_url[source_url.find('www.')+4:]
-
-                if not urls['is_hd']:
-                    source_quality = ''
-                    source_color = 'FF834DCC'
-                    sd_count += 1
-
-                    if sd_count < 5:
-                        count += 1
-
-                        items += [{
-                                      'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
-                                      'thumbnail': thumbnail,
-                                      'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
-                                      'is_playable': False,
-                                  }]
 
             hide_busy_dialog()
             return items
