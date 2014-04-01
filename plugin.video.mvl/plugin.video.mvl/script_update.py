@@ -18,8 +18,8 @@ if ret == 1:
         #freeze UI by showing a busy dialog
         xbmc.executebuiltin( "ActivateWindow(busydialog)" )
 
-        #wait for 30 seconds
-        time.sleep(30)
+        #wait for 60 seconds
+        time.sleep(60)
 
         #make everything normal
         xbmc.executebuiltin( "Dialog.Close(busydialog)" )

@@ -1,4 +1,5 @@
 import sys
+
 if 'do_nothing' in sys.argv[0]:
     #no need to do anything!
     exit()
@@ -465,21 +466,12 @@ def get_categories(id, page):
             is_search_category = False
             top_level_parent = 0
             page_limit_cat = 30
+
             xbmcplugin.setContent(pluginhandle, 'Movies')
+
             plugin.log.info(id)
             plugin.log.info(page)
             plugin.log.info(page_limit_cat)
-
-
-            #freeze UI by showing a busy dialog
-            # xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-            # xbmc.executebuiltin( "ActivateWindow(busydialog)" )
-
-            # #wait for 30 seconds
-            # time.sleep(10)
-
-            # #make everything normal
-            # xbmc.executebuiltin( "Dialog.Close(busydialog)" )
 
             url = server_url + "/api/index.php/api/categories_api/getCategories?parent_id={0}&page={1}&limit={2}".format(id,
                                                                                                                          page,
@@ -614,7 +606,7 @@ def get_categories(id, page):
                             items += [{
                                           'label': categories['release_group'],
                                           'path': plugin.url_for('do_nothing', view_mode=0),
-                                          'is_playable': True
+                                          'is_playable': False
                                       }]
 
                     ####
@@ -898,7 +890,7 @@ def get_videos(id, thumbnail):
                           #'label': '[COLOR FFFFFF00]Please click on a link below to begin viewing[/COLOR] [COLOR FFFF0000]* HD[/COLOR] [COLOR FFFFFFFF]sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed [COLOR FFFF0000]* Unusable sources[/COLOR] are replaced weekly[/COLOR]',
                           'label': '[COLOR FFC41D67]Please click on a link below to begin viewing[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
-                          'is_playable': True
+                          'is_playable': False
                       }]
 
 
@@ -925,7 +917,7 @@ def get_videos(id, thumbnail):
 
                 if not urls['is_hd']:
                     source_quality = '*DVD'
-                    source_color = 'FF235B9E'
+                    source_color = 'FFFFFFFF'
                     sd_count += 1
 
                     if sd_count < 5:
@@ -1864,5 +1856,7 @@ def get_favourites(category):
 
 if __name__ == '__main__':
     plugin.run()
+    #xbmc.executebuiltin("Container.SetViewMode(%s)" % 50)
+    time.sleep(0.5)
     xbmc.executebuiltin("Container.SetViewMode(%s)" % mvl_view_mode)
 
