@@ -106,7 +106,7 @@ def index():
             file = open(file_path, 'r')
             for line in file:
                 # if '<showparentdiritems>false</showparentdiritems>' in line:
-                if '<upnpannounce>true</upnpannounce>' in line:
+                if '<zeroconf>true</zeroconf>' in line:
                     found = True
             file.close()
 
@@ -127,6 +127,7 @@ def index():
             file.write('<upnpannounce>true</upnpannounce>\n')
             file.write('<upnprenderer>true</upnprenderer>\n')
             file.write('<upnpserver>true</upnpserver>\n')
+            file.write('<zeroconf>true</zeroconf>\n')
             file.write('</services>\n')
             file.write('<network>\n')
             file.write('<cachemembuffersize>0</cachemembuffersize>\n')
@@ -1080,7 +1081,7 @@ def login_check():
                 return True
             else:
                 # xbmc.executebuiltin('Notification(License Limit Reached,' + row['message'] + ')')
-                showMessage('Error', 'License Limit Reached, '+ row['message'])
+                showMessage('Error', 'License Limit Reached for user '+username+', '+ row['message'])
                 return False
     except IOError:
         # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
