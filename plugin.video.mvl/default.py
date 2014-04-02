@@ -105,10 +105,18 @@ def index():
         if os.path.exists(file_path):
             file = open(file_path, 'r')
             for line in file:
-                # if '<showparentdiritems>false</showparentdiritems>' in line:
-                if '<upnpannounce>true</upnpannounce>' in line:
+                #if '<showparentdiritems>false</showparentdiritems>' in line:
+                if '<cachemembuffersize>0</cachemembuffersize>' in line:
                     found = True
             file.close()
+
+            #do it to make sure we remove services from already existing boxes
+            file = open(file_path, 'r')
+            for line in file:
+                if '<services>' in line:
+                    found = False
+            file.close()
+
 
         file_path_keymap = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'keymaps', 'Keyboard.xml')
         found_keymap = False
@@ -123,11 +131,12 @@ def index():
         if not found or not found_keymap:
             file = open(file_path, 'w')
             file.write('<advancedsettings>\n')
-            file.write('<services>\n')
-            file.write('<upnpannounce>true</upnpannounce>\n')
-            file.write('<upnprenderer>true</upnprenderer>\n')
-            file.write('<upnpserver>true</upnpserver>\n')
-            file.write('</services>\n')
+            #file.write('<services>\n')
+            #file.write('<upnpannounce>true</upnpannounce>\n')
+            #file.write('<upnprenderer>true</upnprenderer>\n')
+            #file.write('<upnpserver>true</upnpserver>\n')
+            #file.write('<zeroconf>true</zeroconf>\n')
+            #file.write('</services>\n')
             file.write('<network>\n')
             file.write('<cachemembuffersize>0</cachemembuffersize>\n')
             file.write('</network>\n')
@@ -1080,7 +1089,7 @@ def login_check():
                 return True
             else:
                 # xbmc.executebuiltin('Notification(License Limit Reached,' + row['message'] + ')')
-                showMessage('Error', 'License Limit Reached, '+ row['message'])
+                showMessage('Error', 'License Limit Reached for user '+username+', '+ row['message'])
                 return False
     except IOError:
         # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
