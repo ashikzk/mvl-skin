@@ -1004,7 +1004,7 @@ def play_video(url, title):
                     #plugin.set_resolved_url(hostedurl)
                     #play the resolved url manually, since we aren't using playable link
                     playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
-                    playlist.clear()
+                    #playlist.clear()
                     listitem = xbmcgui.ListItem('[COLOR FFFFFFFF]{0}[/COLOR] | [COLOR FF777777]{1}[/COLOR]'.format(title, source_url))
                     playlist.add(url=hostedurl, listitem=listitem)
                     xbmc.Player().play(playlist)
