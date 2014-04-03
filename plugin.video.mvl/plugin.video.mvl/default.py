@@ -180,12 +180,12 @@ def index():
 
             #Media has been clicked
             #Check for update first before proceeding forward
-            if check_update():
-                #new update is available
-                #return to Home
-                sys_exit()
-                run_update()
-                return None
+            #if check_update():
+            #    #new update is available
+            #    #return to Home
+            #    sys_exit()
+            #    run_update()
+            #    return None
             ##
 
 
