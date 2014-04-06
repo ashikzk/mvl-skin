@@ -981,6 +981,10 @@ def play_video(url, title):
     if check_internet():
         show_notification()
 
+        xbmc.executebuiltin('ActivateWindow(1234)')
+        hide_busy_dialog()
+        exit()
+
         mvl_view_mode = 50
         #if login is successful then selected item will be resolved using urlresolver and played
         if login_check():
@@ -991,8 +995,8 @@ def play_video(url, title):
                 import urlresolver
 
                 # print 'Resolving.....'
-                hostedurl = urlresolver.HostedMediaFile(url).resolve()
                 plugin.log.info(url)
+                hostedurl = urlresolver.HostedMediaFile(url).resolve()
                 plugin.log.info(hostedurl)
 
                 if str(hostedurl)[0] == 'h':
@@ -1013,6 +1017,7 @@ def play_video(url, title):
                     unplayable = True
             except Exception, e:
                 unplayable = True
+                print e
 
             if unplayable:
                 #video not playable
@@ -1866,6 +1871,6 @@ def get_favourites(category):
 if __name__ == '__main__':
     plugin.run()
     #xbmc.executebuiltin("Container.SetViewMode(%s)" % 50)
-    time.sleep(0.5)
+    #time.sleep(0.5)
     xbmc.executebuiltin("Container.SetViewMode(%s)" % mvl_view_mode)
 
