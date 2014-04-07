@@ -90,6 +90,26 @@ isAgree = False
 @plugin.route('/')
 def index():
     global Main_cat
+
+#############
+
+    video_popup = xbmcgui.WindowXMLDialog('Custom-VideoPopUp.xml', os.path.dirname(os.path.realpath(__file__)))
+    video_popup.doModal()
+
+    print video_popup.getControl(9123)
+    #print dir(li)
+    #print video_popup.removeItem(0)
+    #print 'OKEY-DOKEY'
+
+    del video_popup
+
+    #xbmc.executebuiltin('ActivateWindow(1234)')
+    hide_busy_dialog()
+    exit()
+
+
+
+    #################
     
     file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'quit_log.dat')
     f = open(file_path, 'w')
@@ -980,10 +1000,6 @@ def play_video(url, title):
 
     if check_internet():
         show_notification()
-
-        xbmc.executebuiltin('ActivateWindow(1234)')
-        hide_busy_dialog()
-        exit()
 
         mvl_view_mode = 50
         #if login is successful then selected item will be resolved using urlresolver and played

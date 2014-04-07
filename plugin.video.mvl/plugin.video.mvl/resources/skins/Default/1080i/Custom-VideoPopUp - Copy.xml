@@ -97,7 +97,7 @@
             <onclick></onclick>
             <label>[COLOR FFFF0000]* HD[/COLOR] sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed [COLOR FFFF0000]* Unusable sources[/COLOR] are replaced weekly</label>
           </item>
-          <item id="13" description="PlayItem">
+          <item id="14" description="PlayItem">
             <visible>true</visible>
             <onclick>dialog.close(all,true)</onclick>
             <onclick></onclick>
