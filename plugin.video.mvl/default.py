@@ -96,18 +96,16 @@ def index():
     video_popup = xbmcgui.WindowXMLDialog('Custom-VideoPopUp.xml', os.path.dirname(os.path.realpath(__file__)))
     video_popup.doModal()
 
-    print video_popup.getControl(9123)
+    print video_popup.getControl(9009).addItem('TestItem')
     #print dir(li)
     #print video_popup.removeItem(0)
     #print 'OKEY-DOKEY'
 
     del video_popup
 
-    #xbmc.executebuiltin('ActivateWindow(1234)')
+    xbmc.executebuiltin('ActivateWindow(1234)')
     hide_busy_dialog()
     exit()
-
-
 
     #################
     

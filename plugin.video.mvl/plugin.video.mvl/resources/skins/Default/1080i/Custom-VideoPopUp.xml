@@ -19,16 +19,16 @@
 			<control type="image" description="Menu BG">
 				<posx>699</posx>
 				<posy>300</posy>
-				<height>400</height>
+				<height>350</height>
 				<width>600</width>
 				<!--<texture border="20,42,20,42">dialogs/ContextMenu.png</texture>-->
 				<texture border="0,40,0,40">dialogs/ContextMenu.png</texture>
 			</control>
-			<control type="panel" id="9009" description="PW Options">
+			<control type="list" id="9009" description="PW Options">
 				<posx>699</posx>
 				<posy>384</posy>
 				<width>600</width>
-				<height>400</height>
+				<height>350</height>
 				<onleft>close</onleft>
 				<onright>close</onright>
 				<onup>9009</onup>
@@ -74,6 +74,7 @@
 						<label>$INFO[ListItem.Label]</label>
 					</control>
 				</focusedlayout>
+
 				<content>
 					<item id="11" description="WatchTrailer">
 						<visible>true</visible>
@@ -87,12 +88,6 @@
 						<onclick></onclick>
 						<label>View Complete URL</label>
 					</item>
-					<item id="13" description="HDMessage">
-						<visible>true</visible>
-						<onclick>dialog.close(all,true)</onclick>
-						<onclick></onclick>
-						<label>[COLOR FFFF0000]* HD[/COLOR] sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed [COLOR FFFF0000]* Unusable sources[/COLOR] are replaced weekly</label>
-					</item>
 					<item id="14" description="PlayItem">
 						<visible>true</visible>
 						<onclick>dialog.close(all,true)</onclick>
@@ -100,6 +95,7 @@
 						<label>Play Item</label>
 					</item>
 				</content>
+
 			</control>
 		</control>
 	</controls>
