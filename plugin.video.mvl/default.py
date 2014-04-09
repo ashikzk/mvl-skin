@@ -94,16 +94,33 @@ def index():
 #############
 
     video_popup = xbmcgui.WindowXMLDialog('Custom-VideoPopUp.xml', os.path.dirname(os.path.realpath(__file__)))
-    video_popup.doModal()
+    #xbmc.executebuiltin('ActivateWindow(1234)')
+    #video_popup.getControl(10).setLabel('Paisi Tore')
+    video_popup.show()
+    video_popup.close()
+    #video_popup.doModal()
 
-    print video_popup.getControl(9009).addItem('TestItem')
+    button1 = video_popup.getControl(10)
+    button1.setLabel('View Complete URL')
+
+    #video_popup.onClick(10)
+
+    #video_popup.onClick('XBMC.Notification("heading", "message")')
+    ret = video_popup.show()
+    #time.sleep(3)
+
+    #print 'HELLO'
+    ##print ret
+    #print 'WORLD'
+
+
+    #print video_popup.getControl(9009).addItem('TestItem')
     #print dir(li)
     #print video_popup.removeItem(0)
     #print 'OKEY-DOKEY'
 
-    del video_popup
+    #del video_popup
 
-    xbmc.executebuiltin('ActivateWindow(1234)')
     hide_busy_dialog()
     exit()
 

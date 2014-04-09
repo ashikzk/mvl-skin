@@ -1,5 +1,6 @@
-<window type="buttonmenu" id="1234">
-	<defaultcontrol always="true">9009</defaultcontrol>
+<window type="dialog" id="1234">
+	<defaultcontrol always="true">9001</defaultcontrol>
+  <include>DialogOpenClose</include>
 	<coordinates>
 	<system>1</system>
 	<posx>0</posx>
@@ -7,6 +8,7 @@
 	</coordinates>
 	<onload condition="!IntegerGreaterThan(Container(9009).NumItems,0)">close</onload>
 	<controls>
+
 		<control type="group" description="MENU">
 			<animation type="WindowOpen">
 				<effect type="zoom" start="95" end="100" center="960,540" time="200" />
@@ -21,10 +23,10 @@
 				<posy>300</posy>
 				<height>350</height>
 				<width>600</width>
-				<!--<texture border="20,42,20,42">dialogs/ContextMenu.png</texture>-->
 				<texture border="0,40,0,40">dialogs/ContextMenu.png</texture>
 			</control>
 			<control type="list" id="9009" description="PW Options">
+                <visible>False</visible>
 				<posx>699</posx>
 				<posy>384</posy>
 				<width>600</width>
@@ -98,5 +100,34 @@
 
 			</control>
 		</control>
+
+
+      <control type="grouplist" id="9001" description="Right side">
+        <posx>718</posx>
+        <posy>350</posy>
+        <width>562</width>
+        <height>5000</height>
+        <itemgap>0</itemgap>
+        <onup>9001</onup>
+        <ondown>9001</ondown>
+        <onleft>2</onleft>
+        <onright>9</onright>
+        <orientation>vertical</orientation>
+        <control type="button" id="10" description="OK">
+          <label>$LOCALIZE[186]</label>
+          <width>600</width>
+            <onclick>XBMC.Notification('HEADER', 'HELLO WORLD')</onclick>
+            <textoffsetx>30</textoffsetx>
+        </control>
+        <control type="button" id="11" description="cancel">
+          <label>$LOCALIZE[222]</label>
+          <width>600</width>
+          <pulseonselect>true</pulseonselect>
+            <onclick>XBMC.</onclick>
+            <textoffsetx>30</textoffsetx>
+        </control>
+
+      </control>
+
 	</controls>
 </window>
