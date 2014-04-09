@@ -87,45 +87,11 @@ mvl_tvshow_title = ''
 isAgree = False
 
 
+
 @plugin.route('/')
 def index():
     global Main_cat
 
-#############
-
-    video_popup = xbmcgui.WindowXMLDialog('Custom-VideoPopUp.xml', os.path.dirname(os.path.realpath(__file__)))
-    #xbmc.executebuiltin('ActivateWindow(1234)')
-    #video_popup.getControl(10).setLabel('Paisi Tore')
-    video_popup.show()
-    video_popup.close()
-    #video_popup.doModal()
-
-    button1 = video_popup.getControl(10)
-    button1.setLabel('View Complete URL')
-
-    #video_popup.onClick(10)
-
-    #video_popup.onClick('XBMC.Notification("heading", "message")')
-    ret = video_popup.show()
-    #time.sleep(3)
-
-    #print 'HELLO'
-    ##print ret
-    #print 'WORLD'
-
-
-    #print video_popup.getControl(9009).addItem('TestItem')
-    #print dir(li)
-    #print video_popup.removeItem(0)
-    #print 'OKEY-DOKEY'
-
-    #del video_popup
-
-    hide_busy_dialog()
-    exit()
-
-    #################
-    
     file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'quit_log.dat')
     f = open(file_path, 'w')
     f.close()
@@ -970,7 +936,7 @@ def get_videos(id, thumbnail):
                         items += [{
                                       'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                                       'thumbnail': thumbnail,
-                                      'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
+                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content)),
                                       'is_playable': False,
                                   }]
 
@@ -992,7 +958,7 @@ def get_videos(id, thumbnail):
                         items += [{
                                       'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                                       'thumbnail': thumbnail,
-                                      'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
+                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content)),
                                       'is_playable': False,
                                   }]
 
@@ -1006,6 +972,45 @@ def get_videos(id, thumbnail):
     else:
         dialog_msg()
         hide_busy_dialog()
+
+
+class CustomPopup(xbmcgui.WindowXMLDialog):
+    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+        pass
+
+    def setParams(self, trailer_url, source_url, title):
+        self.trailer_url = trailer_url
+        self.source_url = source_url
+        self.title = title
+
+
+    def updateLabels(self):
+        self.show()
+        self.getControl(20).setLabel(self.source_url)
+        self.close()
+
+    def onClick	(self, control):
+        if control == 20:
+            # showMessage('Msg', self.trailer_url)
+            pass
+        elif control == 21:
+            showMessage('Msg', self.source_url)
+        elif control == 22:
+            self.close()
+            play_video(self.source_url, self.title)
+
+
+@plugin.route('/show_popup/<url>/<title>')
+def show_popup(url, title):
+    video_popup = CustomPopup('Custom-VideoPopUp.xml', os.path.dirname(os.path.realpath(__file__)))
+    video_popup.setParams(url, url, title)
+
+    video_popup.updateLabels()
+
+    video_popup.doModal()
+
+    hide_busy_dialog()
+    exit()
 
 
 
