@@ -13,7 +13,7 @@ try:
 
         path = xbmc.getInfoLabel('Container.FolderPath')
 
-        print "PATH HERE  = " + path
+        # print "PATH HERE  = " + path
 
         if len(path.split('/')) >= 6:
             selection = path.split('/')[3]
@@ -26,7 +26,7 @@ try:
             elif (
                     selection == 'categories' and (selection_id == '23' or selection_id == '104916' or selection_id == '112504' or 
                     selection_id == '32' or selection_id == '104917' or selection_id == '366042' or selection_id == '372395' or selection_id == '372396') and
-                    page_num == 0
+                    page_num == '0'
                  ) or selection == 'azlisting' or selection == 'search':
                 #we are in screen 2, set view mode to 59
                 xbmc.executebuiltin( "Container.SetViewmode(59)" )
