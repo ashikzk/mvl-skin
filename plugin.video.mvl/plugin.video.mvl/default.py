@@ -42,11 +42,13 @@ import locale
 locale.getlocale=getlocale
 from datetime import datetime
 
+plugin_id = 'plugin.video.mvl'
+skin_id = 'skin.mvl'
 
-_MVL = Addon('plugin.video.mvl', sys.argv)
+_MVL = Addon(plugin_id, sys.argv)
 plugin = Plugin()
 pluginhandle = int(sys.argv[1])
-usrsettings = xbmcaddon.Addon(id='plugin.video.mvl')
+usrsettings = xbmcaddon.Addon(id=plugin_id)
 page_limit = usrsettings.getSetting('page_limit_xbmc')
 authentication = plugin.get_storage('authentication', TTL=1)
 authentication['logged_in'] = 'false'
@@ -67,7 +69,7 @@ __metaget__ = metahandlers.MetaData(preparezip=PREPARE_ZIP)
 # except:
 # import storageserverdummy as StorageServer
 # #cache = StorageServer.StorageServer("mvl_storage_data", 24) # (Your plugin name, Cache time in hours)
-# cache = StorageServer.StorageServer("plugin://plugin.video.mvl/", 24)
+# cache = StorageServer.StorageServer("plugin://"+plugin_id+"/", 24)
 # cache.delete("%")
 
 try:
@@ -87,10 +89,11 @@ mvl_tvshow_title = ''
 isAgree = False
 
 
+
 @plugin.route('/')
 def index():
     global Main_cat
-    
+
     file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'quit_log.dat')
     f = open(file_path, 'w')
     f.close()
@@ -144,7 +147,7 @@ def index():
             file.write('<showparentdiritems>false</showparentdiritems>\n')
             file.write('</filelists>\n')
             file.write('<lookandfeel>\n')
-            file.write('<skin>skin.mvl</skin>\n')
+            file.write('<skin>'+skin_id+'</skin>\n')
             file.write('</lookandfeel>\n')
             file.write('</advancedsettings>\n')
             file.close()
@@ -161,7 +164,7 @@ def index():
             file.write("<F5>Skin.ToggleSetting('test')</F5>\n")
             file.write("<F6>Skin.ToggleSetting('test')</F6>\n")
             file.write("<backslash>Skin.ToggleSetting('test')</backslash>\n")
-            file.write("<backspace>XBMC.RunScript(special://home\\addons\plugin.video.mvl\script_backhandler.py)</backspace>\n")
+            file.write("<backspace>XBMC.RunScript(special://home\\addons\\"+plugin_id+"\\script_backhandler.py)</backspace>\n")
             file.write('</keyboard>\n')
             file.write('</global>\n')
             file.write('</keymap>')
@@ -752,7 +755,6 @@ def get_categories(id, page):
                         except:
                             mvl_plot = categories['synopsis'].encode('utf-8')
 
-
                         items += [{
                                       'thumbnail': thumbnail_url,
                                       'properties': {
@@ -772,7 +774,7 @@ def get_categories(id, page):
                                           'year': categories['release_date']
                                       },
                                       'path': plugin.url_for('get_videos', id=categories['video_id'],
-                                                             thumbnail=thumbnail_url),
+                                                             thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta)),
                                       'is_playable': False,
                                       'context_menu': [(
                                                            'Add to Favourites',
@@ -871,8 +873,8 @@ def get_categories(id, page):
         hide_busy_dialog()
 
 
-@plugin.route('/get_videos/<id>/<thumbnail>/')
-def get_videos(id, thumbnail):
+@plugin.route('/get_videos/<id>/<thumbnail>/<trailer>')
+def get_videos(id, thumbnail, trailer):
     if check_internet():
         show_notification()
 
@@ -935,7 +937,7 @@ def get_videos(id, thumbnail):
                         items += [{
                                       'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                                       'thumbnail': thumbnail,
-                                      'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
+                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content), trailer=trailer),
                                       'is_playable': False,
                                   }]
 
@@ -957,7 +959,7 @@ def get_videos(id, thumbnail):
                         items += [{
                                       'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                                       'thumbnail': thumbnail,
-                                      'path': plugin.url_for('play_video', url=urls['URL'], title='{0}'.format(content)),
+                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content), trailer=trailer),
                                       'is_playable': False,
                                   }]
 
@@ -971,6 +973,54 @@ def get_videos(id, thumbnail):
     else:
         dialog_msg()
         hide_busy_dialog()
+
+
+class CustomPopup(xbmcgui.WindowXMLDialog):
+    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+        pass
+
+    def setParams(self, trailer_id, source_url, title):
+        self.trailer_id = trailer_id
+        self.trailer_url = 'http://www.youtube.com/watch?v='+trailer_id
+        self.source_url = source_url
+        self.title = title
+
+
+    def updateLabels(self):
+        self.show()
+        self.getControl(20).setLabel(self.source_url)
+        self.close()
+
+    def onClick	(self, control):
+        if control == 20:
+            #show source URL
+            # showMessage('Msg', self.trailer_url)
+            pass
+        elif control == 21:
+            #play trailer
+            self.close()
+
+            if self.trailer_id == 'NONE':
+                showMessage('Error', 'No trailer found')
+            else:
+                play_video(self.trailer_url, self.title + ' - Official trailer')
+
+        elif control == 22:
+            self.close()
+            play_video(self.source_url, self.title)
+
+
+@plugin.route('/show_popup/<url>/<title>/<trailer>')
+def show_popup(url, title, trailer):
+    video_popup = CustomPopup('Custom-VideoPopUp.xml', os.path.dirname(os.path.realpath(__file__)))
+    video_popup.setParams(trailer, url, title)
+
+    video_popup.updateLabels()
+
+    video_popup.doModal()
+
+    hide_busy_dialog()
+    exit()
 
 
 
@@ -990,12 +1040,12 @@ def play_video(url, title):
                 #as this takes a while, we'll be importing it only when required
                 import urlresolver
 
-                # print 'Resolving.....'
+                #print 'Resolving.....'
+                #plugin.log.info(url)
                 hostedurl = urlresolver.HostedMediaFile(url).resolve()
-                plugin.log.info(url)
-                plugin.log.info(hostedurl)
+                #plugin.log.info(hostedurl)
 
-                if str(hostedurl)[0] == 'h':
+                if str(hostedurl)[0] == 'h' or str(hostedurl)[0] == 'p':
                     source_url = url[ url.find('://')+3: ]
                     if source_url.find('www.') != -1:
                         source_url = source_url[source_url.find('www.')+4:]
@@ -1005,14 +1055,41 @@ def play_video(url, title):
                     #play the resolved url manually, since we aren't using playable link
                     playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
                     playlist.clear()
-                    listitem = xbmcgui.ListItem('[COLOR FFFFFFFF]{0}[/COLOR] | [COLOR FF777777]{1}[/COLOR]'.format(title, source_url))
-                    playlist.add(url=hostedurl, listitem=listitem)
+
+                    item_title = '[COLOR FFFFFFFF]{0}[/COLOR] | [COLOR FF777777]{1}[/COLOR]'.format(title, source_url)
+                    listitem = xbmcgui.ListItem(item_title)
+
+                    #check if this item already exists
+                    #playlist_len = playlist.__len__()
+                    #item_found = False
+                    #item_index = 0
+
+                    #for i in range(0, playlist_len):
+                    #    #print item_title
+                    #    #print playlist.__getitem__(i).getLabel()
+                    #    #print '---------------'
+                    #    #check to see if this item is already in the playlist
+                    #    if playlist.__getitem__(i).getLabel() == item_title:
+                    #        item_found = True
+                    #        item_index = i
+                    #        break
+
+                    #if item_found:
+                    #    #same filename already exists in playlist
+                    #    #remove same filename from playlist
+                    #    print playlist.remove(hostedurl)
+                    #    print 'inside delete'
+
+
+                    playlist.add(url=hostedurl, listitem=listitem, index=0)
+
                     xbmc.Player().play(playlist)
                     #return None
                 else:
                     unplayable = True
             except Exception, e:
                 unplayable = True
+                print e
 
             if unplayable:
                 #video not playable
@@ -1061,6 +1138,13 @@ def create_meta(video_type, title, year, thumb):
         traceback.print_exc()
 
     return meta
+
+def get_trailer_url(mvl_meta):
+    trailer = mvl_meta['trailer_url']
+    if trailer == '':
+        trailer = 'NONE'
+
+    return trailer
 
 
 def login_check():
@@ -1120,7 +1204,7 @@ def check_update():
         mvl_video_version = addon.attributes['version'].value
 
         #mvl skin
-        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'skin.mvl', 'addon.xml')
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', skin_id, 'addon.xml')
         xmldoc = minidom.parse(file_path)
         addon = xmldoc.getElementsByTagName('addon')[0]
         mvl_skin_version = addon.attributes['version'].value
@@ -1866,6 +1950,6 @@ def get_favourites(category):
 if __name__ == '__main__':
     plugin.run()
     #xbmc.executebuiltin("Container.SetViewMode(%s)" % 50)
-    time.sleep(0.5)
+    #time.sleep(0.5)
     xbmc.executebuiltin("Container.SetViewMode(%s)" % mvl_view_mode)
 

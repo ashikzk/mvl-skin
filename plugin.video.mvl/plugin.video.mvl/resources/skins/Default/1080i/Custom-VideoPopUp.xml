@@ -1,12 +1,10 @@
 <window type="dialog" id="1234">
 	<defaultcontrol always="true">9001</defaultcontrol>
-  <!--<include>DialogOpenClose</include>-->
 	<coordinates>
 	<system>1</system>
 	<posx>0</posx>
 	<posy>0</posy>
 	</coordinates>
-	<!--<onload condition="!IntegerGreaterThan(Container(9009).NumItems,0)">close</onload>-->
 	<controls>
 
 		<control type="group" description="MENU">
