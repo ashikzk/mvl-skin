@@ -42,8 +42,8 @@ import locale
 locale.getlocale=getlocale
 from datetime import datetime
 
-plugin_id = 'plugin.video.mvl'
-skin_id = 'skin.mvl'
+plugin_id = 'plugin.video.mvl.staging'
+skin_id = 'skin.mvl.staging'
 
 _MVL = Addon(plugin_id, sys.argv)
 plugin = Plugin()
@@ -774,7 +774,7 @@ def get_categories(id, page):
                                           'year': categories['release_date']
                                       },
                                       'path': plugin.url_for('get_videos', id=categories['video_id'],
-                                                             thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta)),
+                                                             thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8')),
                                       'is_playable': False,
                                       'context_menu': [(
                                                            'Add to Favourites',
@@ -1009,6 +1009,9 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
             self.close()
             play_video(self.source_url, self.title)
 
+        elif control == 23:
+            self.close()
+
 
 @plugin.route('/show_popup/<url>/<title>/<trailer>')
 def show_popup(url, title, trailer):
@@ -1165,16 +1168,18 @@ def login_check():
         #converting to json object
         plugin.log.info("Debug_Content: " + content)
         myObj = json.loads(content)
-        plugin.log.info(myObj)
+        #plugin.log.info(myObj)
 
-        #creating items from json object
-        for row in myObj:
-            if row['status'] == 1:
-                return True
-            else:
-                # xbmc.executebuiltin('Notification(License Limit Reached,' + row['message'] + ')')
-                showMessage('Error', 'License Limit Reached for user '+username+', '+ row['message'])
-                return False
+        return True
+
+        ##creating items from json object
+        #for row in myObj:
+        #    if row['status'] == 1:
+        #        return True
+        #    else:
+        #        # xbmc.executebuiltin('Notification(License Limit Reached,' + row['message'] + ')')
+        #        showMessage('Error', 'License Limit Reached for user '+username+', '+ row['message'])
+        #        return False
     except IOError:
         # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/error.png)')
         dialog_msg()
@@ -1407,7 +1412,7 @@ def search(category):
                                               'cast': categories['actors'].encode('utf-8'),
                                               'year': categories['release_date']
                                           },
-                                          'path': plugin.url_for('get_videos', id=categories['video_id'], thumbnail=thumbnail_url),
+                                          'path': plugin.url_for('get_videos', id=categories['video_id'], thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8')),
                                           'is_playable': False,
                                           'context_menu': [(
                                                                'Add to Favourites',
@@ -1694,7 +1699,7 @@ def get_azlist(key, page, category):
                                           'year': results['release_date']
                                       },
                                       'path': plugin.url_for('get_videos', id=results['video_id'],
-                                                             thumbnail=results['thumbnail']),
+                                                             thumbnail=results['thumbnail'], trailer=get_trailer_url(mvl_meta).encode('utf-8')),
                                       'is_playable': False,
                                       'context_menu': [(
                                                            'Add to Favourites',
@@ -1809,7 +1814,7 @@ def mostpopular(page, category):
                                   'properties': {
                                       'fanart_image': fanart_url,
                                   },
-                                  'path': plugin.url_for('get_videos', id=results['id'], thumbnail=thumbnail_url),
+                                  'path': plugin.url_for('get_videos', id=results['id'], thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8')),
                                   'is_playable': False,
                                   'context_menu': [(
                                                        'Add to Favourites',

@@ -17,20 +17,20 @@
 				<effect type="fade" start="100" end="0" time="100" />
 			</animation>
 			<control type="image" description="Menu BG">
-				<posx>699</posx>
+				<posx>600</posx>
 				<posy>300</posy>
-				<height>300</height>
-				<width>600</width>
+				<height>350</height>
+				<width>700</width>
 				<texture border="0,40,0,40">dialogs/ContextMenu.png</texture>
 			</control>
 		</control>
 
 
       <control type="grouplist" id="9001" description="Custom Popup for video">
-        <posx>718</posx>
+        <posx>618</posx>
         <posy>362</posy>
-        <width>562</width>
-        <height>5000</height>
+        <width>662</width>
+        <height>350</height>
         <itemgap>-2</itemgap>
         <onup>9001</onup>
         <ondown>9001</ondown>
@@ -40,20 +40,30 @@
 
         <control type="button" id="20" description="ViewUrl">
           <label>View Complete URL</label>
-          <width>560</width>
+          <width>660</width>
           <textoffsetx>30</textoffsetx>
+          <focusedcolor>FF1F6C15</focusedcolor>
         </control>
 
         <control type="button" id="21" description="WatchTrailer">
           <label>Watch Official Trailer</label>
-          <width>560</width>
+          <width>660</width>
           <textoffsetx>30</textoffsetx>
+          <focusedcolor>FF1F6C15</focusedcolor>
         </control>
 
         <control type="button" id="22" description="PlayItem">
           <label>Play Item</label>
-          <width>560</width>
+          <width>660</width>
           <textoffsetx>30</textoffsetx>
+          <focusedcolor>FF1F6C15</focusedcolor>
+        </control>
+
+        <control type="button" id="23" description="Close">
+          <label>Exit</label>
+          <width>660</width>
+          <textoffsetx>30</textoffsetx>
+          <focusedcolor>FF1F6C15</focusedcolor>
         </control>
 
       </control>
