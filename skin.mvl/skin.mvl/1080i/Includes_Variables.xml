@@ -46,7 +46,8 @@
     <value condition="Container.content(movies) + StringCompare(Container.FolderName,$LOCALIZE[369])">$LOCALIZE[20342][COLOR=Orange]  •  [/COLOR]$INFO[Container.NumItems]</value>
     <value condition="Container.content(tvshows) + StringCompare(Container.FolderName,$LOCALIZE[369])">$LOCALIZE[20343][COLOR=Orange]  •  [/COLOR]$INFO[Container.NumItems]</value>
     <value condition="Container.content(musicvideos) + StringCompare(Container.FolderName,$LOCALIZE[369])">$LOCALIZE[20389][COLOR=Orange]  •  [/COLOR]$INFO[Container.NumItems]</value>
-    <value condition="!IsEmpty(Container.FolderName)">$INFO[Container.FolderName,,[COLOR=Orange]  •  [/COLOR]]$INFO[Container.NumItems]</value>
+    <!-- <value condition="!IsEmpty(Container.FolderName)">$INFO[Container.FolderName,,[COLOR=Orange]  •  [/COLOR]]$INFO[Container.NumItems]</value> -->
+    <value condition="!IsEmpty(Container.FolderName)">$INFO[Container.FolderName]</value>
   </variable>
   <variable name="QuitLabel2" description="Label2 for skin settings Quit function item">
     <value condition="StringCompare(Skin.String(shutdown),quit)">$LOCALIZE[13009]</value>

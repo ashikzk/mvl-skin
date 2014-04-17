@@ -15,6 +15,7 @@ f.write('true')
 f.close()
 ####
 
+
 from xbmcswift2 import Plugin, xbmcgui, xbmc, xbmcaddon, xbmcplugin, actions
 import urllib2
 import time
@@ -42,8 +43,8 @@ import locale
 locale.getlocale=getlocale
 from datetime import datetime
 
-plugin_id = 'plugin.video.mvl.staging'
-skin_id = 'skin.mvl.staging'
+plugin_id = 'plugin.video.mvl'
+skin_id = 'skin.mvl'
 
 _MVL = Addon(plugin_id, sys.argv)
 plugin = Plugin()
@@ -846,7 +847,13 @@ def get_categories(id, page):
 
             hide_busy_dialog()
 
-            plugin.log.info("View mode = " + str(mvl_view_mode))
+            #plugin.log.info("View mode = " + str(mvl_view_mode))
+            #set current section name
+            if id == '1':
+                xbmc.executebuiltin('Skin.SetString(CurrentSection,Movies)')
+            elif id == '3':
+                xbmc.executebuiltin('Skin.SetString(CurrentSection,TV)')
+
 
             return items
         # except IOError:
