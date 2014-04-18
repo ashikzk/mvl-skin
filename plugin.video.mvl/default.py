@@ -51,8 +51,8 @@ plugin = Plugin()
 pluginhandle = int(sys.argv[1])
 usrsettings = xbmcaddon.Addon(id=plugin_id)
 page_limit = usrsettings.getSetting('page_limit_xbmc')
-authentication = plugin.get_storage('authentication', TTL=1)
-authentication['logged_in'] = 'false'
+# authentication = plugin.get_storage('authentication', TTL=1)
+# authentication['logged_in'] = 'false'
 username = usrsettings.getSetting('username_xbmc')
 activation_key = usrsettings.getSetting('activationkey_xbmc')
 usrsettings.setSetting(id='mac_address', value=usrsettings.getSetting('mac_address'))
@@ -1158,6 +1158,8 @@ def get_trailer_url(mvl_meta):
 
 
 def login_check():
+    return True
+
     try:
         url = server_url + "/api/index.php/api/authentication_api/authenticate_user"
         #urlencode is used to create a json object which will be sent to server in POST
@@ -1176,8 +1178,6 @@ def login_check():
         plugin.log.info("Debug_Content: " + content)
         myObj = json.loads(content)
         #plugin.log.info(myObj)
-
-        return True
 
         ##creating items from json object
         #for row in myObj:
@@ -1910,7 +1910,7 @@ def remove_favourite(id, title, category):
 
 def sys_exit():
     hide_busy_dialog()
-    plugin.finish(succeeded=True)
+    # plugin.finish(succeeded=True)
     xbmc.executebuiltin("XBMC.ActivateWindow(Home)")
 
 
