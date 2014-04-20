@@ -19,7 +19,7 @@
 			<control type="image" description="Menu BG">
 				<posx>600</posx>
 				<posy>300</posy>
-				<height>415</height>
+				<height>470</height>
 				<width>700</width>
 				<texture border="0,40,0,40">dialogs/ContextMenu.png</texture>
 			</control>
@@ -30,7 +30,7 @@
         <posx>618</posx>
         <posy>362</posy>
         <width>662</width>
-        <height>415</height>
+        <height>470</height>
         <itemgap>-2</itemgap>
         <onup>9001</onup>
         <ondown>9001</ondown>
@@ -38,35 +38,25 @@
         <onright>9</onright>
         <orientation>vertical</orientation>
 
-        
-        <control type="label" id="20">
+        <control type="label" id="19">
             <width>660</width>
-            <label>View Complete URL</label>
+            <label>[COLOR FF235B9E]Please make your selection below[/COLOR]</label>
             <textoffsetx>30</textoffsetx>
-            <scroll>true</scroll>
-            <scrollspeed>50</scrollspeed>
-        </control>
-  
-<!--         <control type="button" id="20" description="ViewUrl">
-          <label>View Complete URL</label>
-          <width>660</width>
-          <textoffsetx>30</textoffsetx>
-          <focusedcolor>FF4F9C45</focusedcolor>
-        </control>
- -->
-
-        <control type="button" id="21" description="WatchTrailer">
-          <label>Watch Official Trailer</label>
-          <width>660</width>
-          <textoffsetx>30</textoffsetx>
-          <!-- <focusedcolor>FF1F6C15</focusedcolor> -->
-          <focusedcolor>FF4F9C45</focusedcolor>
+            <align>center</align>
         </control>
 
         <control type="button" id="22" description="PlayItem">
           <label>Play Item</label>
           <width>660</width>
           <textoffsetx>30</textoffsetx>
+          <focusedcolor>FF4F9C45</focusedcolor>
+        </control>
+
+        <control type="button" id="21" description="WatchTrailer">
+          <label>Watch Official Trailer</label>
+          <width>660</width>
+          <textoffsetx>30</textoffsetx>
+          <!-- <focusedcolor>FF1F6C15</focusedcolor> -->
           <focusedcolor>FF4F9C45</focusedcolor>
         </control>
 
@@ -83,6 +73,23 @@
           <textoffsetx>30</textoffsetx>
           <focusedcolor>FF4F9C45</focusedcolor>
         </control>
+
+        <control type="label" id="20">
+            <width>660</width>
+            <label>View Complete URL</label>
+            <textoffsetx>30</textoffsetx>
+            <scroll>true</scroll>
+            <scrollspeed>50</scrollspeed>
+        </control>
+
+<!--         <control type="button" id="20" description="ViewUrl">
+          <label>View Complete URL</label>
+          <width>660</width>
+          <textoffsetx>30</textoffsetx>
+          <focusedcolor>FF4F9C45</focusedcolor>
+        </control>
+ -->
+
 
       </control>
 

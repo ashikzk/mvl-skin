@@ -1012,6 +1012,7 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
             else:
                 play_video(self.trailer_url, self.title + ' - Official trailer')
 
+
         elif control == 22:
             self.close()
             play_video(self.source_url, self.title)
@@ -1092,6 +1093,7 @@ def play_video(url, title):
 
 
                     playlist.add(url=hostedurl, listitem=listitem, index=0)
+                    #playlist.add(url='http://r8---sn-npo7ene7.googlevideo.com/videoplayback?ipbits=0&upn=P83ZO5hdK0s&ip=27.147.135.178&key=yt5&signature=05ED62D8BA773E5CE1F58C33819179958B31DAB5.470D1ECFF943E939599AE09C197BD7EBD1313BBA&itag=22&id=o-AOeCMalj5EEm_c8SEutkhjE6jjk562hXbW6ktCEJy1CX&ratebypass=yes&fexp=941290,902545,937417,913434,936916,934022,936923&ms=au&mt=1397988460&mv=m&expire=1398014603&sver=3&source=youtube&sparams=id,ip,ipbits,itag,ratebypass,source,upn,expire', listitem=listitem, index=0)
 
                     xbmc.Player().play(playlist)
                     #return None
