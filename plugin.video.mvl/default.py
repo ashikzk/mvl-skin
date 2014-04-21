@@ -992,7 +992,6 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
         self.source_url = source_url
         self.title = title
 
-
     def updateLabels(self):
         self.show()
         self.getControl(20).setLabel(self.source_url)
@@ -1020,6 +1019,31 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
         elif control == 23:
             self.close()
 
+        elif control == 24:
+            self.close()
+            show_review()
+
+class CustomReviewPopup(xbmcgui.WindowXMLDialog):
+    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+        pass
+
+    def setParams(self, review_url):
+        self.review_url = review_url
+
+    def updateReviewText(self, review):
+        self.show()
+        self.getControl(1).setLabel('Less Redemption, More Tears')
+        self.getControl(2).setText(review)
+        self.close()
+
+    def onClick	(self, control):
+        if control == 11:
+            #show source URL
+            # showMessage('Msg', self.trailer_url)
+            self.close()
+            #pass
+
+
 
 @plugin.route('/show_popup/<url>/<title>/<trailer>')
 def show_popup(url, title, trailer):
@@ -1032,6 +1056,26 @@ def show_popup(url, title, trailer):
 
     hide_busy_dialog()
     exit()
+
+
+def show_review():
+    video_popup = CustomReviewPopup('Custom-ReviewDialog.xml', os.path.dirname(os.path.realpath(__file__)))
+    video_popup.setParams('http://www.nytimes.com/2014/02/12/movies/robocop-remake-arrives-starring-joel-kinnaman.html')
+
+    url = server_url + "/api/index.php/api/review_api/getReview"
+    req = urllib2.Request(url)
+    opener = urllib2.build_opener()
+    f = opener.open(req)
+    #reading content fetched from the url
+    content = f.read()
+    #converting to json object
+    jsonObj = json.loads(content)
+    review = jsonObj['message']
+
+    video_popup.updateReviewText(review)
+
+    video_popup.doModal()
+
 
 
 
@@ -1047,16 +1091,22 @@ def play_video(url, title):
         if login_check():
             unplayable = False
             try:
-                #first import urlresolver
-                #as this takes a while, we'll be importing it only when required
-                import urlresolver
+                if url.find('youtube.com') == -1:
+                    #first import urlresolver
+                    #as this takes a while, we'll be importing it only when required
+                    import urlresolver
+                    #plugin.log.info(url)
+                    hostedurl = urlresolver.HostedMediaFile(url).resolve()
+                    #plugin.log.info(hostedurl)
+                else:
+                    #this is youtube video
+                    #resolve ourselves
+                    from resources.youtube import YouTubeResolver
+                    yt = YouTubeResolver()
+                    host, media_id = yt.get_host_and_id(url)
+                    hostedurl = yt.get_media_url(host, media_id)
 
-                #print 'Resolving.....'
-                #plugin.log.info(url)
-                hostedurl = urlresolver.HostedMediaFile(url).resolve()
-                #plugin.log.info(hostedurl)
-
-                if str(hostedurl)[0] == 'h' or str(hostedurl)[0] == 'p':
+                if str(hostedurl)[0] == 'h':# or str(hostedurl)[0] == 'p':
                     source_url = url[ url.find('://')+3: ]
                     if source_url.find('www.') != -1:
                         source_url = source_url[source_url.find('www.')+4:]
