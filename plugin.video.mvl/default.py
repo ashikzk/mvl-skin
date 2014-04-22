@@ -728,7 +728,14 @@ def get_categories(id, page):
                             thumbnail_url = server_url + '/wp-content/themes/twentytwelve/images/{0}'.format(categories['video_id'] + categories['image_name'])
 
                         mvl_img = thumbnail_url
-                        mvl_meta = create_meta('movie', categories['title'].encode('utf-8'), categories['release_date'], mvl_img)
+
+                        content_type = ''
+                        if categories['top_level_parent'] == '1':
+                            content_type = 'movie'
+                        elif categories['top_level_parent'] == '3':
+                            content_type = 'tvshow'
+
+                        mvl_meta = create_meta(content_type, categories['title'].encode('utf-8'), categories['release_date'], mvl_img)
                         plugin.log.info('>> meta data-> %s' % mvl_meta)
                         thumbnail_url = ''
 
@@ -1060,7 +1067,7 @@ def show_popup(url, title, trailer):
 
 def show_review():
     video_popup = CustomReviewPopup('Custom-ReviewDialog.xml', os.path.dirname(os.path.realpath(__file__)))
-    video_popup.setParams('http://www.nytimes.com/2014/02/12/movies/robocop-remake-arrives-starring-joel-kinnaman.html')
+    video_popup.setParams('')
 
     url = server_url + "/api/index.php/api/review_api/getReview"
     req = urllib2.Request(url)
@@ -1170,6 +1177,7 @@ def play_video(url, title):
         hide_busy_dialog()
 
 def create_meta(video_type, title, year, thumb):
+    print video_type
     try:
         year = int(year)
     except:
@@ -2014,6 +2022,6 @@ def get_favourites(category):
 if __name__ == '__main__':
     plugin.run()
     #xbmc.executebuiltin("Container.SetViewMode(%s)" % 50)
-    #time.sleep(0.5)
+    # time.sleep(0.1)
     xbmc.executebuiltin("Container.SetViewMode(%s)" % mvl_view_mode)
 

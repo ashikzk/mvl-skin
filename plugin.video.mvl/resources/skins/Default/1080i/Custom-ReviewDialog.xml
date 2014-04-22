@@ -24,8 +24,8 @@
         <posx>424</posx>
         <posy>150</posy>
         <width>1070</width>
-        <height>790</height>
-        <font>InfoPlot</font>
+        <height>780</height>
+        <textcolor>FF999999</textcolor>
         <align>justify</align>
       </control>
       <control type="scrollbar" id="61">
@@ -51,6 +51,7 @@
         <height>60</height>
         <width>250</width>
         <label>Close</label>
+        <textcolor>FF00FF00</textcolor>
         <align>center</align>
         <pulseonselect>true</pulseonselect>
         <onleft>61</onleft>
