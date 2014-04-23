@@ -733,9 +733,12 @@ def get_categories(id, page):
                         if categories['top_level_parent'] == '1':
                             content_type = 'movie'
                         elif categories['top_level_parent'] == '3':
-                            content_type = 'tvshow'
+                            #playable items of TV show are episodes
+                            content_type = 'episode'
 
-                        mvl_meta = create_meta(content_type, categories['title'].encode('utf-8'), categories['release_date'], mvl_img)
+                        print categories['imdb_id']
+
+                        mvl_meta = create_meta(content_type, categories['title'].encode('utf-8'), categories['release_date'], mvl_img, categories['imdb_id'])
                         plugin.log.info('>> meta data-> %s' % mvl_meta)
                         thumbnail_url = ''
 
@@ -1176,7 +1179,7 @@ def play_video(url, title):
         dialog_msg()
         hide_busy_dialog()
 
-def create_meta(video_type, title, year, thumb):
+def create_meta(video_type, title, year, thumb, imdb_id=None):
     print video_type
     try:
         year = int(year)
@@ -1190,9 +1193,16 @@ def create_meta(video_type, title, year, thumb):
             if not (meta['imdb_id'] or meta['tvdb_id']):
                 meta = __metaget__.get_meta(video_type, title, year=year)
 
-        else:  # movie
+        elif video_type == 'movie':  # movie
             meta = __metaget__.get_meta(video_type, title, year=year)
             alt_id = meta['tmdb_id']
+
+        elif video_type == 'episode': # tv show episode
+            episode_title = title[title.find(' ')+1:]
+            season_text = title[0:title.find(' ')]
+            season = season_text[0:season_text.find('x')]
+            episode_num = season_text[season_text.find('x')+1:]
+            meta = __metaget__.get_episode_meta(episode_title, imdb_id, season, episode_num)
 
         if video_type == 'tvshow':
             meta['cover_url'] = meta['banner_url']
