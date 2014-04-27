@@ -1,0 +1,91 @@
+<window type="dialog" id="1234">
+	<defaultcontrol always="true">9001</defaultcontrol>
+	<coordinates>
+	<system>1</system>
+	<posx>0</posx>
+	<posy>0</posy>
+	</coordinates>
+	<controls>
+
+		<control type="group" description="MENU">
+			<animation type="WindowOpen">
+				<effect type="zoom" start="95" end="100" center="960,540" time="200" />
+				<effect type="fade" start="80" end="100" time="200" />
+			</animation>
+			<animation type="WindowClose">
+				<effect type="zoom" start="100" end="95" center="960,540" time="100" />
+				<effect type="fade" start="100" end="0" time="100" />
+			</animation>
+			<control type="image" description="Menu BG">
+				<posx>600</posx>
+				<posy>300</posy>
+				<height>400</height>
+				<width>700</width>
+				<texture border="0,40,0,40">dialogs/ContextMenu.png</texture>
+			</control>
+		</control>
+
+
+      <control type="grouplist" id="9001" description="Custom Popup for video">
+        <posx>618</posx>
+        <posy>362</posy>
+        <width>662</width>
+        <height>400</height>
+        <itemgap>-2</itemgap>
+        <onup>9001</onup>
+        <ondown>9001</ondown>
+        <onleft>2</onleft>
+        <onright>9</onright>
+        <orientation>vertical</orientation>
+
+        <control type="label" id="19">
+            <width>660</width>
+            <label>[COLOR FF235B9E][B]Please make your selection below[/B][/COLOR]</label>
+            <textoffsetx>30</textoffsetx>
+            <align>center</align>
+        </control>
+
+        <control type="button" id="22" description="PlayItem">
+          <label>Play Item</label>
+          <width>660</width>
+          <textoffsetx>30</textoffsetx>
+          <focusedcolor>FF4F9C45</focusedcolor>
+        </control>
+
+        <control type="label" id="18">
+            <width>660</width>
+            <label>Subtitle - coming soon</label>
+            <textoffsetx>30</textoffsetx>
+            <textcolor>FF555555</textcolor>
+        </control>
+
+        <control type="button" id="23" description="Close">
+          <label>Exit</label>
+          <width>660</width>
+          <textoffsetx>30</textoffsetx>
+          <focusedcolor>FF4F9C45</focusedcolor>
+          <textcolor>FF1F6C15</textcolor>
+        </control>
+
+        <control type="label" id="20">
+            <width>660</width>
+            <label>View Complete URL</label>
+            <textoffsetx>30</textoffsetx>
+            <scroll>true</scroll>
+            <scrollspeed>50</scrollspeed>
+            <textcolor>FF777777</textcolor>
+        </control>
+
+<!--         <control type="button" id="20" description="ViewUrl">
+          <label>View Complete URL</label>
+          <width>660</width>
+          <textoffsetx>30</textoffsetx>
+          <focusedcolor>FF4F9C45</focusedcolor>
+        </control>
+ -->
+
+
+      </control>
+
+	</controls>
+</window>

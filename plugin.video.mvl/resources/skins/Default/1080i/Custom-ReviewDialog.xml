@@ -16,16 +16,18 @@
         <posx>0</posx>
         <posy>60</posy>
         <width>1920</width>
-        <height>45</height>
+        <height>90</height>
         <align>center</align>
+        <font>size22</font>
         <textcolor>Orange</textcolor>
       </control>
       <control type="textbox" id="2" description="TextArea">
         <posx>424</posx>
-        <posy>150</posy>
+        <posy>170</posy>
         <width>1070</width>
-        <height>780</height>
-        <textcolor>FF999999</textcolor>
+        <height>750</height>
+        <textcolor>FF888888</textcolor>
+        <!--<font>Label2</font>-->
         <align>justify</align>
       </control>
       <control type="scrollbar" id="61">
@@ -51,7 +53,7 @@
         <height>60</height>
         <width>250</width>
         <label>Close</label>
-        <textcolor>FF00FF00</textcolor>
+        <textcolor>FF1F6C15</textcolor>
         <align>center</align>
         <pulseonselect>true</pulseonselect>
         <onleft>61</onleft>

@@ -40,7 +40,7 @@
 
         <control type="label" id="19">
             <width>660</width>
-            <label>[COLOR FF235B9E]Please make your selection below[/COLOR]</label>
+            <label>[COLOR FF235B9E][B]Please make your selection below[/B][/COLOR]</label>
             <textoffsetx>30</textoffsetx>
             <align>center</align>
         </control>
@@ -61,7 +61,7 @@
         </control>
 
         <control type="button" id="24" description="CriticReview">
-          <label>Critic's Review</label>
+          <label>Read Movie Review</label>
           <width>660</width>
           <textoffsetx>30</textoffsetx>
           <focusedcolor>FF4F9C45</focusedcolor>
@@ -79,7 +79,7 @@
           <width>660</width>
           <textoffsetx>30</textoffsetx>
           <focusedcolor>FF4F9C45</focusedcolor>
-          <textcolor>FF00FF00</textcolor>
+          <textcolor>FF1F6C15</textcolor>
         </control>
 
         <control type="label" id="20">

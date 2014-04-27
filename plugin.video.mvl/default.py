@@ -636,16 +636,23 @@ def get_categories(id, page):
                     elif categories['is_playable'] == 'False':
 
                         if categories['top_level_parent'] == '3' and categories['parent_id'] not in ('32', '3'):  # Parsing the TV Shows Titles & Seasons only
-                            tmpTitle = categories['title'].encode('utf-8')
-
                             mvl_meta = ''
-                            if tmpTitle == "Season 1":
-                                tmpSeasons = []
-                                mvl_view_mode = 50
+                            #tmpTitle = categories['title'].encode('utf-8')
+                            #if tmpTitle == "Season 1":
+                            #    tmpSeasons = []
+                            #    mvl_view_mode = 50
                                 # for i in range(totalCats):
                                 # tmpSeasons.append( i )
                                 #plugin.log.info('season found')
                                 #mvl_meta = __metaget__.get_seasons(mvl_tvshow_title, '', tmpSeasons)
+                            is_season = False
+                            if 'parent_title' in categories:
+                                #this must be a TV Show Season list
+                                mvl_meta = create_meta('tvshow', categories['parent_title'].encode('utf-8'), '', '')
+                                mvl_tvshow_title = categories['parent_title'].encode('utf-8')
+                                is_season = True
+                                #xbmcplugin.setContent(pluginhandle, 'Seasons')
+
                             else:
                                 mvl_meta = create_meta('tvshow', categories['title'].encode('utf-8'), '', '')
                                 mvl_tvshow_title = categories['title'].encode('utf-8')
@@ -674,6 +681,20 @@ def get_categories(id, page):
                             except:
                                 mvl_plot = ''
 
+                            if is_season:
+                                info_dic = {
+                                        'title': categories['title'].encode('utf-8'),
+                                        }
+                            else:
+                                info_dic = {
+                                          'title': categories['title'].encode('utf-8'),
+                                          'rating': mvl_meta['rating'],
+                                          'plot': mvl_plot,
+                                          'year': mvl_meta['year'],
+                                          'premiered': mvl_meta['premiered'],
+                                          'duration': mvl_meta['duration']
+                                          }
+
                             items += [{
                                           'label': '{0}'.format(categories['title'].encode('utf-8')),
                                           'path': plugin.url_for('get_categories', id=categories['id'], page=0),
@@ -682,6 +703,7 @@ def get_categories(id, page):
                                           'properties': {
                                               'fanart_image': fanart_url,
                                           },
+                                          'info': info_dic,
                                           'context_menu': [(
                                                                'Add to Favourites',
                                                                'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
@@ -729,16 +751,15 @@ def get_categories(id, page):
 
                         mvl_img = thumbnail_url
 
-                        content_type = ''
                         if categories['top_level_parent'] == '1':
-                            content_type = 'movie'
+                            mvl_meta = create_meta('movie', categories['title'].encode('utf-8'), categories['release_date'], mvl_img)
                         elif categories['top_level_parent'] == '3':
                             #playable items of TV show are episodes
-                            content_type = 'episode'
+                            mvl_meta = create_meta('episode', categories['title'].encode('utf-8'), categories['release_date'], mvl_img, categories['sub_categories_names'])
+                            #set layout to Episode
+                            xbmcplugin.setContent(pluginhandle, 'Episodes')
 
-                        print categories['imdb_id']
 
-                        mvl_meta = create_meta(content_type, categories['title'].encode('utf-8'), categories['release_date'], mvl_img, categories['imdb_id'])
                         plugin.log.info('>> meta data-> %s' % mvl_meta)
                         thumbnail_url = ''
 
@@ -749,6 +770,7 @@ def get_categories(id, page):
                                 thumbnail_url = mvl_meta['cover_url']
                         except:
                             thumbnail_url = mvl_img
+
                         # New condition added
                         if thumbnail_url == '':
                             thumbnail_url = art('image-not-available.png')
@@ -766,6 +788,7 @@ def get_categories(id, page):
                         except:
                             mvl_plot = categories['synopsis'].encode('utf-8')
 
+
                         items += [{
                                       'thumbnail': thumbnail_url,
                                       'properties': {
@@ -782,10 +805,13 @@ def get_categories(id, page):
                                           'plot': mvl_plot,
                                           'genre': categories['sub_categories_names'],
                                           'cast': categories['actors'].encode('utf-8'),
-                                          'year': categories['release_date']
+                                          'year': categories['release_date'],
+                                          'premiered': categories['release_date'],
+                                          'duration': mvl_meta['duration']
                                       },
                                       'path': plugin.url_for('get_videos', id=categories['video_id'],
-                                                             thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8')),
+                                                             thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8'),
+                                                             parent_id=categories['top_level_parent']),
                                       'is_playable': False,
                                       'context_menu': [(
                                                            'Add to Favourites',
@@ -869,6 +895,8 @@ def get_categories(id, page):
         # except IOError:
             # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
         except Exception, e:
+            #print e
+
             if id in ('1', '3'):  # if we were on 1st page, then the viewmode should remain to 58 as an error has occured and we haven't got any data for next screen
                 mvl_view_mode = 58
             elif id in ('23', '104916', '112504', '32', '104917', '366042', '372395', '372396'):
@@ -890,8 +918,8 @@ def get_categories(id, page):
         hide_busy_dialog()
 
 
-@plugin.route('/get_videos/<id>/<thumbnail>/<trailer>')
-def get_videos(id, thumbnail, trailer):
+@plugin.route('/get_videos/<id>/<thumbnail>/<trailer>/<parent_id>')
+def get_videos(id, thumbnail, trailer, parent_id):
     if check_internet():
         show_notification()
 
@@ -954,7 +982,7 @@ def get_videos(id, thumbnail, trailer):
                         items += [{
                                       'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                                       'thumbnail': thumbnail,
-                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content), trailer=trailer),
+                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content), trailer=trailer, parent_id=parent_id),
                                       'is_playable': False,
                                   }]
 
@@ -976,7 +1004,7 @@ def get_videos(id, thumbnail, trailer):
                         items += [{
                                       'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                                       'thumbnail': thumbnail,
-                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content), trailer=trailer),
+                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content), trailer=trailer, parent_id=parent_id),
                                       'is_playable': False,
                                   }]
 
@@ -1040,27 +1068,46 @@ class CustomReviewPopup(xbmcgui.WindowXMLDialog):
     def setParams(self, review_url):
         self.review_url = review_url
 
-    def updateReviewText(self, review):
+    def updateReviewText(self, review, critic_name, review_publish_date):
         self.show()
-        self.getControl(1).setLabel('Less Redemption, More Tears')
+        self.getControl(1).setLabel('Less Redemption, More Tears'+'\n By '+critic_name+' ('+review_publish_date+')')
         self.getControl(2).setText(review)
         self.close()
 
     def onClick	(self, control):
         if control == 11:
-            #show source URL
-            # showMessage('Msg', self.trailer_url)
             self.close()
-            #pass
+            resume_popup_window()
 
 
 
-@plugin.route('/show_popup/<url>/<title>/<trailer>')
-def show_popup(url, title, trailer):
-    video_popup = CustomPopup('Custom-VideoPopUp.xml', os.path.dirname(os.path.realpath(__file__)))
+
+@plugin.route('/show_popup/<url>/<title>/<trailer>/<parent_id>')
+def show_popup(url, title, trailer, parent_id):
+    if parent_id == '1':
+        video_popup = CustomPopup('Custom-VideoPopUp-Movies.xml', os.path.dirname(os.path.realpath(__file__)))
+    elif parent_id == '3':
+        video_popup = CustomPopup('Custom-VideoPopUp-TV.xml', os.path.dirname(os.path.realpath(__file__)))
+
+    print 'ekhane ' + title
+
     video_popup.setParams(trailer, url, title)
 
+    print title
+
     video_popup.updateLabels()
+
+    print title
+
+
+    #save current state
+    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'popup_state.dat')
+    f = open(file_path, 'w')
+    f.write(url+'\n')
+    f.write(title+'\n')
+    f.write(trailer+'\n')
+    f.write(parent_id+'\n')
+    f.close()
 
     video_popup.doModal()
 
@@ -1080,12 +1127,38 @@ def show_review():
     content = f.read()
     #converting to json object
     jsonObj = json.loads(content)
-    review = jsonObj['message']
+    review = jsonObj['text']
+    critic_name = jsonObj['critic_name']
+    review_publish_date = jsonObj['publish_date']
 
-    video_popup.updateReviewText(review)
+    video_popup.updateReviewText(review, critic_name, review_publish_date)
 
     video_popup.doModal()
 
+
+def resume_popup_window():
+    try:
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'popup_state.dat')
+        f = open(file_path, 'r')
+        url = f.readline()
+
+        if len(url) != 0:
+            title = f.readline()
+            trailer = f.readline()
+            parent_id = f.readline()
+            f.close()
+
+            print url
+            print title
+            print trailer
+
+            show_popup(url, title, trailer, parent_id)
+
+        else:
+            f.close()
+
+    except Exception, e:
+        pass
 
 
 
@@ -1179,7 +1252,7 @@ def play_video(url, title):
         dialog_msg()
         hide_busy_dialog()
 
-def create_meta(video_type, title, year, thumb, imdb_id=None):
+def create_meta(video_type, title, year, thumb, sub_cat=None):
     print video_type
     try:
         year = int(year)
@@ -1198,21 +1271,25 @@ def create_meta(video_type, title, year, thumb, imdb_id=None):
             alt_id = meta['tmdb_id']
 
         elif video_type == 'episode': # tv show episode
+            series_name = sub_cat[sub_cat.find('_')+1:sub_cat.find('_Season')]
+            meta_temp = __metaget__.get_meta('tvshow', series_name)
+
             episode_title = title[title.find(' ')+1:]
             season_text = title[0:title.find(' ')]
             season = season_text[0:season_text.find('x')]
             episode_num = season_text[season_text.find('x')+1:]
-            meta = __metaget__.get_episode_meta(episode_title, imdb_id, season, episode_num)
+            meta = __metaget__.get_episode_meta(episode_title, meta_temp['imdb_id'], season, episode_num)
 
         if video_type == 'tvshow':
             meta['cover_url'] = meta['banner_url']
         if meta['cover_url'] in ('/images/noposter.jpg', ''):
             meta['cover_url'] = thumb
 
-        # print 'Done TV'
-        # print meta
+        print 'Done TV'
+        print meta
 
     except Exception, e:
+        print e
         plugin.log.info('Error assigning meta data for %s %s %s' % (video_type, title, year))
         plugin.log.info(e)
         traceback.print_exc()
@@ -1220,7 +1297,11 @@ def create_meta(video_type, title, year, thumb, imdb_id=None):
     return meta
 
 def get_trailer_url(mvl_meta):
-    trailer = mvl_meta['trailer_url']
+    trailer = ''
+
+    if 'trailer_url' in mvl_meta:
+        trailer = mvl_meta['trailer_url']
+
     if trailer == '':
         trailer = 'NONE'
 
@@ -1365,15 +1446,23 @@ def search(category):
                     for categories in jsonObj:
                         if categories['is_playable'] == 'False':
                             if categories['top_level_parent'] == '3' and categories['parent_id'] not in ('32', '3'):  # Parsing the TV Shows Titles & Seasons only:      # if TV Series fetch there fan art
-                                tmpTitle = categories['title'].encode('utf-8')
                                 mvl_meta = ''
-                                if tmpTitle == "Season 1":
-                                    tmpSeasons = []
-                                    mvl_view_mode = 50
-                                    # for i in range(totalCats):
-                                    # tmpSeasons.append( i )
-                                    #plugin.log.info('season found')
-                                    #mvl_meta = __metaget__.get_seasons(mvl_tvshow_title, '', tmpSeasons)
+                                #tmpTitle = categories['title'].encode('utf-8')
+                                #if tmpTitle == "Season 1":
+                                #    tmpSeasons = []
+                                #    mvl_view_mode = 50
+                                #    # for i in range(totalCats):
+                                #    # tmpSeasons.append( i )
+                                #    #plugin.log.info('season found')
+                                #    #mvl_meta = __metaget__.get_seasons(mvl_tvshow_title, '', tmpSeasons)
+                                is_season = False
+                                if 'parent_title' in categories:
+                                    #this must be a TV Show Season list
+                                    mvl_meta = create_meta('tvshow', categories['parent_title'].encode('utf-8'), '', '')
+                                    mvl_tvshow_title = categories['parent_title'].encode('utf-8')
+                                    is_season = True
+                                    #xbmcplugin.setContent(pluginhandle, 'Seasons')
+
                                 else:
                                     mvl_meta = create_meta('tvshow', categories['title'].encode('utf-8'), '', '')
                                     mvl_tvshow_title = categories['title'].encode('utf-8')
@@ -1402,6 +1491,20 @@ def search(category):
                                 except:
                                     mvl_plot = ''
 
+                                if is_season:
+                                    info_dic = {
+                                            'title': categories['title'].encode('utf-8'),
+                                            }
+                                else:
+                                    info_dic = {
+                                              'title': categories['title'].encode('utf-8'),
+                                              'rating': mvl_meta['rating'],
+                                              'plot': mvl_plot,
+                                              'year': mvl_meta['year'],
+                                              'premiered': mvl_meta['premiered'],
+                                              'duration': mvl_meta['duration']
+                                              }
+
                                 items += [{
                                               'label': '{0}'.format(categories['title'].encode('utf-8')),
                                               'path': plugin.url_for('get_categories', id=categories['id'], page=0),
@@ -1410,6 +1513,7 @@ def search(category):
                                               'properties': {
                                                   'fanart_image': fanart_url,
                                               },
+                                              'info': info_dic,
                                               'context_menu': [(
                                                                    'Add to Favourites',
                                                                    'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
@@ -1446,7 +1550,16 @@ def search(category):
                             dp_type = 'movie'
                             
                             mvl_img = thumbnail_url
-                            mvl_meta = create_meta('movie', categories['title'], '', thumbnail_url)
+
+                            if categories['top_level_parent'] == '1':
+                                mvl_meta = create_meta('movie', categories['title'].encode('utf-8'), categories['release_date'], mvl_img)
+                            elif categories['top_level_parent'] == '3':
+                                #playable items of TV show are episodes
+                                mvl_meta = create_meta('episode', categories['title'].encode('utf-8'), categories['release_date'], mvl_img, categories['sub_categories_names'])
+                                # mvl_meta = create_meta('movie', categories['title'], '', thumbnail_url)
+                                #set layout to Episode
+                                xbmcplugin.setContent(pluginhandle, 'Episodes')
+
                             plugin.log.info('meta data-> %s' % mvl_meta)
                             thumbnail_url = ''
                             try:
@@ -1487,9 +1600,13 @@ def search(category):
                                               'plot': mvl_plot,
                                               'genre': categories['sub_categories_names'],
                                               'cast': categories['actors'].encode('utf-8'),
-                                              'year': categories['release_date']
+                                              'year': categories['release_date'],
+                                              'premiered': categories['release_date'],
+                                              'duration': mvl_meta['duration']
                                           },
-                                          'path': plugin.url_for('get_videos', id=categories['video_id'], thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8')),
+                                          'path': plugin.url_for('get_videos', id=categories['video_id'],
+                                                                 thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8'),
+                                                                 parent_id=categories['top_level_parent']),
                                           'is_playable': False,
                                           'context_menu': [(
                                                                'Add to Favourites',
@@ -1649,16 +1766,24 @@ def get_azlist(key, page, category):
                     elif results['is_playable'] == 'False':
                         if results['parent_id'] not in ('32', '23'):  # if not Genres then show them
                             if results['top_level_parent'] == '3':      # if TV Series fetch there fan art
-                                tmpTitle = results['title'].encode('utf-8')
-
                                 mvl_meta = ''
-                                if tmpTitle == "Season 1":
-                                    tmpSeasons = []
-                                    mvl_view_mode = 50
-                                    # for i in range(totalCats):
-                                    # tmpSeasons.append( i )
-                                    #plugin.log.info('season found')
-                                    #mvl_meta = __metaget__.get_seasons(mvl_tvshow_title, '', tmpSeasons)
+                                #tmpTitle = results['title'].encode('utf-8')
+                                #if tmpTitle == "Season 1":
+                                #    tmpSeasons = []
+                                #    mvl_view_mode = 50
+                                #    # for i in range(totalCats):
+                                #    # tmpSeasons.append( i )
+                                #    #plugin.log.info('season found')
+                                #    #mvl_meta = __metaget__.get_seasons(mvl_tvshow_title, '', tmpSeasons)
+                                is_season = False
+                                if 'parent_title' in results:
+                                    #this must be a TV Show Season list
+                                    mvl_meta = create_meta('tvshow', results['parent_title'].encode('utf-8'), '', '')
+                                    mvl_tvshow_title = results['parent_title'].encode('utf-8')
+                                    is_season = True
+                                    #xbmcplugin.setContent(pluginhandle, 'Seasons')
+
+
                                 else:
                                     mvl_meta = create_meta('tvshow', results['title'].encode('utf-8'), '', '')
                                     mvl_tvshow_title = results['title'].encode('utf-8')
@@ -1687,6 +1812,20 @@ def get_azlist(key, page, category):
                                 except:
                                     mvl_plot = ''
 
+                                if is_season:
+                                    info_dic = {
+                                            'title': results['title'].encode('utf-8'),
+                                            }
+                                else:
+                                    info_dic = {
+                                              'title': results['title'].encode('utf-8'),
+                                              'rating': mvl_meta['rating'],
+                                              'plot': mvl_plot,
+                                              'year': mvl_meta['year'],
+                                              'premiered': mvl_meta['premiered'],
+                                              'duration': mvl_meta['duration']
+                                              }
+
                                 items += [{
                                               'label': '{0}'.format(results['title'].encode('utf-8')),
                                               'path': plugin.url_for('get_categories', id=results['id'], page=0),
@@ -1695,6 +1834,7 @@ def get_azlist(key, page, category):
                                               'properties': {
                                                   'fanart_image': fanart_url,
                                               },
+                                              'info': info_dic,
                                               'context_menu': [(
                                                                    'Add to Favourites',
                                                                    'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
@@ -1733,8 +1873,16 @@ def get_azlist(key, page, category):
                         dp_type = 'movie'
 
                         mvl_img = thumbnail_url
-                        #print "TITLE = " + results['title']
-                        mvl_meta = create_meta('movie', results['title'], '', thumbnail_url)
+
+                        if results['top_level_parent'] == '1':
+                            mvl_meta = create_meta('movie', results['title'].encode('utf-8'), results['release_date'], mvl_img)
+                        elif results['top_level_parent'] == '3':
+                            #playable items of TV show are episodes
+                            mvl_meta = create_meta('episode', results['title'].encode('utf-8'), results['release_date'], mvl_img, results['sub_categories_names'])
+                            # mvl_meta = create_meta('movie', results['title'], '', thumbnail_url)
+                            #set layout to Episode
+                            xbmcplugin.setContent(pluginhandle, 'Episodes')
+
                         plugin.log.info('meta data-> %s' % mvl_meta)
                         thumbnail_url = ''
                         try:
@@ -1773,10 +1921,14 @@ def get_azlist(key, page, category):
                                           'plot': mvl_plot,
                                           'genre': results['sub_categories_names'],
                                           'cast': results['actors'].encode('utf-8'),
-                                          'year': results['release_date']
+                                          'year': results['release_date'],
+                                          'premiered': results['release_date'],
+                                          'duration': mvl_meta['duration']
+
                                       },
                                       'path': plugin.url_for('get_videos', id=results['video_id'],
-                                                             thumbnail=results['thumbnail'], trailer=get_trailer_url(mvl_meta).encode('utf-8')),
+                                                             thumbnail=results['thumbnail'], trailer=get_trailer_url(mvl_meta).encode('utf-8'),
+                                                             parent_id=results['top_level_parent']),
                                       'is_playable': False,
                                       'context_menu': [(
                                                            'Add to Favourites',
@@ -1891,7 +2043,9 @@ def mostpopular(page, category):
                                   'properties': {
                                       'fanart_image': fanart_url,
                                   },
-                                  'path': plugin.url_for('get_videos', id=results['id'], thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8')),
+                                  'path': plugin.url_for('get_videos', id=results['id'],
+                                                         thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8'),
+                                                         parent_id=results['top_level_parent']),
                                   'is_playable': False,
                                   'context_menu': [(
                                                        'Add to Favourites',
