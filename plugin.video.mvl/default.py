@@ -1046,6 +1046,7 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
 
             if self.trailer_id == 'NONE':
                 showMessage('Error', 'No trailer found')
+                resume_popup_window()
             else:
                 play_video(self.trailer_url, self.title + ' - Official trailer')
 
@@ -1055,11 +1056,13 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
             play_video(self.source_url, self.title)
 
         elif control == 23:
+            #exit
             self.close()
 
         elif control == 24:
             self.close()
             show_review()
+
 
 class CustomReviewPopup(xbmcgui.WindowXMLDialog):
     def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
@@ -1070,8 +1073,9 @@ class CustomReviewPopup(xbmcgui.WindowXMLDialog):
 
     def updateReviewText(self, review, critic_name, review_publish_date):
         self.show()
-        self.getControl(1).setLabel('Less Redemption, More Tears'+'\n By '+critic_name+' ('+review_publish_date+')')
+        self.getControl(1).setLabel('Less Redemption, More Tears'+'\n[COLOR FF888888] By '+critic_name+' ('+review_publish_date+') [/COLOR]')
         self.getControl(2).setText(review)
+
         self.close()
 
     def onClick	(self, control):
@@ -1080,87 +1084,124 @@ class CustomReviewPopup(xbmcgui.WindowXMLDialog):
             resume_popup_window()
 
 
-
+video_popup = None
 
 @plugin.route('/show_popup/<url>/<title>/<trailer>/<parent_id>')
 def show_popup(url, title, trailer, parent_id):
+    global video_popup
+
     if parent_id == '1':
         video_popup = CustomPopup('Custom-VideoPopUp-Movies.xml', os.path.dirname(os.path.realpath(__file__)))
     elif parent_id == '3':
         video_popup = CustomPopup('Custom-VideoPopUp-TV.xml', os.path.dirname(os.path.realpath(__file__)))
 
-    print 'ekhane ' + title
-
     video_popup.setParams(trailer, url, title)
-
-    print title
-
     video_popup.updateLabels()
 
-    print title
-
-
-    #save current state
-    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'popup_state.dat')
-    f = open(file_path, 'w')
-    f.write(url+'\n')
-    f.write(title+'\n')
-    f.write(trailer+'\n')
-    f.write(parent_id+'\n')
-    f.close()
+    try:
+        #save current state
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'popup_state.dat')
+        f = open(file_path, 'w')
+        f.write(url+'\n')
+        f.write(title+'\n')
+        f.write(trailer+'\n')
+        f.write(parent_id)
+        f.close()
+    except Exception,e:
+        print e
 
     video_popup.doModal()
+
+    hide_busy_dialog()
+    # exit()
+
+def show_review():
+    global video_popup
+
+    hide_busy_dialog()
+    xbmc.executebuiltin( "ActivateWindow(busydialog)" )
+
+    video_popup = CustomReviewPopup('Custom-ReviewDialog.xml', os.path.dirname(os.path.realpath(__file__)))
+    video_popup.setParams('')
+
+    try:
+        url = server_url + "/api/index.php/api/review_api/getReview"
+        req = urllib2.Request(url)
+        opener = urllib2.build_opener()
+        f = opener.open(req)
+        #reading content fetched from the url
+        content = f.read()
+        #converting to json object
+        jsonObj = json.loads(content)
+        review = jsonObj['text']
+        critic_name = jsonObj['critic_name']
+        review_publish_date = jsonObj['publish_date']
+
+        if len(review) != 0:
+            video_popup.updateReviewText(review, critic_name, review_publish_date)
+            video_popup.doModal()
+
+    except Exception, e:
+        pass
 
     hide_busy_dialog()
     exit()
 
 
-def show_review():
-    video_popup = CustomReviewPopup('Custom-ReviewDialog.xml', os.path.dirname(os.path.realpath(__file__)))
-    video_popup.setParams('')
-
-    url = server_url + "/api/index.php/api/review_api/getReview"
-    req = urllib2.Request(url)
-    opener = urllib2.build_opener()
-    f = opener.open(req)
-    #reading content fetched from the url
-    content = f.read()
-    #converting to json object
-    jsonObj = json.loads(content)
-    review = jsonObj['text']
-    critic_name = jsonObj['critic_name']
-    review_publish_date = jsonObj['publish_date']
-
-    video_popup.updateReviewText(review, critic_name, review_publish_date)
-
-    video_popup.doModal()
-
 
 def resume_popup_window():
+
+    print 'resuming'
+    time.sleep(2)
+    print 'sleep done'
+
     try:
         file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'popup_state.dat')
         f = open(file_path, 'r')
-        url = f.readline()
+        url = f.readline().strip('\n')
 
         if len(url) != 0:
-            title = f.readline()
-            trailer = f.readline()
+            title = f.readline().strip('\n')
+            trailer = f.readline().strip('\n')
             parent_id = f.readline()
             f.close()
 
-            print url
-            print title
-            print trailer
+            f = open(file_path, 'w')
+            f.close()
 
             show_popup(url, title, trailer, parent_id)
-
         else:
             f.close()
+
 
     except Exception, e:
         pass
 
 
+class MVLPlayer(xbmc.Player):
+    def __init__( self, *args, **kwargs ):
+        xbmc.Player.__init__( self )
+
+    def PlayVideo(self, url):
+        self.play(url)
+
+        try:
+            while self.isPlaying():
+                xbmc.sleep(1000)
+        except:
+            pass
+
+    def onPlayBackStarted(self):
+        # print "PLAYBACK STARTED"
+        pass
+
+    def onPlayBackEnded(self):
+        # print "PLAYBACK ENDED"
+        resume_popup_window()
+
+    def onPlayBackStopped(self):
+        # print "PLAYBACK STOPPED"
+        resume_popup_window()
 
 @plugin.route('/play_video/<url>/<title>')
 def play_video(url, title):
@@ -1226,9 +1267,9 @@ def play_video(url, title):
 
 
                     playlist.add(url=hostedurl, listitem=listitem, index=0)
-                    #playlist.add(url='http://r8---sn-npo7ene7.googlevideo.com/videoplayback?ipbits=0&upn=P83ZO5hdK0s&ip=27.147.135.178&key=yt5&signature=05ED62D8BA773E5CE1F58C33819179958B31DAB5.470D1ECFF943E939599AE09C197BD7EBD1313BBA&itag=22&id=o-AOeCMalj5EEm_c8SEutkhjE6jjk562hXbW6ktCEJy1CX&ratebypass=yes&fexp=941290,902545,937417,913434,936916,934022,936923&ms=au&mt=1397988460&mv=m&expire=1398014603&sver=3&source=youtube&sparams=id,ip,ipbits,itag,ratebypass,source,upn,expire', listitem=listitem, index=0)
 
-                    xbmc.Player().play(playlist)
+                    # xbmc.Player().play(playlist)
+                    MVLPlayer().PlayVideo(playlist)
                     #return None
                 else:
                     unplayable = True
