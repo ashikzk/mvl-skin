@@ -109,15 +109,15 @@ def index():
         if os.path.exists(file_path):
             file = open(file_path, 'r')
             for line in file:
-                #if '<showparentdiritems>false</showparentdiritems>' in line:
-                if '<cachemembuffersize>0</cachemembuffersize>' in line:
+                if '<showparentdiritems>false</showparentdiritems>' in line:
+                #if '<cachemembuffersize>0</cachemembuffersize>' in line:
                     found = True
             file.close()
 
-            #do it to make sure we remove services from already existing boxes
+            #do it to make sure we remove network from already existing boxes
             file = open(file_path, 'r')
             for line in file:
-                if '<services>' in line:
+                if '<network>' in line:
                     found = False
             file.close()
 
@@ -141,9 +141,9 @@ def index():
             #file.write('<upnpserver>true</upnpserver>\n')
             #file.write('<zeroconf>true</zeroconf>\n')
             #file.write('</services>\n')
-            file.write('<network>\n')
-            file.write('<cachemembuffersize>0</cachemembuffersize>\n')
-            file.write('</network>\n')
+            #file.write('<network>\n')
+            #file.write('<cachemembuffersize>0</cachemembuffersize>\n')
+            #file.write('</network>\n')
             file.write('<filelists>\n')
             file.write('<showparentdiritems>false</showparentdiritems>\n')
             file.write('</filelists>\n')
@@ -705,7 +705,7 @@ def get_categories(id, page):
                                           },
                                           'info': info_dic,
                                           'context_menu': [(
-                                                               'Add to Favourites',
+                                                               'Mark as Watched',
                                                                'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                      id=categories['id'],
                                                                                                      title=categories['title'].encode('utf-8'),
@@ -724,7 +724,7 @@ def get_categories(id, page):
                                           'is_playable': False,
                                           'thumbnail': art('{0}{1}.png'.format(categories['title'].lower(), image_on_off)),
                                           'context_menu': [(
-                                                               'Add to Favourites',
+                                                               'Mark as Watched',
                                                                'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                      id=categories['id'],
                                                                                                      title=categories['title'].encode('utf-8'),
@@ -750,12 +750,15 @@ def get_categories(id, page):
                             thumbnail_url = server_url + '/wp-content/themes/twentytwelve/images/{0}'.format(categories['video_id'] + categories['image_name'])
 
                         mvl_img = thumbnail_url
+                        series_name = 'NONE'
 
                         if categories['top_level_parent'] == '1':
                             mvl_meta = create_meta('movie', categories['title'].encode('utf-8'), categories['release_date'], mvl_img)
                         elif categories['top_level_parent'] == '3':
                             #playable items of TV show are episodes
                             mvl_meta = create_meta('episode', categories['title'].encode('utf-8'), categories['release_date'], mvl_img, categories['sub_categories_names'])
+                            if 'series_name' in mvl_meta:
+                                series_name = mvl_meta['series_name'].strip()
                             #set layout to Episode
                             xbmcplugin.setContent(pluginhandle, 'Episodes')
 
@@ -811,10 +814,10 @@ def get_categories(id, page):
                                       },
                                       'path': plugin.url_for('get_videos', id=categories['video_id'],
                                                              thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8'),
-                                                             parent_id=categories['top_level_parent']),
+                                                             parent_id=categories['top_level_parent'], series_name=series_name),
                                       'is_playable': False,
                                       'context_menu': [(
-                                                           'Add to Favourites',
+                                                           'Mark as Watched',
                                                            'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                  id=categories['video_id'],
                                                                                                  title=categories['title'].encode('utf-8'),
@@ -918,8 +921,8 @@ def get_categories(id, page):
         hide_busy_dialog()
 
 
-@plugin.route('/get_videos/<id>/<thumbnail>/<trailer>/<parent_id>')
-def get_videos(id, thumbnail, trailer, parent_id):
+@plugin.route('/get_videos/<id>/<thumbnail>/<trailer>/<parent_id>/<series_name>')
+def get_videos(id, thumbnail, trailer, parent_id, series_name):
     if check_internet():
         show_notification()
 
@@ -951,6 +954,7 @@ def get_videos(id, thumbnail, trailer, parent_id):
 
 
             src_list = ['movreel', 'mightyupload', 'promptfile', 'hugefile', 'billionupload', '180upload', 'lemupload', 'gorillavid']
+            #you want to add - putlocker after firedrive (same server company) and add,novamov,movpod, filenuke, sockshare
 
             for urls in jsonObj:
                 src_order = 0
@@ -982,7 +986,7 @@ def get_videos(id, thumbnail, trailer, parent_id):
                         items += [{
                                       'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                                       'thumbnail': thumbnail,
-                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content), trailer=trailer, parent_id=parent_id),
+                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content), trailer=trailer, parent_id=parent_id, video_id=id, series_name=series_name),
                                       'is_playable': False,
                                   }]
 
@@ -1004,7 +1008,7 @@ def get_videos(id, thumbnail, trailer, parent_id):
                         items += [{
                                       'label': '{0} [COLOR FF235B9E]Source {1}[/COLOR] [COLOR {2}]{3}[/COLOR]'.format(content, count, source_color, source_quality),
                                       'thumbnail': thumbnail,
-                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content), trailer=trailer, parent_id=parent_id),
+                                      'path': plugin.url_for('show_popup', url=urls['URL'], title='{0}'.format(content), trailer=trailer, parent_id=parent_id, video_id=id, series_name=series_name),
                                       'is_playable': False,
                                   }]
 
@@ -1024,11 +1028,12 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
     def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
         pass
 
-    def setParams(self, trailer_id, source_url, title):
+    def setParams(self, trailer_id, source_url, title, video_id):
         self.trailer_id = trailer_id
         self.trailer_url = 'http://www.youtube.com/watch?v='+trailer_id
         self.source_url = source_url
         self.title = title
+        self.video_id = video_id
 
     def updateLabels(self):
         self.show()
@@ -1061,7 +1066,7 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
 
         elif control == 24:
             self.close()
-            show_review()
+            show_review(self.video_id)
 
 
 class CustomReviewPopup(xbmcgui.WindowXMLDialog):
@@ -1071,9 +1076,11 @@ class CustomReviewPopup(xbmcgui.WindowXMLDialog):
     def setParams(self, review_url):
         self.review_url = review_url
 
-    def updateReviewText(self, review, critic_name, review_publish_date):
+    def updateReviewText(self, review, critic_name, review_publish_date, heading):
         self.show()
-        self.getControl(1).setLabel('Less Redemption, More Tears'+'\n[COLOR FF888888] By '+critic_name+' ('+review_publish_date+') [/COLOR]')
+        #self.getControl(1).setLabel(heading+'\n[COLOR FF888888] By '+critic_name+' ('+review_publish_date+') [/COLOR]')
+        self.getControl(1).setLabel(heading)
+        self.getControl(4).setLabel('[COLOR FF888888] By '+critic_name+' ('+review_publish_date+') [/COLOR]')
         self.getControl(2).setText(review)
 
         self.close()
@@ -1086,8 +1093,8 @@ class CustomReviewPopup(xbmcgui.WindowXMLDialog):
 
 video_popup = None
 
-@plugin.route('/show_popup/<url>/<title>/<trailer>/<parent_id>')
-def show_popup(url, title, trailer, parent_id):
+@plugin.route('/show_popup/<url>/<title>/<trailer>/<parent_id>/<video_id>/<series_name>')
+def show_popup(url, title, trailer, parent_id, video_id, series_name):
     global video_popup
 
     if parent_id == '1':
@@ -1095,7 +1102,11 @@ def show_popup(url, title, trailer, parent_id):
     elif parent_id == '3':
         video_popup = CustomPopup('Custom-VideoPopUp-TV.xml', os.path.dirname(os.path.realpath(__file__)))
 
-    video_popup.setParams(trailer, url, title)
+    video_title = title
+    if series_name != 'NONE':
+        video_title = series_name + ' : ' + title
+
+    video_popup.setParams(trailer, url, video_title, video_id)
     video_popup.updateLabels()
 
     try:
@@ -1105,7 +1116,9 @@ def show_popup(url, title, trailer, parent_id):
         f.write(url+'\n')
         f.write(title+'\n')
         f.write(trailer+'\n')
-        f.write(parent_id)
+        f.write(parent_id+'\n')
+        f.write(video_id+'\n')
+        f.write(series_name)
         f.close()
     except Exception,e:
         print e
@@ -1113,9 +1126,9 @@ def show_popup(url, title, trailer, parent_id):
     video_popup.doModal()
 
     hide_busy_dialog()
-    # exit()
+    exit()
 
-def show_review():
+def show_review(video_id):
     global video_popup
 
     hide_busy_dialog()
@@ -1125,7 +1138,7 @@ def show_review():
     video_popup.setParams('')
 
     try:
-        url = server_url + "/api/index.php/api/review_api/getReview"
+        url = server_url + "/api/index.php/api/review_api/getReview?video_id={0}".format(video_id)
         req = urllib2.Request(url)
         opener = urllib2.build_opener()
         f = opener.open(req)
@@ -1133,13 +1146,17 @@ def show_review():
         content = f.read()
         #converting to json object
         jsonObj = json.loads(content)
+        heading = jsonObj['heading']
         review = jsonObj['text']
         critic_name = jsonObj['critic_name']
         review_publish_date = jsonObj['publish_date']
 
         if len(review) != 0:
-            video_popup.updateReviewText(review, critic_name, review_publish_date)
+            video_popup.updateReviewText(review, critic_name, review_publish_date, heading)
             video_popup.doModal()
+        else:
+            showMessage('Sorry!', 'No review found for this movie')
+            resume_popup_window()
 
     except Exception, e:
         pass
@@ -1151,10 +1168,6 @@ def show_review():
 
 def resume_popup_window():
 
-    print 'resuming'
-    time.sleep(2)
-    print 'sleep done'
-
     try:
         file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'popup_state.dat')
         f = open(file_path, 'r')
@@ -1163,13 +1176,15 @@ def resume_popup_window():
         if len(url) != 0:
             title = f.readline().strip('\n')
             trailer = f.readline().strip('\n')
-            parent_id = f.readline()
+            parent_id = f.readline().strip('\n')
+            video_id = f.readline().strip('\n')
+            series_name = f.readline()
             f.close()
 
             f = open(file_path, 'w')
             f.close()
 
-            show_popup(url, title, trailer, parent_id)
+            show_popup(url, title, trailer, parent_id, video_id, series_name)
         else:
             f.close()
 
@@ -1320,6 +1335,7 @@ def create_meta(video_type, title, year, thumb, sub_cat=None):
             season = season_text[0:season_text.find('x')]
             episode_num = season_text[season_text.find('x')+1:]
             meta = __metaget__.get_episode_meta(episode_title, meta_temp['imdb_id'], season, episode_num)
+            meta['series_name'] = series_name
 
         if video_type == 'tvshow':
             meta['cover_url'] = meta['banner_url']
@@ -1556,7 +1572,7 @@ def search(category):
                                               },
                                               'info': info_dic,
                                               'context_menu': [(
-                                                                   'Add to Favourites',
+                                                                   'Mark as Watched',
                                                                    'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                          id=categories['id'],
                                                                                                          title=categories['title'].encode('utf-8'),
@@ -1574,7 +1590,7 @@ def search(category):
                                               'is_playable': False,
                                               'thumbnail': art('{0}.png'.format(categories['title'].lower())),
                                               'context_menu': [(
-                                                                   'Add to Favourites',
+                                                                   'Mark as Watched',
                                                                    'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                          id=categories['id'],
                                                                                                          title=categories['title'],
@@ -1650,7 +1666,7 @@ def search(category):
                                                                  parent_id=categories['top_level_parent']),
                                           'is_playable': False,
                                           'context_menu': [(
-                                                               'Add to Favourites',
+                                                               'Mark as Watched',
                                                                'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                      id=categories['video_id'],
                                                                                                      title=categories['title'],
@@ -1877,7 +1893,7 @@ def get_azlist(key, page, category):
                                               },
                                               'info': info_dic,
                                               'context_menu': [(
-                                                                   'Add to Favourites',
+                                                                   'Mark as Watched',
                                                                    'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                          id=results['id'],
                                                                                                          title=results['title'].encode('utf-8'),
@@ -1896,7 +1912,7 @@ def get_azlist(key, page, category):
                                               'is_playable': False,
                                               'thumbnail': art('{0}.png'.format(results['title'].lower())),
                                               'context_menu': [(
-                                                                   'Add to Favourites',
+                                                                   'Mark as Watched',
                                                                    'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                          id=results['id'],
                                                                                                          title=results['title'].encode('utf-8'),
@@ -1972,7 +1988,7 @@ def get_azlist(key, page, category):
                                                              parent_id=results['top_level_parent']),
                                       'is_playable': False,
                                       'context_menu': [(
-                                                           'Add to Favourites',
+                                                           'Mark as Watched',
                                                            'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                                  id=results['video_id'],
                                                                                                  title=results['title'],
@@ -2089,7 +2105,7 @@ def mostpopular(page, category):
                                                          parent_id=results['top_level_parent']),
                                   'is_playable': False,
                                   'context_menu': [(
-                                                       'Add to Favourites',
+                                                       'Mark as Watched',
                                                        'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
                                                                                              id=results['id'],
                                                                                              title=results['title'],
@@ -2143,22 +2159,27 @@ def init_database():
 
 @plugin.route('/save_favourite/<id>/<title>/<thumbnail>/<isplayable>/<category>')
 def save_favourite(id, title, thumbnail, isplayable, category):
-    plugin.log.info(id)
-    plugin.log.info(title)
-    plugin.log.info(thumbnail)
-    plugin.log.info(isplayable)
-    plugin.log.info(category)
-    try:
-        statement = 'INSERT OR IGNORE INTO favourites (id, title, thumbnail, isplayable, category) VALUES (%s,%s,%s,%s,%s)'
-        db = orm.connect(DB_DIR)
-        statement = statement.replace("%s", "?")
-        cursor = db.cursor()
-        cursor.execute(statement, (id, title, thumbnail, isplayable, category))
-        db.commit()
-        db.close()
-    except:
-        # xbmc.executebuiltin('Notification(Database Error, Please contact software provider,5000,/script.hellow.world.png)')
-        showMessage('Database Error', 'Please contact software provider') 
+    __metaget__.change_watched('movie', title, 'tt2349460', season=None, episode=None, year=2014, watched=7)
+    xbmc.executebuiltin("XBMC.Container.Refresh")
+
+    #pass
+
+    #plugin.log.info(id)
+    #plugin.log.info(title)
+    #plugin.log.info(thumbnail)
+    #plugin.log.info(isplayable)
+    #plugin.log.info(category)
+    #try:
+    #    statement = 'INSERT OR IGNORE INTO favourites (id, title, thumbnail, isplayable, category) VALUES (%s,%s,%s,%s,%s)'
+    #    db = orm.connect(DB_DIR)
+    #    statement = statement.replace("%s", "?")
+    #    cursor = db.cursor()
+    #    cursor.execute(statement, (id, title, thumbnail, isplayable, category))
+    #    db.commit()
+    #    db.close()
+    #except:
+    #    # xbmc.executebuiltin('Notification(Database Error, Please contact software provider,5000,/script.hellow.world.png)')
+    #    showMessage('Database Error', 'Please contact software provider')
 
 
 @plugin.route('/remove_favourite/<id>/<title>/<category>')
@@ -2227,6 +2248,6 @@ def get_favourites(category):
 if __name__ == '__main__':
     plugin.run()
     #xbmc.executebuiltin("Container.SetViewMode(%s)" % 50)
-    # time.sleep(0.1)
+    time.sleep(0.1)
     xbmc.executebuiltin("Container.SetViewMode(%s)" % mvl_view_mode)
 
