@@ -42,7 +42,8 @@
         <posy>1</posy>
         <width>1210</width>
         <height>69</height>
-        <texture>list/ListFO.png</texture>
+        <texture>list/ListFO2.png</texture>
+		<colordiffuse>FF000000</colordiffuse>
       </control>
       <control type="label">
         <posx>25</posx>
@@ -96,6 +97,7 @@
         <width>640</width>
         <height>69</height>
         <texture>list/ListFO.png</texture>
+		<colordiffuse>FF000000</colordiffuse>
       </control>
       <control type="label" description="Main Label">
         <posx>589</posx>

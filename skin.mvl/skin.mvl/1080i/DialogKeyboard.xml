@@ -541,7 +541,7 @@
               <onright>32</onright>
               <onup>302</onup>
               <ondown>8</ondown>
-              <textcolor>FF4fe805</textcolor>
+              <textcolor>FF1F6C15</textcolor>
               <font>ListDetails</font>
               <include>KeyboardButtons</include>
             </control>

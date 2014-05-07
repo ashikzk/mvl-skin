@@ -182,7 +182,7 @@
         <width>1200</width>
         <height>35</height>
         <font>Details</font>
-        <label>$VAR[GlobalHeadings] - Movies</label>
+        <label>$VAR[GlobalHeadings] - [COLOR FF235B9E]Movies[/COLOR]</label>
       </control>
 	  
 	  <control type="label">
@@ -193,7 +193,7 @@
         <width>1200</width>
         <height>35</height>
         <font>Details</font>
-        <label>$VAR[GlobalHeadings] - TV</label>
+        <label>$VAR[GlobalHeadings] - [COLOR FF235B9E]TV Shows[/COLOR]</label>
       </control>
 	  
       <control type="group">
@@ -814,7 +814,8 @@
       <width>1920</width>
       <height>765</height>
       <texture border="0,30,0,0">OSD/OSDBackground.png</texture>
-      <colordiffuse>FF9e9e9e</colordiffuse>
+      <!-- <colordiffuse>FF9e9e9e</colordiffuse> -->
+      <colordiffuse>FF000000</colordiffuse>
     </control>
     <control type="image" description="fa overlay">
       <visible>Control.IsVisible(54) </visible>

@@ -55,6 +55,7 @@
         <onright>11</onright>
 		<onup>61</onup>
 		<ondown>61</ondown>
+        <textcolor>FF1F6C15</textcolor>
       </control>
       <control type="button" id="11" description="Agree">
         <visible></visible>
@@ -68,6 +69,7 @@
         <onleft>10</onleft>
 		<onup>61</onup>
 		<ondown>61</ondown>
+        <textcolor>FF1F6C15</textcolor>
       </control>      
     </control>
   </controls>

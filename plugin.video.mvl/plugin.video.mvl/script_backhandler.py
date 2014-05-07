@@ -23,6 +23,8 @@ try:
             if selection == 'categories' and (selection_id == '1' or selection_id == '3'):
                 #we are in screen 1, set view mode to 58
                 xbmc.executebuiltin( "Container.SetViewmode(58)" )
+                #clear current section name
+                xbmc.executebuiltin('Skin.SetString(CurrentSection,)')
             elif (
                     selection == 'categories' and (selection_id == '23' or selection_id == '104916' or selection_id == '112504' or 
                     selection_id == '32' or selection_id == '104917' or selection_id == '366042' or selection_id == '372395' or selection_id == '372396') and
