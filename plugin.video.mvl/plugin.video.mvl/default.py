@@ -1671,10 +1671,10 @@ def search(category):
                             series_name = 'NONE'
 
                             if categories['top_level_parent'] == '1':
-                                mvl_meta = create_meta('movie', categories['title'].encode('utf-8'), categories['release_date'], mvl_img)
+                                mvl_meta = create_meta('movie', categories['title'], categories['release_date'], mvl_img)
                             elif categories['top_level_parent'] == '3':
                                 #playable items of TV show are episodes
-                                mvl_meta = create_meta('episode', categories['title'].encode('utf-8'), categories['release_date'], mvl_img, categories['sub_categories_names'])
+                                mvl_meta = create_meta('episode', categories['title'], categories['release_date'], mvl_img, categories['sub_categories_names'])
                                 # mvl_meta = create_meta('movie', categories['title'], '', thumbnail_url)
                                 if 'series_name' in mvl_meta:
                                     series_name = mvl_meta['series_name'].strip()
@@ -1998,10 +1998,10 @@ def get_azlist(key, page, category):
                         series_name = 'NONE'
 
                         if results['top_level_parent'] == '1':
-                            mvl_meta = create_meta('movie', results['title'].encode('utf-8'), results['release_date'], mvl_img)
+                            mvl_meta = create_meta('movie', results['title'], results['release_date'], mvl_img)
                         elif results['top_level_parent'] == '3':
                             #playable items of TV show are episodes
-                            mvl_meta = create_meta('episode', results['title'].encode('utf-8'), results['release_date'], mvl_img, results['sub_categories_names'])
+                            mvl_meta = create_meta('episode', results['title'], results['release_date'], mvl_img, results['sub_categories_names'])
                             # mvl_meta = create_meta('movie', results['title'], '', thumbnail_url)
                             if 'series_name' in mvl_meta:
                                 series_name = mvl_meta['series_name'].strip()
