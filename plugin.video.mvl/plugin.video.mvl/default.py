@@ -4,9 +4,11 @@ if 'do_nothing' in sys.argv[0]:
     #no need to do anything!
     exit()
 
-#hide any existing loading and show system busy dialog to freeze the screen
+
+#hide any existing loading and show system busy dialog to freeze the screen.
 xbmc.executebuiltin( "Dialog.Close(busydialog)" )
 xbmc.executebuiltin( "ActivateWindow(busydialog)" )
+
 #save lockdown state to a file for future reference
 import os
 file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_lock.dat')
@@ -34,7 +36,11 @@ from metahandler import metahandlers
 from metahandler import metacontainers
 
 from operator import itemgetter
-from threading import Thread
+#from threading import Thread
+
+import resources._common as common
+from resources import playbackengine
+
 
 #Patch Locale for android devices
 def getlocale(*args, **kwargs):
@@ -43,20 +49,24 @@ import locale
 locale.getlocale=getlocale
 from datetime import datetime
 
-plugin_id = 'plugin.video.mvl'
-skin_id = 'skin.mvl'
 
-_MVL = Addon(plugin_id, sys.argv)
+_MVL = Addon(common.plugin_id, sys.argv)
 plugin = Plugin()
 pluginhandle = int(sys.argv[1])
-usrsettings = xbmcaddon.Addon(id=plugin_id)
-page_limit = usrsettings.getSetting('page_limit_xbmc')
+
+usrsettings = xbmcaddon.Addon(id=common.plugin_id)
+#page_limit = usrsettings.getSetting('page_limit_xbmc')
 # authentication = plugin.get_storage('authentication', TTL=1)
 # authentication['logged_in'] = 'false'
-username = usrsettings.getSetting('username_xbmc')
-activation_key = usrsettings.getSetting('activationkey_xbmc')
+#username = usrsettings.getSetting('username_xbmc')
+#activation_key = usrsettings.getSetting('activationkey_xbmc')
+page_limit = 30
+username = ''
+activation_key = ''
 usrsettings.setSetting(id='mac_address', value=usrsettings.getSetting('mac_address'))
+
 THEME_PATH = os.path.join(_MVL.get_path(), 'art')
+
 # server_url = 'http://staging.redbuffer.net/xbmc'
 # server_url = 'http://localhost/xbmc'
 server_url = 'http://config.myvideolibrary.com'
@@ -70,7 +80,7 @@ __metaget__ = metahandlers.MetaData(preparezip=PREPARE_ZIP)
 # except:
 # import storageserverdummy as StorageServer
 # #cache = StorageServer.StorageServer("mvl_storage_data", 24) # (Your plugin name, Cache time in hours)
-# cache = StorageServer.StorageServer("plugin://"+plugin_id+"/", 24)
+# cache = StorageServer.StorageServer("plugin://"+common.plugin_id+"/", 24)
 # cache.delete("%")
 
 try:
@@ -148,7 +158,7 @@ def index():
             file.write('<showparentdiritems>false</showparentdiritems>\n')
             file.write('</filelists>\n')
             file.write('<lookandfeel>\n')
-            file.write('<skin>'+skin_id+'</skin>\n')
+            file.write('<skin>'+common.skin_id+'</skin>\n')
             file.write('</lookandfeel>\n')
             file.write('</advancedsettings>\n')
             file.close()
@@ -165,7 +175,7 @@ def index():
             file.write("<F5>Skin.ToggleSetting('test')</F5>\n")
             file.write("<F6>Skin.ToggleSetting('test')</F6>\n")
             file.write("<backslash>Skin.ToggleSetting('test')</backslash>\n")
-            file.write("<backspace>XBMC.RunScript(special://home\\addons\\"+plugin_id+"\\script_backhandler.py)</backspace>\n")
+            file.write("<backspace>XBMC.RunScript(special://home\\addons\\"+common.plugin_id+"\\script_backhandler.py)</backspace>\n")
             file.write('</keyboard>\n')
             file.write('</global>\n')
             file.write('</keymap>')
@@ -337,12 +347,12 @@ def showMessage(heading, message):
     dialog = xbmcgui.Dialog()
     dialog.ok(heading, message)
 
+
 def check_condition():
     macAddress = usrsettings.getSetting('mac_address')
     global curr_page
     curr_page = 1
-    url = server_url + "/api/index.php/api/authentication_api/get_flag_status?username={0}&mac={1}".format(username,
-                                                                                                           macAddress)
+    url = server_url + "/api/index.php/api/authentication_api/get_flag_status?username={0}&mac={1}".format(username, macAddress)
     req = urllib2.Request(url)
     opener = urllib2.build_opener()
     # f = opener.open(req)
@@ -359,13 +369,17 @@ def check_condition():
         f = open(tc_path)
         text = f.read()
 
-        dialog = xbmcgui.Dialog()
-        agree_ret = dialog.yesno(heading, text, yeslabel='Agree', nolabel='Disagree')
+        #dialog = xbmcgui.Dialog()
+        #agree_ret = dialog.yesno(heading, text, yeslabel='Agree', nolabel='Disagree')
 
-        if agree_ret:
-            onClick_agree()
-        else:
-            onClick_disAgree()
+        terms_popup = CustomTermsPopup('Custom-DialogTerms&Condition.xml', os.path.dirname(os.path.realpath(__file__)))
+        terms_popup.updateTermText(heading, text)
+        terms_popup.doModal()
+
+        #if agree_ret:
+        #    onClick_agree()
+        #else:
+        #    onClick_disAgree()
 
     elif content == 'true':
         global isAgree
@@ -623,6 +637,15 @@ def get_categories(id, page):
                     #add an extra item for the release month + year combo
                     if 'release_group' in categories:
                         if categories['release_group'] != last_release_group:
+                            if last_release_group == '':
+                                #that means this is the first line of list
+                                items += [{
+                                              'label': '[COLOR FFC41D67]Estimated Release Date[/COLOR]',
+                                              'path': plugin.url_for('do_nothing', view_mode=0),
+                                              'is_playable': False,
+                                          }]
+
+
                             last_release_group = categories['release_group']
 
                             items += [{
@@ -668,13 +691,17 @@ def get_categories(id, page):
 
                             dp_type = 'show'
 
-                            plugin.log.info('meta data-> %s' % mvl_meta)
+                            #plugin.log.info('meta data-> %s' % mvl_meta)
+
                             thumbnail_url = ''
                             try:
                                 if mvl_meta['cover_url']:
                                     thumbnail_url = mvl_meta['cover_url']
                             except:
                                 thumbnail_url = ''
+
+                            print "New Thumb"
+                            print thumbnail_url
 
                             fanart_url = ''
                             try:
@@ -713,15 +740,15 @@ def get_categories(id, page):
                                               'fanart_image': fanart_url,
                                           },
                                           'info': info_dic,
-                                          'context_menu': [(
-                                                               'Mark as Watched',
-                                                               'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                     id=categories['id'],
-                                                                                                     title=categories['title'].encode('utf-8'),
-                                                                                                     thumbnail="None",
-                                                                                                     isplayable="False",
-                                                                                                     category=categories['top_level_parent'])
-                                                           )],
+                                          # 'context_menu': [(
+                                          #                      'Mark as Watched',
+                                          #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                          #                                                            id=categories['id'],
+                                          #                                                            title=categories['title'].encode('utf-8'),
+                                          #                                                            thumbnail="None",
+                                          #                                                            isplayable="False",
+                                          #                                                            category=categories['top_level_parent'])
+                                          #                  )],
                                           'replace_context_menu': True
                                       }]
 
@@ -738,8 +765,8 @@ def get_categories(id, page):
                                     button_name = 'Cinema1'
                                     categories['title'] = 'Cinema Movies'
                                 elif categories['title'] == 'Genre':
-                                    button_name = 'MoviesByGenres1'
-                                    categories['title'] = 'Movies by Genres'
+                                    button_name = 'MovieGenres2'
+                                    categories['title'] = 'Movies by Genre'
                             elif categories['parent_id'] == '3':
                                 if categories['title'] == 'New Releases':
                                     button_name = 'DateAired1'
@@ -749,22 +776,22 @@ def get_categories(id, page):
                                     categories['title'] = 'Popular TV Series'
                                 elif categories['title'] == 'Genre':
                                     button_name = 'TVByGenres1'
-                                    categories['title'] = 'TV Shows by Genres'
+                                    categories['title'] = 'TV Shows by Genre'
 
                             items += [{
                                           'label': '{0}'.format(categories['title'].encode('utf-8')),
                                           'path': plugin.url_for('get_categories', id=categories['id'], page=0),
                                           'is_playable': False,
                                           'thumbnail': art('{0}.png'.format(button_name.lower())),
-                                          'context_menu': [(
-                                                               'Mark as Watched',
-                                                               'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                     id=categories['id'],
-                                                                                                     title=categories['title'].encode('utf-8'),
-                                                                                                     thumbnail="None",
-                                                                                                     isplayable="False",
-                                                                                                     category=categories['top_level_parent'])
-                                                           )],
+                                          # 'context_menu': [(
+                                          #                      'Mark as Watched',
+                                          #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                          #                                                            id=categories['id'],
+                                          #                                                            title=categories['title'].encode('utf-8'),
+                                          #                                                            thumbnail="None",
+                                          #                                                            isplayable="False",
+                                          #                                                            category=categories['top_level_parent'])
+                                          #                  )],
                                           'replace_context_menu': True
                                       }]
 
@@ -786,11 +813,24 @@ def get_categories(id, page):
                         mvl_img = thumbnail_url
                         series_name = 'NONE'
 
+                        watch_info = {'video_type': 'movie', 'season': 'NONE', 'episode': 'NONE', 'year': '0'}
+
                         if categories['top_level_parent'] == '1':
                             mvl_meta = create_meta('movie', categories['title'].encode('utf-8'), categories['release_date'], mvl_img)
+                            watch_info['year'] = mvl_meta['year']
                         elif categories['top_level_parent'] == '3':
                             #playable items of TV show are episodes
                             mvl_meta = create_meta('episode', categories['title'].encode('utf-8'), categories['release_date'], mvl_img, categories['sub_categories_names'])
+
+                            watch_info['video_type'] = 'episode'
+                            watch_info['season'] = mvl_meta['season']
+                            watch_info['episode'] = mvl_meta['episode']
+                            watch_info['year'] = mvl_meta['premiered'][:4]
+
+                            if watch_info['year'] == '':
+                                watch_info['year'] = 0
+
+
                             if 'series_name' in mvl_meta:
                                 series_name = mvl_meta['series_name'].strip()
                             #set layout to Episode
@@ -825,6 +865,9 @@ def get_categories(id, page):
                         except:
                             mvl_plot = categories['synopsis'].encode('utf-8')
 
+                        watched_state = 'Watched'
+                        if mvl_meta['playcount'] > 0:
+                            watched_state = 'Unwatched'
 
                         items += [{
                                       'thumbnail': thumbnail_url,
@@ -844,20 +887,23 @@ def get_categories(id, page):
                                           'cast': categories['actors'].encode('utf-8'),
                                           'year': categories['release_date'],
                                           'premiered': categories['release_date'],
-                                          'duration': mvl_meta['duration']
+                                          'duration': mvl_meta['duration'],
+                                          'playcount': mvl_meta['playcount']
                                       },
                                       'path': plugin.url_for('get_videos', id=categories['video_id'],
                                                              thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8'),
                                                              parent_id=categories['top_level_parent'], series_name=series_name),
                                       'is_playable': False,
                                       'context_menu': [(
-                                                           'Mark as Watched',
-                                                           'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                 id=categories['video_id'],
+                                                           'Mark as {0}'.format(watched_state),
+                                                           'XBMC.RunPlugin(%s)' % plugin.url_for('mark_as_{0}'.format(watched_state.lower()),
+                                                                                                 video_type=watch_info['video_type'],
                                                                                                  title=categories['title'].encode('utf-8'),
-                                                                                                 thumbnail=thumbnail_url,
-                                                                                                 isplayable="True",
-                                                                                                 category=categories['top_level_parent'])
+                                                                                                 imdb_id=mvl_meta['imdb_id'],
+                                                                                                 year=watch_info['year'],
+                                                                                                 season=watch_info['season'],
+                                                                                                 episode=watch_info['episode']
+                                                                                                 )
                                                        )],
                                       'replace_context_menu': True
                                   }]
@@ -939,7 +985,7 @@ def get_categories(id, page):
         # except IOError:
             # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
         except Exception, e:
-            #print e
+            print e
 
             if id in ('1', '3'):  # if we were on 1st page, then the viewmode should remain to 58 as an error has occured and we haven't got any data for next screen
                 mvl_view_mode = 58
@@ -988,13 +1034,15 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
             # instruction text
             items += [{
                           #'label': '[COLOR FFFFFF00]Please click on a link below to begin viewing[/COLOR] [COLOR FFFF0000]* HD[/COLOR] [COLOR FFFFFFFF]sources require a minimum of [COLOR FFFF0000]40mb/s[/COLOR] internet speed [COLOR FFFF0000]* Unusable sources[/COLOR] are replaced weekly[/COLOR]',
-                          'label': '[COLOR FFC41D67]Please click on a link below to begin viewing[/COLOR]',
+                          # 'label': '[COLOR FFC41D67]Please click on a link below to begin viewing[/COLOR]',
+                          'label': '[COLOR FFC41D67]MVL may have removed certain links to this content based upon DMCA notice[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
                           'is_playable': False
                       }]
 
 
-            src_list = ['firedrive', 'putlocker', 'novamov', 'movpod', 'filenuke', 'sockshare', 'movreel', 'mightyupload', 'promptfile', 'hugefile', 'billionupload', '180upload', 'lemupload', 'gorillavid']
+            src_list = ['firedrive', 'putlocker', 'movreel', 'promptfile', 'mightyupload', 'novamov', 'nowvideo', 'lemupload', 'gorillavid']
+            #'hugefile', 'billionupload', '180upload',
 
             for urls in jsonObj:
                 src_order = 0
@@ -1013,8 +1061,9 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
             count = 0
             sd_count = 0
             for urls in jsonObj:
-                #if parent_id == '1' and urls['resolved_URL'] == 'NONE':
-                #    continue
+                # if parent_id == '1' and urls['resolved_URL'] == 'NONE':
+                if urls['resolved_URL'] == 'NONE' and urls['src_order'] == 0:
+                    continue
 
                 source_quality = ''
                 source_url = urls['URL'][urls['URL'].find('://')+3:]
@@ -1040,6 +1089,9 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
             for urls in jsonObj:
                 # if urls['resolved_URL'] == 'NONE':
                 #     continue
+                if urls['URL'].find('billionupload') >= 0 or urls['URL'].find('180upload') >= 0 or urls['URL'].find('hugefile') >= 0:
+                    #discard these 3 source for hd
+                    continue
 
                 source_quality = ''
                 source_url = urls['URL'][urls['URL'].find('://')+3:]
@@ -1073,73 +1125,16 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
         hide_busy_dialog()
 
 
-class CustomPopup(xbmcgui.WindowXMLDialog):
-    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
-        pass
-
-    def setParams(self, trailer_id, source_url, resolved_url, title, video_id):
-        self.trailer_id = trailer_id
-        self.trailer_url = 'http://www.youtube.com/watch?v='+trailer_id
-        self.source_url = source_url
-        self.resolved_url = resolved_url
-        self.title = title
-        self.video_id = video_id
-
-    def updateLabels(self):
-        self.show()
-        self.getControl(20).setLabel(self.source_url)
-        self.close()
-
-    def onClick	(self, control):
-        if control == 20:
-            #show source URL
-            # showMessage('Msg', self.trailer_url)
-            pass
-        elif control == 21:
-            #play trailer
-            self.close()
-
-            if self.trailer_id == 'NONE':
-                showMessage('Error', 'No trailer found')
-                resume_popup_window()
-            else:
-                play_video(self.trailer_url, 'NONE', self.title + ' - Official trailer')
-
-
-        elif control == 22:
-            self.close()
-            play_video(self.source_url, self.resolved_url, self.title)
-
-        elif control == 23:
-            #exit
-            self.close()
-
-        elif control == 24:
-            self.close()
-            show_review(self.video_id)
-
-
-class CustomReviewPopup(xbmcgui.WindowXMLDialog):
-    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
-        pass
-
-    def setParams(self, review_url):
-        self.review_url = review_url
-
-    def updateReviewText(self, review, critic_name, review_publish_date, heading):
-        self.show()
-        #self.getControl(1).setLabel(heading+'\n[COLOR FF888888] By '+critic_name+' ('+review_publish_date+') [/COLOR]')
-        self.getControl(1).setLabel(heading)
-        self.getControl(4).setLabel('[COLOR FF888888] By '+critic_name+' ('+review_publish_date+') [/COLOR]')
-        self.getControl(2).setText(review)
-
-        self.close()
-
-    def onClick	(self, control):
-        if control == 11:
-            self.close()
-            resume_popup_window()
-
+def getFullPath(path, url, useKiosk, userAgent):
+    profile = ""
+    # if useOwnProfile:
+    #     profile = '--user-data-dir="'+profileFolder+'" '
+    kiosk = ""
+    if useKiosk=="yes":
+        kiosk = '--kiosk '
+    if userAgent:
+        userAgent = '--user-agent="'+userAgent+'" '
+    return '"'+path+'" '+profile+userAgent+'--start-maximized --disable-translate --disable-new-tab-first-run --no-default-browser-check --no-first-run '+kiosk+'"'+url+'"'
 
 video_popup = None
 
@@ -1152,11 +1147,19 @@ def show_popup(url, resolved_url, title, trailer, parent_id, video_id, series_na
     elif parent_id == '3':
         video_popup = CustomPopup('Custom-VideoPopUp-TV.xml', os.path.dirname(os.path.realpath(__file__)))
 
+    series_id = "NONE"
     video_title = title
     if series_name != 'NONE':
         video_title = series_name + ' : ' + title
 
-    video_popup.setParams(trailer, url, resolved_url, video_title, video_id)
+        mvl_meta = create_meta('tvshow', series_name.encode('utf-8'), '', '')
+        series_id = mvl_meta['tvdb_id']
+    else:
+        mvl_meta = create_meta('movie', title, '', '')
+        series_id = mvl_meta['tmdb_id']
+
+
+    video_popup.setParams(trailer, url, resolved_url, video_title, video_id, series_id)
     video_popup.updateLabels()
 
     try:
@@ -1218,8 +1221,6 @@ def show_review(video_id):
     hide_busy_dialog()
     exit()
 
-
-
 def resume_popup_window():
 
     try:
@@ -1248,33 +1249,15 @@ def resume_popup_window():
         pass
 
 
-class MVLPlayer(xbmc.Player):
-    def __init__( self, *args, **kwargs ):
-        xbmc.Player.__init__( self )
 
-    def PlayVideo(self, url):
-        self.play(url)
+def WatchedCallbackwithParams(video_type, title, imdb_id, season, episode, year):
+    print('- - -' +'Video completely watched.')
 
-        try:
-            while self.isPlaying():
-                xbmc.sleep(1000)
-        except:
-            pass
+    if video_type == 'movie':
+        __metaget__.change_watched(video_type, title, imdb_id, season=None, episode=None, year=year, watched=7)
+        # xbmc.executebuiltin("XBMC.Container.Refresh")
 
-    def onPlayBackStarted(self):
-        # print "PLAYBACK STARTED"
-        pass
-
-    def onPlayBackEnded(self):
-        # print "PLAYBACK ENDED"
-        resume_popup_window()
-
-    def onPlayBackStopped(self):
-        # print "PLAYBACK STOPPED"
-        resume_popup_window()
-
-@plugin.route('/play_video/<url>/<resolved_url>/<title>')
-def play_video(url, resolved_url, title):
+def play_video(url, resolved_url, title, video_type):
     global mvl_view_mode
 
     # if check_internet():
@@ -1285,11 +1268,11 @@ def play_video(url, resolved_url, title):
     # if login_check():
     unplayable = False
     try:
-        if resolved_url != 'NONE':
-            #no need to resolve the url on client side
-            #use the pre-resolved url
-            hostedurl = resolved_url
-        elif url.find('youtube.com') != -1:
+        # if resolved_url != 'NONE':
+        #     #no need to resolve the url on client side
+        #     #use the pre-resolved url
+        #     hostedurl = resolved_url
+        if url.find('youtube.com') != -1:
             #this is youtube video
             #resolve ourselves
             from resources.youtube import YouTubeResolver
@@ -1312,18 +1295,20 @@ def play_video(url, resolved_url, title):
 
             hide_busy_dialog()
             #plugin.set_resolved_url(hostedurl)
-            #play the resolved url manually, since we aren't using playable link
-            playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
-            playlist.clear()
 
-            item_title = '[COLOR FFFFFFFF]{0}[/COLOR] | [COLOR FF777777]{1}[/COLOR]'.format(title, source_url)
-            listitem = xbmcgui.ListItem(item_title)
 
-            #check if this item already exists
+            ##play the resolved url manually, since we aren't using playable link
+            #playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
+            ## playlist.clear()
+            #
+            #item_title = '[COLOR FFFFFFFF]{0}[/COLOR] | [COLOR FF777777]{1}[/COLOR]'.format(title, source_url)
+            #listitem = xbmcgui.ListItem(item_title)
+            #
+            ##check if this item already exists
             #playlist_len = playlist.__len__()
             #item_found = False
             #item_index = 0
-
+            #
             #for i in range(0, playlist_len):
             #    #print item_title
             #    #print playlist.__getitem__(i).getLabel()
@@ -1333,23 +1318,64 @@ def play_video(url, resolved_url, title):
             #        item_found = True
             #        item_index = i
             #        break
-
+            #
             #if item_found:
-            #    #same filename already exists in playlist
-            #    #remove same filename from playlist
-            #    print playlist.remove(hostedurl)
-            #    print 'inside delete'
+            #   #same filename already exists in playlist
+            ##    #remove same filename from playlist
+            ##    print playlist.remove(hostedurl)
+            #    print 'found in playlist'
+            #    # pass
+            #else:
+            #    playlist.add(url=hostedurl, listitem=listitem, index=0)
+            #
+            ##playlist.add(url=hostedurl, listitem=listitem, index=0)
+            #
+            ## xbmc.Player().play(playlist)
+            #
+            ##print item_index
+            ##xbmc.executebuiltin('Playlist.PlayOffset(video, {0})'.format(item_index))
+            ##print 'Playlist.PlayOffset(video, {0})'.format(item_index)
+            #
+            #MVLPlayer().PlayVideo(playlist)
 
 
-            playlist.add(url=hostedurl, listitem=listitem, index=0)
+######################
+            if video_type == 'movie':
+                mvl_meta = create_meta('movie', title, '', '')
+            else:
+            #     mvl_meta = create_meta('movie', title, '', '')
+                mvl_meta = {'year': ''}
 
-            # xbmc.Player().play(playlist)
-            MVLPlayer().PlayVideo(playlist)
+
+######################
+
+
+            playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+            playlist.clear()
+            item_title = '[COLOR FFFFFFFF]{0}[/COLOR] | [COLOR FF777777]{1}[/COLOR]'.format(title, source_url)
+            listitem = xbmcgui.ListItem(item_title)
+            playlist.add(url=hostedurl, listitem=listitem)
+
+
+            player = playbackengine.Player(addon_id='plugin.video.mvl', video_type='movie', title=title,
+                                    season='', episode='', year=mvl_meta['year'], watch_percent=0.5,
+                                    watchedCallbackwithParams=WatchedCallbackwithParams)
+
+            player.play(playlist)
+            while player._playbackLock.isSet():
+                print('- - -' +'Playback lock set. Sleeping for 250.')
+                xbmc.sleep(250)
+
+            #if we are here, it means playback has either stopped or finished
+            #show popup again
+            resume_popup_window()
+
             #return None
         else:
             unplayable = True
     except Exception, e:
         unplayable = True
+        print 'KISU EKTA HOISE'
         print e
 
     if unplayable:
@@ -1397,14 +1423,16 @@ def create_meta(video_type, title, year, thumb, sub_cat=None):
             episode_num = season_text[season_text.find('x')+1:]
             meta = __metaget__.get_episode_meta(episode_title, meta_temp['imdb_id'], season, episode_num)
             meta['series_name'] = series_name
+            #replace episode poster with series poster
+            meta['cover_url'] = meta_temp['cover_url']
 
-        if video_type == 'tvshow':
-            meta['cover_url'] = meta['banner_url']
+        #if video_type == 'tvshow':
+        #    meta['cover_url'] = meta['banner_url']
         if meta['cover_url'] in ('/images/noposter.jpg', ''):
             meta['cover_url'] = thumb
 
-        print 'Done TV'
-        print meta
+        #print 'Done TV'
+        #print meta
 
     except Exception, e:
         print e
@@ -1424,7 +1452,6 @@ def get_trailer_url(mvl_meta):
         trailer = 'NONE'
 
     return trailer
-
 
 def login_check():
     return True
@@ -1485,7 +1512,7 @@ def check_update():
         mvl_video_version = addon.attributes['version'].value
 
         #mvl skin
-        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', skin_id, 'addon.xml')
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', common.skin_id, 'addon.xml')
         xmldoc = minidom.parse(file_path)
         addon = xmldoc.getElementsByTagName('addon')[0]
         mvl_skin_version = addon.attributes['version'].value
@@ -1506,12 +1533,9 @@ def check_update():
 
     pass
 
-
 def run_update():
     file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'script_update.py')
     xbmc.executebuiltin("RunScript("+file_path+")")
-
-
 
 @plugin.route('/search/<category>/')
 def search(category):
@@ -1632,15 +1656,15 @@ def search(category):
                                                   'fanart_image': fanart_url,
                                               },
                                               'info': info_dic,
-                                              'context_menu': [(
-                                                                   'Mark as Watched',
-                                                                   'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                         id=categories['id'],
-                                                                                                         title=categories['title'].encode('utf-8'),
-                                                                                                         thumbnail="None",
-                                                                                                         isplayable="False",
-                                                                                                         category=categories['top_level_parent'])
-                                                               )],
+                                              # 'context_menu': [(
+                                              #                      'Mark as Watched',
+                                              #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                              #                                                            id=categories['id'],
+                                              #                                                            title=categories['title'].encode('utf-8'),
+                                              #                                                            thumbnail="None",
+                                              #                                                            isplayable="False",
+                                              #                                                            category=categories['top_level_parent'])
+                                              #                  )],
                                               'replace_context_menu': True
                                           }]
 
@@ -1650,15 +1674,15 @@ def search(category):
                                               'path': plugin.url_for('get_categories', id=categories['id'], page=0),
                                               'is_playable': False,
                                               'thumbnail': art('{0}.png'.format(categories['title'].lower())),
-                                              'context_menu': [(
-                                                                   'Mark as Watched',
-                                                                   'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                         id=categories['id'],
-                                                                                                         title=categories['title'],
-                                                                                                         thumbnail="None",
-                                                                                                         isplayable="False",
-                                                                                                         category=category)
-                                                               )],
+                                              # 'context_menu': [(
+                                              #                      'Mark as Watched',
+                                              #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                              #                                                            id=categories['id'],
+                                              #                                                            title=categories['title'],
+                                              #                                                            thumbnail="None",
+                                              #                                                            isplayable="False",
+                                              #                                                            category=category)
+                                              #                  )],
                                               'replace_context_menu': True
                                           }]
                         elif categories['is_playable'] == 'True':
@@ -1670,12 +1694,24 @@ def search(category):
                             mvl_img = thumbnail_url
                             series_name = 'NONE'
 
+                            watch_info = {'video_type': 'movie', 'season': 'NONE', 'episode': 'NONE', 'year': '0'}
+
                             if categories['top_level_parent'] == '1':
                                 mvl_meta = create_meta('movie', categories['title'], categories['release_date'], mvl_img)
+                                watch_info['year'] = mvl_meta['year']
                             elif categories['top_level_parent'] == '3':
                                 #playable items of TV show are episodes
                                 mvl_meta = create_meta('episode', categories['title'], categories['release_date'], mvl_img, categories['sub_categories_names'])
                                 # mvl_meta = create_meta('movie', categories['title'], '', thumbnail_url)
+
+                                watch_info['video_type'] = 'episode'
+                                watch_info['season'] = mvl_meta['season']
+                                watch_info['episode'] = mvl_meta['episode']
+                                watch_info['year'] = mvl_meta['premiered'][:4]
+
+                                if watch_info['year'] == '':
+                                    watch_info['year'] = 0
+
                                 if 'series_name' in mvl_meta:
                                     series_name = mvl_meta['series_name'].strip()
                                 #set layout to Episode
@@ -1705,6 +1741,10 @@ def search(category):
                             except:
                                 mvl_plot = categories['synopsis'].encode('utf-8')
 
+                            watched_state = 'Watched'
+                            if mvl_meta['playcount'] > 0:
+                                watched_state = 'Unwatched'
+
                             items += [{
                                           'thumbnail': thumbnail_url,
                                           'properties': {
@@ -1723,20 +1763,23 @@ def search(category):
                                               'cast': categories['actors'].encode('utf-8'),
                                               'year': categories['release_date'],
                                               'premiered': categories['release_date'],
-                                              'duration': mvl_meta['duration']
+                                              'duration': mvl_meta['duration'],
+                                              'playcount': mvl_meta['playcount']
                                           },
                                           'path': plugin.url_for('get_videos', id=categories['video_id'],
                                                                  thumbnail=thumbnail_url, trailer=get_trailer_url(mvl_meta).encode('utf-8'),
                                                                  parent_id=categories['top_level_parent'], series_name=series_name),
                                           'is_playable': False,
                                           'context_menu': [(
-                                                               'Mark as Watched',
-                                                               'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                     id=categories['video_id'],
-                                                                                                     title=categories['title'],
-                                                                                                     thumbnail=thumbnail_url,
-                                                                                                     isplayable="True",
-                                                                                                     category=categories['top_level_parent'])
+                                                               'Mark as {0}'.format(watched_state),
+                                                               'XBMC.RunPlugin(%s)' % plugin.url_for('mark_as_{0}'.format(watched_state.lower()),
+                                                                                                 video_type=watch_info['video_type'],
+                                                                                                 title=categories['title'].encode('utf-8'),
+                                                                                                 imdb_id=mvl_meta['imdb_id'],
+                                                                                                 year=watch_info['year'],
+                                                                                                 season=watch_info['season'],
+                                                                                                 episode=watch_info['episode']
+                                                                                                    )
                                                            )],
                                           'replace_context_menu': True
                                       }]
@@ -1778,9 +1821,6 @@ def search(category):
         dialog_msg()
         hide_busy_dialog()
 
-
-
-
 @plugin.route('/azlisting/<category>/')
 def azlisting(category):
     global mvl_view_mode
@@ -1812,7 +1852,6 @@ def azlisting(category):
         mvl_view_mode = 59
         dialog_msg()
         hide_busy_dialog()
-
 
 @plugin.route('/get_azlist/<key>/<page>/<category>/')
 def get_azlist(key, page, category):
@@ -1957,16 +1996,16 @@ def get_azlist(key, page, category):
                                                   'fanart_image': fanart_url,
                                               },
                                               'info': info_dic,
-                                              'context_menu': [(
-                                                                   'Mark as Watched',
-                                                                   'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                         id=results['id'],
-                                                                                                         title=results['title'].encode('utf-8'),
-                                                                                                         thumbnail="None",
-                                                                                                         isplayable="False",
-                                                                                                         category=results[
-                                                                                                             'top_level_parent'])
-                                                               )],
+                                              # 'context_menu': [(
+                                              #                      'Mark as Watched',
+                                              #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                              #                                                            id=results['id'],
+                                              #                                                            title=results['title'].encode('utf-8'),
+                                              #                                                            thumbnail="None",
+                                              #                                                            isplayable="False",
+                                              #                                                            category=results[
+                                              #                                                                'top_level_parent'])
+                                              #                  )],
                                               'replace_context_menu': True
                                           }]
 
@@ -1976,15 +2015,15 @@ def get_azlist(key, page, category):
                                               'path': plugin.url_for('get_categories', id=results['id'], page=0),
                                               'is_playable': False,
                                               'thumbnail': art('{0}.png'.format(results['title'].lower())),
-                                              'context_menu': [(
-                                                                   'Mark as Watched',
-                                                                   'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                         id=results['id'],
-                                                                                                         title=results['title'].encode('utf-8'),
-                                                                                                         thumbnail="None",
-                                                                                                         isplayable="False",
-                                                                                                         category=category)
-                                                               )],
+                                              # 'context_menu': [(
+                                              #                      'Mark as Watched',
+                                              #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
+                                              #                                                            id=results['id'],
+                                              #                                                            title=results['title'].encode('utf-8'),
+                                              #                                                            thumbnail="None",
+                                              #                                                            isplayable="False",
+                                              #                                                            category=category)
+                                              #                  )],
                                               'replace_context_menu': True
                                           }]
 
@@ -1997,12 +2036,24 @@ def get_azlist(key, page, category):
                         mvl_img = thumbnail_url
                         series_name = 'NONE'
 
+                        watch_info = {'video_type': 'movie', 'season': 'NONE', 'episode': 'NONE', 'year': ''}
+
                         if results['top_level_parent'] == '1':
                             mvl_meta = create_meta('movie', results['title'], results['release_date'], mvl_img)
+                            watch_info['year'] = mvl_meta['year']
                         elif results['top_level_parent'] == '3':
                             #playable items of TV show are episodes
                             mvl_meta = create_meta('episode', results['title'], results['release_date'], mvl_img, results['sub_categories_names'])
                             # mvl_meta = create_meta('movie', results['title'], '', thumbnail_url)
+
+                            watch_info['video_type'] = 'episode'
+                            watch_info['season'] = mvl_meta['season']
+                            watch_info['episode'] = mvl_meta['episode']
+                            watch_info['year'] = mvl_meta['premiered'][:4]
+
+                            if watch_info['year'] == '':
+                                watch_info['year'] = 0
+
                             if 'series_name' in mvl_meta:
                                 series_name = mvl_meta['series_name'].strip()
                             #set layout to Episode
@@ -2030,6 +2081,10 @@ def get_azlist(key, page, category):
                         except:
                             mvl_plot = results['synopsis'].encode('utf-8')
 
+                        watched_state = 'Watched'
+                        if mvl_meta['playcount'] > 0:
+                            watched_state = 'Unwatched'
+
                         items += [{
                                       'thumbnail': thumbnail_url,
                                       'properties': {
@@ -2056,13 +2111,15 @@ def get_azlist(key, page, category):
                                                              parent_id=results['top_level_parent'], series_name=series_name),
                                       'is_playable': False,
                                       'context_menu': [(
-                                                           'Mark as Watched',
-                                                           'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                                                                                 id=results['video_id'],
-                                                                                                 title=results['title'],
-                                                                                                 thumbnail=thumbnail_url,
-                                                                                                 isplayable="True",
-                                                                                                 category=results['top_level_parent'])
+                                                           'Mark as {0}'.format(watched_state),
+                                                           'XBMC.RunPlugin(%s)' % plugin.url_for('mark_as_{0}'.format(watched_state.lower()),
+                                                                                                 video_type=watch_info['video_type'],
+                                                                                                 title=categories['title'].encode('utf-8'),
+                                                                                                 imdb_id=mvl_meta['imdb_id'],
+                                                                                                 year=watch_info['year'],
+                                                                                                 season=watch_info['season'],
+                                                                                                 episode=watch_info['episode']
+                                                                                               )
                                                        )],
                                       'replace_context_menu': True
                                   }]
@@ -2103,7 +2160,6 @@ def get_azlist(key, page, category):
         mvl_view_mode = 59
         dialog_msg()
         hide_busy_dialog()
-
 
 @plugin.route('/mostpopular/<page>/<category>/')
 def mostpopular(page, category):
@@ -2213,7 +2269,6 @@ def mostpopular(page, category):
         dialog_msg()
         hide_busy_dialog()
 
-
 def init_database():
     plugin.log.info('Building My Video Library Database')
     if not xbmcvfs.exists(os.path.dirname(DB_DIR)):
@@ -2225,48 +2280,29 @@ def init_database():
     db.close()
 
 
-@plugin.route('/save_favourite/<id>/<title>/<thumbnail>/<isplayable>/<category>')
-def save_favourite(id, title, thumbnail, isplayable, category):
-    __metaget__.change_watched('movie', title, 'tt2349460', season=None, episode=None, year=2014, watched=7)
+@plugin.route('/mark_as_watched/<video_type>/<title>/<imdb_id>/<season>/<episode>/<year>')
+def mark_as_watched(video_type, title, imdb_id, season, episode, year):
+    if video_type == 'movie':
+        __metaget__.change_watched(video_type, title, imdb_id, season=None, episode=None, year=year, watched=7)
+    elif video_type == 'episode':
+        __metaget__.change_watched(video_type, title, imdb_id, season=season, episode=episode, year=year, watched=7)
+
     xbmc.executebuiltin("XBMC.Container.Refresh")
 
-    #pass
+@plugin.route('/mark_as_unwatched/<video_type>/<title>/<imdb_id>/<season>/<episode>/<year>')
+def mark_as_unwatched(video_type, title, imdb_id, season, episode, year):
+    if video_type == 'movie':
+        __metaget__.change_watched(video_type, title, imdb_id, season=None, episode=None, year=year, watched=6)
+    elif video_type == 'episode':
+        __metaget__.change_watched(video_type, title, imdb_id, season=season, episode=episode, year=year, watched=6)
 
-    #plugin.log.info(id)
-    #plugin.log.info(title)
-    #plugin.log.info(thumbnail)
-    #plugin.log.info(isplayable)
-    #plugin.log.info(category)
-    #try:
-    #    statement = 'INSERT OR IGNORE INTO favourites (id, title, thumbnail, isplayable, category) VALUES (%s,%s,%s,%s,%s)'
-    #    db = orm.connect(DB_DIR)
-    #    statement = statement.replace("%s", "?")
-    #    cursor = db.cursor()
-    #    cursor.execute(statement, (id, title, thumbnail, isplayable, category))
-    #    db.commit()
-    #    db.close()
-    #except:
-    #    # xbmc.executebuiltin('Notification(Database Error, Please contact software provider,5000,/script.hellow.world.png)')
-    #    showMessage('Database Error', 'Please contact software provider')
-
-
-@plugin.route('/remove_favourite/<id>/<title>/<category>')
-def remove_favourite(id, title, category):
-    statement = 'DELETE FROM favourites WHERE id=%s AND title=%s AND category=%s'
-    db = orm.connect(DB_DIR)
-    statement = statement.replace("%s", "?")
-    cursor = db.cursor()
-    cursor.execute(statement, (id, title, category))
-    db.commit()
-    db.close()
-    return xbmc.executebuiltin("XBMC.Container.Refresh()")
+    xbmc.executebuiltin("XBMC.Container.Refresh")
 
 
 def sys_exit():
     hide_busy_dialog()
     # plugin.finish(succeeded=True)
     xbmc.executebuiltin("XBMC.ActivateWindow(Home)")
-
 
 @plugin.route('/get_favourites/<category>/')
 def get_favourites(category):
@@ -2311,6 +2347,324 @@ def get_favourites(category):
     db.close()
     hide_busy_dialog()
     return items
+
+
+class CustomTermsPopup(xbmcgui.WindowXMLDialog):
+    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+        pass
+
+    def updateTermText(self, heading, term_text):
+        self.show()
+        self.getControl(1).setLabel(heading)
+        self.getControl(2).setText(term_text)
+
+        self.close()
+
+    def onClick	(self, control):
+        if control == 11:
+            self.close()
+            onClick_agree()
+        elif control == 10:
+            self.close()
+            onClick_disAgree()
+
+
+
+class CustomPopup(xbmcgui.WindowXMLDialog):
+    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+        pass
+
+    def setParams(self, trailer_id, source_url, resolved_url, title, video_id, series_id):
+        self.trailer_id = trailer_id
+        self.trailer_url = 'http://www.youtube.com/watch?v='+trailer_id
+        self.source_url = source_url
+        self.resolved_url = resolved_url
+        self.title = title.strip()
+        self.video_id = video_id
+        self.series_id = series_id
+
+        if trailer_id == 'NONE':
+            self.video_type = 'episode'
+        else:
+            self.video_type = 'movie'
+
+    def updateLabels(self):
+        self.show()
+        self.getControl(20).setLabel(self.source_url)
+        self.close()
+
+    def onClick	(self, control):
+        if control == 20:
+            #show source URL
+            # showMessage('Msg', self.trailer_url)
+            pass
+        elif control == 21:
+            #play trailer
+            self.close()
+
+            if self.trailer_id == 'NONE':
+                showMessage('Error', 'No trailer found')
+                resume_popup_window()
+            else:
+                play_video(self.trailer_url, 'NONE', self.title + ' - Official trailer', self.video_type)
+
+
+        elif control == 22:
+            self.close()
+            play_video(self.source_url, self.resolved_url, self.title, self.video_type)
+
+        elif control == 23:
+            #exit
+            self.close()
+
+        elif control == 24:
+            self.close()
+            show_review(self.video_id)
+
+        elif control == 18:
+            #other viewing options
+            self.close()
+
+            purchase_dialog = CustomPurchaseOptions('Custom-PurchaseOptions.xml', os.path.dirname(os.path.realpath(__file__)))
+            purchase_dialog.showDialog()
+
+            resume_popup_window()
+
+        elif control == 28:
+            #official posters
+            self.close()
+
+            if self.trailer_id == "NONE":
+                poster_text = "For Official posters and images, please visit: [COLOR FF1F6C15] http://thetvdb.com/?tab=seriesposters&id="+self.series_id+"[/COLOR]"
+            else:
+                poster_text = "For Official posters and images, please visit: [COLOR FF1F6C15] http://www.themoviedb.org/movie/"+self.series_id+"-"+self.title.replace(' ', '-')+"/backdrops [/COLOR]"
+
+            dialog = xbmcgui.Dialog()
+            dialog.ok("Posters & Images", poster_text)
+
+            resume_popup_window()
+
+        elif control == 15:
+            #Watch Previews
+            self.close()
+
+            dialog = xbmcgui.Dialog()
+            dialog.ok("Watch Previews", "Please visit http://www.primetvseries.com to watch previews of your favorite shows")
+
+            resume_popup_window()
+
+        elif control == 16:
+            #Watch Previews
+            self.close()
+
+            dialog = xbmcgui.Dialog()
+            dialog.ok("Read Reviews", "Please visit http://www.metacritic.com/tv to read reviews of your favorite shows")
+
+            resume_popup_window()
+
+        elif control == 29:
+            #facebook share
+            #self.close()
+            pass
+
+            #path = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+            #path64 = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
+            #if os.path.exists(path):
+            #    # fullUrl = getFullPath(path, "http://www.facebook.com", "", "")
+            #    # subprocess.check_call("am start -a android.intent.action.VIEW -d http://www.facebook.com", shell=False)
+            #    subprocess.check_call(path+" http://www.facebook.com", shell=False)
+            #elif os.path.exists(path64):
+            #    subprocess.check_call(path64+" http://www.facebook.com", shell=False)
+
+
+class CustomReviewPopup(xbmcgui.WindowXMLDialog):
+    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+        pass
+
+    def setParams(self, review_url):
+        self.review_url = review_url
+
+    def updateReviewText(self, review, critic_name, review_publish_date, heading):
+        self.show()
+        #self.getControl(1).setLabel(heading+'\n[COLOR FF888888] By '+critic_name+' ('+review_publish_date+') [/COLOR]')
+        self.getControl(1).setLabel(heading)
+        self.getControl(4).setLabel('[COLOR FF888888] By '+critic_name+' ('+review_publish_date+', The New York Times) [/COLOR]')
+        self.getControl(2).setText(review)
+
+        self.close()
+
+    def onClick	(self, control):
+        if control == 11:
+            self.close()
+            resume_popup_window()
+
+class CustomPurchaseOptions(xbmcgui.WindowXMLDialog):
+    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+        pass
+
+    def showDialog(self):
+        self.show()
+        self.getControl(21).setLabel("Purchase & Viewing")
+        self.getControl(22).setLabel("Amazon.com .................. [COLOR FF1F6C15]www.amazon.com/dvd[/COLOR]")
+        self.getControl(23).setLabel("Google Play ................... [COLOR FF1F6C15]www.play.google.com/store/movies[/COLOR]")
+        self.getControl(24).setLabel("iTunes.com ..................... [COLOR FF1F6C15]www.apple.com/itunes/charts/movies[/COLOR]")
+        self.getControl(25).setLabel("Fandango ....................... [COLOR FF1F6C15]www.fandango.com[/COLOR]")
+        self.close()
+
+        self.doModal()
+
+    def onClick	(self, control):
+        if control == 10:
+            self.close()
+
+
+
+# class CustomPopup(xbmcgui.WindowXMLDialog):
+#     def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+#         pass
+#
+#     def setParams(self, trailer_id, source_url, resolved_url, title, video_id, series_id):
+#         self.trailer_id = trailer_id
+#         self.trailer_url = 'http://www.youtube.com/watch?v='+trailer_id
+#         self.source_url = source_url
+#         self.resolved_url = resolved_url
+#         self.title = title.strip()
+#         self.video_id = video_id
+#         self.series_id = series_id
+#
+#         if trailer_id == 'NONE':
+#             self.video_type = 'episode'
+#         else:
+#             self.video_type = 'movie'
+#
+#     def updateLabels(self):
+#         self.show()
+#         self.getControl(20).setLabel(self.source_url)
+#         self.close()
+#
+#     def onClick	(self, control):
+#         if control == 20:
+#             #show source URL
+#             # showMessage('Msg', self.trailer_url)
+#             pass
+#         elif control == 21:
+#             #play trailer
+#             self.close()
+#
+#             if self.trailer_id == 'NONE':
+#                 showMessage('Error', 'No trailer found')
+#                 resume_popup_window()
+#             else:
+#                 play_video(self.trailer_url, 'NONE', self.title + ' - Official trailer', self.video_type)
+#
+#
+#         elif control == 22:
+#             self.close()
+#             play_video(self.source_url, self.resolved_url, self.title, self.video_type)
+#
+#         elif control == 23:
+#             #exit
+#             self.close()
+#
+#         elif control == 24:
+#             self.close()
+#             show_review(self.video_id)
+#
+#         elif control == 18:
+#             #other viewing options
+#             self.close()
+#
+#             purchase_dialog = CustomPurchaseOptions('Custom-PurchaseOptions.xml', os.path.dirname(os.path.realpath(__file__)))
+#             purchase_dialog.showDialog()
+#
+#             resume_popup_window()
+#
+#         elif control == 28:
+#             #official posters
+#             self.close()
+#
+#             if self.trailer_id == "NONE":
+#                 poster_text = "Please visit http://thetvdb.com/?tab=seriesposters&id="+self.series_id+" for official posters and images"
+#             else:
+#                 poster_text = "Please visit http://www.themoviedb.org/movie/"+self.series_id+"-"+self.title.replace(' ', '-')+"/backdrops for official posters and images"
+#
+#             dialog = xbmcgui.Dialog()
+#             dialog.ok("Posters & Images", poster_text)
+#
+#             resume_popup_window()
+#
+#         elif control == 15:
+#             #Watch Previews
+#             self.close()
+#
+#             dialog = xbmcgui.Dialog()
+#             dialog.ok("Watch Previews", "Please visit http://www.primetvseries.com to watch previews of your favorite shows")
+#
+#             resume_popup_window()
+#
+#         elif control == 16:
+#             #Watch Previews
+#             self.close()
+#
+#             dialog = xbmcgui.Dialog()
+#             dialog.ok("Read Reviews", "Please visit http://www.metacritic.com/tv to read reviews of your favorite shows")
+#
+#             resume_popup_window()
+#
+#         elif control == 29:
+#             #facebook share
+#             self.close()
+#
+#             path = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+#             path64 = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
+#             if os.path.exists(path):
+#                 # fullUrl = getFullPath(path, "http://www.facebook.com", "", "")
+#                 # subprocess.check_call("am start -a android.intent.action.VIEW -d http://www.facebook.com", shell=False)
+#                 subprocess.check_call(path+" http://www.facebook.com", shell=False)
+#             elif os.path.exists(path64):
+#                 subprocess.check_call(path64+" http://www.facebook.com", shell=False)
+#
+
+# class CustomReviewPopup(xbmcgui.WindowXMLDialog):
+#     def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+#         pass
+#
+#     def setParams(self, review_url):
+#         self.review_url = review_url
+#
+#     def updateReviewText(self, review, critic_name, review_publish_date, heading):
+#         self.show()
+#         #self.getControl(1).setLabel(heading+'\n[COLOR FF888888] By '+critic_name+' ('+review_publish_date+') [/COLOR]')
+#         self.getControl(1).setLabel(heading)
+#         self.getControl(4).setLabel('[COLOR FF888888] By '+critic_name+' ('+review_publish_date+', The New York Times) [/COLOR]')
+#         self.getControl(2).setText(review)
+#
+#         self.close()
+#
+#     def onClick	(self, control):
+#         if control == 11:
+#             self.close()
+#             resume_popup_window()
+#
+# class CustomPurchaseOptions(xbmcgui.WindowXMLDialog):
+#     def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+#         pass
+#
+#     def showDialog(self):
+#         self.show()
+#         self.getControl(21).setLabel("Other Purchase/Viewing Options")
+#         self.getControl(22).setLabel("Amazon.com (www.amazon.com/dvd)")
+#         self.getControl(23).setLabel("Google Play (play.google.com/store/movies)")
+#         self.getControl(24).setLabel("iTunes.com (www.apple.com/itunes/charts/movies)")
+#         self.getControl(25).setLabel("Fandango (http://www.fandango.com)")
+#         self.close()
+#
+#         self.doModal()
+#
+#     def onClick	(self, control):
+#         if control == 10:
+#             self.close()
+
 
 
 if __name__ == '__main__':

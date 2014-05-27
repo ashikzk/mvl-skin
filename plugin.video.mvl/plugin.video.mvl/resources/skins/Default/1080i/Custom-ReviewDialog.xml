@@ -49,7 +49,7 @@
         <texturesliderbar>-</texturesliderbar>
         <texturesliderbarfocus>-</texturesliderbarfocus>
         <textureslidernib border="18">OSD/ScrollbarNibNF.png</textureslidernib>
-        <textureslidernibfocus border="18">OSD/ScrollbarNibFO.png</textureslidernibfocus>
+        <textureslidernibfocus border="18">OSD/ScrollbarNibFO2.png</textureslidernibfocus>
         <showonepage>true</showonepage>
         <orientation>vertical</orientation>
         <onleft>11</onleft>

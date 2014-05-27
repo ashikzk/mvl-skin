@@ -56,7 +56,8 @@
           <height>18</height>
           <texturebg border="15,0,15,0">VideoOSD/ProgressBG.png</texturebg>
           <midtexture border="15,0,15,0">VideoOSD/ProgressBar.png</midtexture>
-          <colordiffuse>Yellow</colordiffuse>
+          <!-- <colordiffuse>Yellow</colordiffuse> -->
+          <colordiffuse>FFC41D67</colordiffuse>
           <info>Player.Progress</info>
           <visible>true</visible>
         </control>

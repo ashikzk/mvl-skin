@@ -106,11 +106,23 @@
           <visible>container.content(episodes)</visible>
           <posx>60</posx>
           <posy>531</posy>
-          <control type="image" description="Thumb">
+<!--           <control type="image" description="Thumb">
             <posx>-6</posx>
             <posy>-123</posy>
             <width>720</width>
             <height>384</height>
+            <include>Icon_Fade</include>
+            <texture background="true">$INFO[ListItem.Art(thumb)]</texture>
+            <include>ThumbBorder</include>
+            <aspectratio>scale</aspectratio>
+          </control>
+ -->      
+		<!-- This is modified thumb for episodes to show series poster instead of episode stills -->
+		  <control type="image" description="Thumb">
+            <posx>-8</posx>
+            <posy>-170</posy>
+            <width>351</width>
+            <height>450</height>
             <include>Icon_Fade</include>
             <texture background="true">$INFO[ListItem.Art(thumb)]</texture>
             <include>ThumbBorder</include>

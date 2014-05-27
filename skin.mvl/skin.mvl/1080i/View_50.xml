@@ -11,7 +11,7 @@
       <control type="label">
         <posx>25</posx>
         <posy>0</posy>
-        <width>900</width>
+        <width>1100</width>
         <height>72</height>
         <scroll>false</scroll>
         <label>$INFO[ListItem.Label]</label>
@@ -48,7 +48,7 @@
       <control type="label">
         <posx>25</posx>
         <posy>0</posy>
-        <width>900</width>
+        <width>1100</width>
         <height>72</height>
         <scroll>false</scroll>
         <label>$INFO[ListItem.Label]</label>
@@ -136,13 +136,15 @@
         <posy>1</posy>
         <width>1010</width>
         <height>69</height>
-        <texture>list/ListFO.png</texture>
+        <texture>list/ListFO2.png</texture>
+		<colordiffuse>FF000000</colordiffuse>
       </control>
       <control type="label" description="Main Label">
         <posx>219</posx>
         <height>72</height>
         <width>920</width>
         <label>$INFO[ListItem.Label]</label>
+        <textcolor>FF1F6C15</textcolor>
       </control>
       <include>ListWatchedOverlay</include>
     </focusedlayout>
