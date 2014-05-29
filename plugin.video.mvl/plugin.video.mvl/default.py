@@ -1062,7 +1062,8 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
             sd_count = 0
             for urls in jsonObj:
                 # if parent_id == '1' and urls['resolved_URL'] == 'NONE':
-                if urls['resolved_URL'] == 'NONE' and urls['src_order'] == 0:
+                # if un-resolved and not in premium list, then continue
+                if urls['resolved_URL'] == 'NONE' and urls['src_order'] == len(src_list):
                     continue
 
                 source_quality = ''
