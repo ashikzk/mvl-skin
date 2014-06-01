@@ -237,6 +237,8 @@ def index():
                                   'path': plugin.url_for('get_categories', id=categories['id'], page=0),
                                   'is_playable': False,
                                   'thumbnail': art('{0}.png'.format(categories['title'].lower())),
+                                  'context_menu': [('','',)],
+                                  'replace_context_menu': True
                               }]
 
                 # hide_busy_dialog()
@@ -631,6 +633,8 @@ def get_categories(id, page):
                                   'path': plugin.url_for('search', category=parent_id),
                                   'thumbnail': art(button_name.lower()+'.png'),
                                   'is_playable': False,
+                                  'context_menu': [('','',)],
+                                  'replace_context_menu': True
                                   }]
 
                     ####
@@ -643,6 +647,8 @@ def get_categories(id, page):
                                               'label': '[COLOR FFC41D67]Estimated Release Date[/COLOR]',
                                               'path': plugin.url_for('do_nothing', view_mode=0),
                                               'is_playable': False,
+                                              'context_menu': [('','',)],
+                                              'replace_context_menu': True
                                           }]
 
 
@@ -651,7 +657,9 @@ def get_categories(id, page):
                             items += [{
                                           'label': categories['release_group'],
                                           'path': plugin.url_for('do_nothing', view_mode=0),
-                                          'is_playable': False
+                                          'is_playable': False,
+                                          'context_menu': [('','',)],
+                                          'replace_context_menu': True
                                       }]
 
                     ####
@@ -662,7 +670,9 @@ def get_categories(id, page):
                                       'label': 'Next >>',
                                       'path': plugin.url_for('get_categories', id=parent_id, page=(int(page) + 1)),
                                       'is_playable': False,
-                                      'thumbnail': art('next.png')
+                                      'thumbnail': art('next.png'),
+                                      'context_menu': [('','',)],
+                                      'replace_context_menu': True
                                   }]
                     #categories['is_playable'] is False for all categories and True for all video Items
                     elif categories['is_playable'] == 'False':
@@ -700,8 +710,8 @@ def get_categories(id, page):
                             except:
                                 thumbnail_url = ''
 
-                            print "New Thumb"
-                            print thumbnail_url
+                            #print "New Thumb"
+                            #print thumbnail_url
 
                             fanart_url = ''
                             try:
@@ -740,15 +750,7 @@ def get_categories(id, page):
                                               'fanart_image': fanart_url,
                                           },
                                           'info': info_dic,
-                                          # 'context_menu': [(
-                                          #                      'Mark as Watched',
-                                          #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                          #                                                            id=categories['id'],
-                                          #                                                            title=categories['title'].encode('utf-8'),
-                                          #                                                            thumbnail="None",
-                                          #                                                            isplayable="False",
-                                          #                                                            category=categories['top_level_parent'])
-                                          #                  )],
+                                          'context_menu': [('','',)],
                                           'replace_context_menu': True
                                       }]
 
@@ -783,15 +785,7 @@ def get_categories(id, page):
                                           'path': plugin.url_for('get_categories', id=categories['id'], page=0),
                                           'is_playable': False,
                                           'thumbnail': art('{0}.png'.format(button_name.lower())),
-                                          # 'context_menu': [(
-                                          #                      'Mark as Watched',
-                                          #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                          #                                                            id=categories['id'],
-                                          #                                                            title=categories['title'].encode('utf-8'),
-                                          #                                                            thumbnail="None",
-                                          #                                                            isplayable="False",
-                                          #                                                            category=categories['top_level_parent'])
-                                          #                  )],
+                                          'context_menu': [('','',)],
                                           'replace_context_menu': True
                                       }]
 
@@ -940,6 +934,8 @@ def get_categories(id, page):
                                   'path': plugin.url_for('azlisting', category=parent_id),
                                   'thumbnail': art(button_name.lower()+'.png'),
                                   'is_playable': False,
+                                  'context_menu': [('','',)],
+                                  'replace_context_menu': True
                               }]
                     #Most Popular & Favortite are commented out on Client's request for now
                     #adding Most Popular option
@@ -1037,7 +1033,9 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
                           # 'label': '[COLOR FFC41D67]Please click on a link below to begin viewing[/COLOR]',
                           'label': '[COLOR FFC41D67]MVL may have removed certain links to this content based upon DMCA notice[/COLOR]',
                           'path': plugin.url_for('do_nothing', view_mode=mvl_view_mode),
-                          'is_playable': False
+                          'is_playable': False,
+                          'context_menu': [('','',)],
+                          'replace_context_menu': True
                       }]
 
 
@@ -1084,6 +1082,8 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
                                       'thumbnail': thumbnail,
                                       'path': plugin.url_for('show_popup', url=urls['URL'], resolved_url=urls['resolved_URL'], title='{0}'.format(content), trailer=trailer, parent_id=parent_id, video_id=id, series_name=series_name),
                                       'is_playable': False,
+                                      'context_menu': [('','',)],
+                                      'replace_context_menu': True
                                   }]
 
             hd_count = 0
@@ -1112,6 +1112,8 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
                                       'thumbnail': thumbnail,
                                       'path': plugin.url_for('show_popup', url=urls['URL'], resolved_url=urls['resolved_URL'], title='{0}'.format(content), trailer=trailer, parent_id=parent_id, video_id=id, series_name=series_name),
                                       'is_playable': False,
+                                      'context_menu': [('','',)],
+                                      'replace_context_menu': True
                                   }]
 
 
@@ -1297,49 +1299,6 @@ def play_video(url, resolved_url, title, video_type):
             hide_busy_dialog()
             #plugin.set_resolved_url(hostedurl)
 
-
-            ##play the resolved url manually, since we aren't using playable link
-            #playlist = xbmc.PlayList( xbmc.PLAYLIST_VIDEO )
-            ## playlist.clear()
-            #
-            #item_title = '[COLOR FFFFFFFF]{0}[/COLOR] | [COLOR FF777777]{1}[/COLOR]'.format(title, source_url)
-            #listitem = xbmcgui.ListItem(item_title)
-            #
-            ##check if this item already exists
-            #playlist_len = playlist.__len__()
-            #item_found = False
-            #item_index = 0
-            #
-            #for i in range(0, playlist_len):
-            #    #print item_title
-            #    #print playlist.__getitem__(i).getLabel()
-            #    #print '---------------'
-            #    #check to see if this item is already in the playlist
-            #    if playlist.__getitem__(i).getLabel() == item_title:
-            #        item_found = True
-            #        item_index = i
-            #        break
-            #
-            #if item_found:
-            #   #same filename already exists in playlist
-            ##    #remove same filename from playlist
-            ##    print playlist.remove(hostedurl)
-            #    print 'found in playlist'
-            #    # pass
-            #else:
-            #    playlist.add(url=hostedurl, listitem=listitem, index=0)
-            #
-            ##playlist.add(url=hostedurl, listitem=listitem, index=0)
-            #
-            ## xbmc.Player().play(playlist)
-            #
-            ##print item_index
-            ##xbmc.executebuiltin('Playlist.PlayOffset(video, {0})'.format(item_index))
-            ##print 'Playlist.PlayOffset(video, {0})'.format(item_index)
-            #
-            #MVLPlayer().PlayVideo(playlist)
-
-
 ######################
             if video_type == 'movie':
                 mvl_meta = create_meta('movie', title, '', '')
@@ -1347,9 +1306,7 @@ def play_video(url, resolved_url, title, video_type):
             #     mvl_meta = create_meta('movie', title, '', '')
                 mvl_meta = {'year': ''}
 
-
 ######################
-
 
             playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
             playlist.clear()
@@ -1359,10 +1316,15 @@ def play_video(url, resolved_url, title, video_type):
 
 
             player = playbackengine.Player(addon_id='plugin.video.mvl', video_type='movie', title=title,
-                                    season='', episode='', year=mvl_meta['year'], watch_percent=0.5,
+                                    season='', episode='', year=mvl_meta['year'], watch_percent=0.9,
                                     watchedCallbackwithParams=WatchedCallbackwithParams)
 
+            #try:
             player.play(playlist)
+            #except:
+            #    print "MURI MURI"
+
+
             while player._playbackLock.isSet():
                 print('- - -' +'Playback lock set. Sleeping for 250.')
                 xbmc.sleep(250)
@@ -1376,7 +1338,7 @@ def play_video(url, resolved_url, title, video_type):
             unplayable = True
     except Exception, e:
         unplayable = True
-        print 'KISU EKTA HOISE'
+        #print 'KISU EKTA HOISE'
         print e
 
     if unplayable:
@@ -1657,15 +1619,7 @@ def search(category):
                                                   'fanart_image': fanart_url,
                                               },
                                               'info': info_dic,
-                                              # 'context_menu': [(
-                                              #                      'Mark as Watched',
-                                              #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                              #                                                            id=categories['id'],
-                                              #                                                            title=categories['title'].encode('utf-8'),
-                                              #                                                            thumbnail="None",
-                                              #                                                            isplayable="False",
-                                              #                                                            category=categories['top_level_parent'])
-                                              #                  )],
+                                              'context_menu': [('','',)],
                                               'replace_context_menu': True
                                           }]
 
@@ -1675,15 +1629,7 @@ def search(category):
                                               'path': plugin.url_for('get_categories', id=categories['id'], page=0),
                                               'is_playable': False,
                                               'thumbnail': art('{0}.png'.format(categories['title'].lower())),
-                                              # 'context_menu': [(
-                                              #                      'Mark as Watched',
-                                              #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                              #                                                            id=categories['id'],
-                                              #                                                            title=categories['title'],
-                                              #                                                            thumbnail="None",
-                                              #                                                            isplayable="False",
-                                              #                                                            category=category)
-                                              #                  )],
+                                              'context_menu': [('','',)],
                                               'replace_context_menu': True
                                           }]
                         elif categories['is_playable'] == 'True':
@@ -1997,16 +1943,7 @@ def get_azlist(key, page, category):
                                                   'fanart_image': fanart_url,
                                               },
                                               'info': info_dic,
-                                              # 'context_menu': [(
-                                              #                      'Mark as Watched',
-                                              #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                              #                                                            id=results['id'],
-                                              #                                                            title=results['title'].encode('utf-8'),
-                                              #                                                            thumbnail="None",
-                                              #                                                            isplayable="False",
-                                              #                                                            category=results[
-                                              #                                                                'top_level_parent'])
-                                              #                  )],
+                                              'context_menu': [('','',)],
                                               'replace_context_menu': True
                                           }]
 
@@ -2016,15 +1953,7 @@ def get_azlist(key, page, category):
                                               'path': plugin.url_for('get_categories', id=results['id'], page=0),
                                               'is_playable': False,
                                               'thumbnail': art('{0}.png'.format(results['title'].lower())),
-                                              # 'context_menu': [(
-                                              #                      'Mark as Watched',
-                                              #                      'XBMC.RunPlugin(%s)' % plugin.url_for('save_favourite',
-                                              #                                                            id=results['id'],
-                                              #                                                            title=results['title'].encode('utf-8'),
-                                              #                                                            thumbnail="None",
-                                              #                                                            isplayable="False",
-                                              #                                                            category=category)
-                                              #                  )],
+                                              'context_menu': [('','',)],
                                               'replace_context_menu': True
                                           }]
 
