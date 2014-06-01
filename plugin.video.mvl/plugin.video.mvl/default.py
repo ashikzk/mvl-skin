@@ -1019,6 +1019,9 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
             content = f.read()
             jsonObj = json.loads(content)
 
+            plugin.log.info(url)
+
+
             url = server_url + "/api/index.php/api/categories_api/getVideoTitle?video_id={0}".format(id)
             req = urllib2.Request(url)
             opener = urllib2.build_opener()
@@ -1039,8 +1042,9 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
                       }]
 
 
-            src_list = ['firedrive', 'putlocker', 'movreel', 'promptfile', 'mightyupload', 'novamov', 'nowvideo', 'lemupload', 'gorillavid']
+            src_list = ['movreel', 'promptfile', 'mightyupload', 'novamov', 'nowvideo', 'lemupload', 'gorillavid']
             #'hugefile', 'billionupload', '180upload',
+            # 'firedrive', 'putlocker',
 
             for urls in jsonObj:
                 src_order = 0
@@ -1090,7 +1094,9 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
             for urls in jsonObj:
                 # if urls['resolved_URL'] == 'NONE':
                 #     continue
-                if urls['URL'].find('billionupload') >= 0 or urls['URL'].find('180upload') >= 0 or urls['URL'].find('hugefile') >= 0:
+                if urls['URL'].find('billionupload') >= 0 or urls['URL'].find('180upload') >= 0 or \
+                        urls['URL'].find('hugefile') >= 0 or urls['URL'].find('megafiles') >= 0 or \
+                            urls['URL'].find('pandapla') >= 0 or urls['URL'].find('vidhog') >= 0:
                     #discard these 3 source for hd
                     continue
 
