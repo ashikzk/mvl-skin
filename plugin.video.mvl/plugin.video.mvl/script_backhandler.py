@@ -1,4 +1,5 @@
 import os
+import time
 
 try:
     #read screen_lock files content
@@ -9,13 +10,24 @@ try:
     
     if len(content) == 0:    
         #if screen_lock doesn't have any content, that means we are good to go
-        xbmc.executebuiltin( "Action(back)" )
-
         path = xbmc.getInfoLabel('Container.FolderPath')
+        # print "PATH (OLD)  = " + path
 
-        # print "PATH HERE  = " + path
+        xbmc.executebuiltin( "Action(back)" )
+        time.sleep(0.05)
 
-        if len(path.split('/')) >= 6:
+        path_new = xbmc.getInfoLabel('Container.FolderPath')
+        # print "PATH (NEW) = " + path_new
+
+        #save new path and set it as current location path
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_path.dat')
+        f = open(file_path, 'w')
+        f.write(path_new)
+        f.close()
+
+
+        if len(path.split('/')) >= 6 and path_new != path:
+            #make sure path has changed cause in case of context menu, path doesn't change and view shouldn't change then
             selection = path.split('/')[3]
             selection_id = path.split('/')[4]
             page_num = path.split('/')[5]

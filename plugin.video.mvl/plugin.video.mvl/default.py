@@ -4,13 +4,35 @@ if 'do_nothing' in sys.argv[0]:
     #no need to do anything!
     exit()
 
+import os
+
+#########
+# load last path
+file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_path.dat')
+if os.path.exists(file_path):
+    f = open(file_path, 'r')
+    last_path = f.read()
+    f.close()
+else:
+    last_path = ''
+
+if last_path == sys.argv[0]:
+    #same path requested again. no need to load. exit immediately
+    print "SAME PATH"
+    xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+    exit()
+
+file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_path.dat')
+f = open(file_path, 'w')
+f.write(sys.argv[0])
+f.close()
+####
 
 #hide any existing loading and show system busy dialog to freeze the screen.
 xbmc.executebuiltin( "Dialog.Close(busydialog)" )
 xbmc.executebuiltin( "ActivateWindow(busydialog)" )
 
 #save lockdown state to a file for future reference
-import os
 file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_lock.dat')
 f = open(file_path, 'w')
 f.write('true')
@@ -108,6 +130,13 @@ def index():
     file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'quit_log.dat')
     f = open(file_path, 'w')
     f.close()
+
+    if last_path == '':
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'term_agree.dat')
+        f = open(file_path, 'w')
+        f.write('false')
+        f.close()
+
     
     try:
         #set view mode first so that whatever happens, it doesn't change
@@ -335,12 +364,17 @@ def onClick_disAgree():
 
 def onClick_agree():
     global isAgree
-    macAddress = usrsettings.getSetting('mac_address')
-    plugin.log.info("I Agree func calls")
-    url = server_url + "/api/index.php/api/authentication_api/set_flag_status?username={0}&mac={1}".format(username, macAddress)
-    req = urllib2.Request(url)
-    opener = urllib2.build_opener()
-    f = opener.open(req)
+    # macAddress = usrsettings.getSetting('mac_address')
+    # plugin.log.info("I Agree func calls")
+    # url = server_url + "/api/index.php/api/authentication_api/set_flag_status?username={0}&mac={1}".format(username, macAddress)
+    # req = urllib2.Request(url)
+    # opener = urllib2.build_opener()
+    # f = opener.open(req)
+
+    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'term_agree.dat')
+    f = open(file_path, 'w')
+    f.write('true')
+    f.close()
 
     isAgree = True
 
@@ -351,19 +385,26 @@ def showMessage(heading, message):
 
 
 def check_condition():
-    macAddress = usrsettings.getSetting('mac_address')
-    global curr_page
-    curr_page = 1
-    url = server_url + "/api/index.php/api/authentication_api/get_flag_status?username={0}&mac={1}".format(username, macAddress)
-    req = urllib2.Request(url)
-    opener = urllib2.build_opener()
+
+    # macAddress = usrsettings.getSetting('mac_address')
+    # global curr_page
+    # curr_page = 1
+    # url = server_url + "/api/index.php/api/authentication_api/get_flag_status?username={0}&mac={1}".format(username, macAddress)
+    # req = urllib2.Request(url)
+    # opener = urllib2.build_opener()
     # f = opener.open(req)
     #reading content fetched from the url
     # content = f.read()
-    content = 'false'
+    # content = 'false'
     #converting to json object
-    plugin.log.info(url)
-    plugin.log.info(content)
+    # plugin.log.info(url)
+    # plugin.log.info(content)
+
+    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'term_agree.dat')
+    f = open(file_path, 'r')
+    content = f.read()
+    f.close()
+
     if content == 'false':
         #Show Terms & Condition window
         heading = "Terms & Conditions"
@@ -981,6 +1022,7 @@ def get_categories(id, page):
         # except IOError:
             # xbmc.executebuiltin('Notification(Unreachable Host,Could not connect to server,5000,/script.hellow.world.png)')
         except Exception, e:
+            print 'Exception...'
             print e
 
             if id in ('1', '3'):  # if we were on 1st page, then the viewmode should remain to 58 as an error has occured and we haven't got any data for next screen
@@ -2050,7 +2092,7 @@ def get_azlist(key, page, category):
                                                            'Mark as {0}'.format(watched_state),
                                                            'XBMC.RunPlugin(%s)' % plugin.url_for('mark_as_{0}'.format(watched_state.lower()),
                                                                                                  video_type=watch_info['video_type'],
-                                                                                                 title=categories['title'].encode('utf-8'),
+                                                                                                 title=results['title'].encode('utf-8'),
                                                                                                  imdb_id=mvl_meta['imdb_id'],
                                                                                                  year=watch_info['year'],
                                                                                                  season=watch_info['season'],
@@ -2239,6 +2281,13 @@ def sys_exit():
     hide_busy_dialog()
     # plugin.finish(succeeded=True)
     xbmc.executebuiltin("XBMC.ActivateWindow(Home)")
+
+    #reset path to home
+    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_path.dat')
+    f = open(file_path, 'w')
+    f.write('')
+    f.close()
+
 
 @plugin.route('/get_favourites/<category>/')
 def get_favourites(category):
@@ -2609,3 +2658,16 @@ if __name__ == '__main__':
     time.sleep(0.1)
     xbmc.executebuiltin("Container.SetViewMode(%s)" % mvl_view_mode)
 
+    ####
+    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_path.dat')
+    f = open(file_path, 'r')
+    last_path = f.read()
+    f.close()
+
+    if 'mark_as' not in last_path:
+        #do not update path in case of mark_as_watched/unwatched was selected
+        path = xbmc.getInfoLabel('Container.FolderPath')
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'screen_path.dat')
+        f = open(file_path, 'w')
+        f.write(path)
+        f.close()
