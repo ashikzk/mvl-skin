@@ -110,6 +110,17 @@
       <style>bold</style>
     </font>
     <font>
+      <name>KeyboardButton</name>
+      <filename>UbuntuCondensed.ttf</filename>
+      <size>40</size>
+      <!-- <style>bold</style> -->
+    </font>
+    <font>
+      <name>KeyboardText</name>
+      <filename>Arial.ttf</filename>
+      <size>35</size>
+    </font>
+    <font>
       <name>ListDetails</name>
       <filename>UbuntuCaps.ttf</filename>
       <size>27</size>

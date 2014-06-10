@@ -5,7 +5,11 @@
   <onload condition="System.HasAddon(plugin.video.plexbmc) + Skin.HasSetting(plexbmc) + !Skin.HasSetting(Hide.RecentlyAdded)">RunScript(plugin.video.plexbmc,shelf)</onload>
   <onload condition="!Skin.HasSetting(Hide.Favourites) + [Window.Previous(favourites) | IsEmpty(Window(Home).Property(favourite.1.path))]">RunScript(script.favourites)</onload-->
   <onload>Container.SetViewMode(50)</onload>
-    
+
+  <onload condition="Window.Previous(startup)">XBMC.RunScript("special://home\addons\plugin.video.mvl\script_reset.py")</onload>
+  
+  <onload condition="Window.Previous(startup)">Control.Move(300,1)</onload>
+  
   <!--onload condition="!Skin.HasSetting(plexbmc)">SetProperty(SkinWidgets_RandomItems_Update,true)</onload-->
   <!--<onload condition="!Skin.HasSetting(Hide.RecentlyAdded) + Window.Previous(Startup.xml)">AlarmClock(StartupRefresh,ReloadSkin(),00:02,silent)</onload>-->
   <controls>

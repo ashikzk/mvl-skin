@@ -1,0 +1,76 @@
+<includes>
+    <include name="Key">
+        <height>120</height>
+        <align>center</align>
+        <aligny>center</aligny>
+        <textoffsety>23</textoffsety>
+        <font>KeyboardButton</font>
+        <texturefocus border="20">common/KeyButtonFO2.png</texturefocus>
+        <texturenofocus border="20">common/KeyButtonNF.png</texturenofocus>
+        <textcolor>FFFFFFFF</textcolor>
+        <focusedcolor>Orange</focusedcolor>
+    </include>
+    <include name="SmallKey">
+        <width>140</width>
+        <include>Key</include>
+    </include>
+    <include name="BigKey">
+        <width>310</width>
+        <include>Key</include>
+    </include>
+    <include name="SpaceBar">
+        <width>950</width>
+        <include>Key</include>
+    </include>
+    <include name="BackSpace">
+        <width>210</width>
+        <height>120</height>
+        <include>Key</include>
+    </include>
+    <include name="ShiftKey">
+        <width>250</width>
+        <height>120</height>
+        <label> Shift </label>
+        <include>Key</include>
+    </include>
+    <include name="CapsKey">
+        <width>199</width>
+        <height>120</height>
+        <label> CapsLock </label>
+        <include>Key</include>
+    </include>
+    <include name="MediumKeyLarr">
+        <width>125</width>
+        <height>120</height>
+        <label> &lt; </label>
+        <include>Key</include>
+    </include>
+    <include name="MediumKeyRarr">
+        <width>125</width>
+        <height>120</height>
+        <label> &gt; </label>
+        <include>Key</include>
+    </include>
+    <include name="DoubleKeyDone">
+        <width>250</width>
+        <height>120</height>
+        <align>center</align>
+        <aligny>center</aligny>
+        <font>KeyboardButton</font>
+        <textcolor>FF1F6C15</textcolor>
+        <focusedcolor>Orange</focusedcolor>
+        <selectedcolor>red</selectedcolor>
+        <include>Key</include>
+    </include>
+    <include name="DoubleKeyCancel">
+        <width>250</width>
+        <height>120</height>
+        <aligny>center</aligny>
+        <textoffsety>23</textoffsety>
+        <font>KeyboardButton</font>
+        <textcolor>red</textcolor>
+        <focusedcolor>Orange</focusedcolor>
+        <selectedcolor>red</selectedcolor>
+        <include>Key</include>
+    </include>
+</includes>

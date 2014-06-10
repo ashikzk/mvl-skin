@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.mvl" name="My Video library" version="2.6.68" provider-name="Mukto Software Ltd.">
+<addon id="plugin.video.mvl" name="My Video library" version="2.6.69" provider-name="Mukto Software Ltd.">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmcswift2" version="2.4.0"/>
@@ -20,7 +20,7 @@
     </extension>
 </addon>
 
-<addon id="skin.mvl" version="1.0.39" name="mvlSkin" provider-name="Mukto Software Ltd.">
+<addon id="skin.mvl" version="1.0.40" name="mvlSkin" provider-name="Mukto Software Ltd.">
   <requires>
     <import addon="xbmc.gui" version="4.0.0"/>
     <import addon="script.favourites" version="3.2.0"/>

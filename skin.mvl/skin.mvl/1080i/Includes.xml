@@ -9,6 +9,7 @@
 		
 	-->
   <include file="Includes_Variables.xml" />
+  <include file="Includes_Keyboard.xml" />
   <include file="defaults.xml" />
   <include file="Includes_Horizontal_Home.xml" />
   <include file="Includes_Vertical_Home.xml" />

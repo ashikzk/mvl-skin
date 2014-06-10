@@ -112,7 +112,7 @@ try:
 except:
     from pysqlite2 import dbapi2 as orm
 
-    plugin.log.info('pysqlite2 as DB engine')
+plugin.log.info('pysqlite2 as DB engine')
 DB = 'sqlite'
 __translated__ = xbmc.translatePath("special://database")
 DB_DIR = os.path.join(__translated__, 'myvideolibrary.db')
@@ -126,6 +126,7 @@ isAgree = False
 @plugin.route('/')
 def index():
     global Main_cat
+    global last_path
 
     file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'quit_log.dat')
     f = open(file_path, 'w')
@@ -137,7 +138,9 @@ def index():
         f.write('false')
         f.close()
 
-    
+    #clear Current Section name saved in the skin
+    xbmc.executebuiltin('Skin.SetString(CurrentSection,)')
+
     try:
         #set view mode first so that whatever happens, it doesn't change
         mvl_view_mode = 58
@@ -419,10 +422,14 @@ def check_condition():
         terms_popup.updateTermText(heading, text)
         terms_popup.doModal()
 
-        #if agree_ret:
-        #    onClick_agree()
-        #else:
-        #    onClick_disAgree()
+        #make sure either Agree or disagree was clicked
+        #if none was clicked, then go back to home
+        file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'term_agree.dat')
+        f = open(file_path, 'r')
+        content = f.read()
+        f.close()
+        if content == 'false':
+            onClick_disAgree()
 
     elif content == 'true':
         global isAgree
@@ -1557,7 +1564,7 @@ def search(category):
         if not show_notification():
         
             try:
-                search_string = plugin.keyboard(heading=('search'))
+                search_string = plugin.keyboard(heading=('Search Media Engine'))
                 
                 #if nothing was typed, return without doing anything
                 if search_string is None or search_string == '' :
