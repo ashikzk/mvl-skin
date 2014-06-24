@@ -2099,7 +2099,7 @@ def get_azlist(key, page, category):
                                                            'Mark as {0}'.format(watched_state),
                                                            'XBMC.RunPlugin(%s)' % plugin.url_for('mark_as_{0}'.format(watched_state.lower()),
                                                                                                  video_type=watch_info['video_type'],
-                                                                                                 title=results['title'].encode('utf-8'),
+                                                                                                 title=results['title'],
                                                                                                  imdb_id=mvl_meta['imdb_id'],
                                                                                                  year=watch_info['year'],
                                                                                                  season=watch_info['season'],
