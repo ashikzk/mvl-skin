@@ -53,15 +53,17 @@ import xbmcplugin
 from t0mm0.common.addon import Addon
 import re
 import traceback
+import shutil
 
 from metahandler import metahandlers
 from metahandler import metacontainers
 
 from operator import itemgetter
-#from threading import Thread
+from threading import Thread
 
 import resources._common as common
 from resources import playbackengine
+from resources.trie import trie
 
 
 #Patch Locale for android devices
@@ -122,7 +124,6 @@ mvl_tvshow_title = ''
 isAgree = False
 
 
-
 @plugin.route('/')
 def index():
     global Main_cat
@@ -137,6 +138,11 @@ def index():
         f = open(file_path, 'w')
         f.write('false')
         f.close()
+
+    # copy pre-cached db
+    src_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources', 'data', 'video_cache.db')
+    dest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'addon_data', 'script.module.metahandler', 'meta_cache', 'video_cache.db')
+    shutil.copyfile(src_path, dest_path)
 
     #clear Current Section name saved in the skin
     xbmc.executebuiltin('Skin.SetString(CurrentSection,)')
@@ -1004,6 +1010,11 @@ def get_categories(id, page):
 
                 dp.close()
 
+            else:
+               showMessage('No result found', 'Sorry, No information Found Matching Your Query')
+               hide_busy_dialog()
+               exit()                
+               
 
             #we should set the view_mode as last thing in this method
             #because if user cancels his action and goes back before the api response
@@ -1564,8 +1575,27 @@ def search(category):
         if not show_notification():
         
             try:
-                search_string = plugin.keyboard(heading=('Search Media Engine'))
-                
+                #search_string = plugin.keyboard(heading=('Search Media Engine'))
+
+                #load word list
+                if category == '1':
+                    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources/data/movie_names.dat')
+                else:
+                    file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources/data/tv_names.dat')
+
+                words = trie()
+                f = open(file_path,'r')
+                cnt = 0
+                for line in f.readlines():
+                    words[line.strip().lower()] = None
+                    cnt += 1
+                f.close()
+                #
+
+                kb = CustomKeyboard('Custom-DialogKeyboard.xml', os.path.dirname(os.path.realpath(__file__)), category = category, words=words)
+                kb.doModal()
+                search_string = kb.labelString
+
                 #if nothing was typed, return without doing anything
                 if search_string is None or search_string == '' :
                     mvl_view_mode = 59
@@ -1870,7 +1900,7 @@ def get_azlist(key, page, category):
             dp = xbmcgui.DialogProgress()
         
             url = server_url + "/api/index.php/api/categories_api/getAZList?key={0}&limit={1}&page={2}&category={3}".format(key, page_limit_az, page, category)
-            plugin.log.info("here is the url")
+            #plugin.log.info("here is the url")
             plugin.log.info(url)
             req = urllib2.Request(url)
             opener = urllib2.build_opener()
@@ -2490,172 +2520,361 @@ class CustomReviewPopup(xbmcgui.WindowXMLDialog):
             self.close()
             resume_popup_window()
 
-class CustomPurchaseOptions(xbmcgui.WindowXMLDialog):
-    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+class CustomKeyboard(xbmcgui.WindowXMLDialog):
+    def __init__(self, xmlFilename, scriptPath, category, words, defaultSkin = "Default", defaultRes = "1080i"):
+        self.isUpper  = 0
+        self.isSymbol = 0
+        self.isLock   = 0
+        self.show()
+        self.category = category
+        #print self.category
+        self.cursorState = 1
+        self.cursorPos   = 0
+        self.labelString = None
+        self.updateKeyboardLabel()
+        self.words = words
+
+
+    def showCursor(self):
+        if self.isLock == 1:
+            time.sleep(.1)
+
+        label = self.getControl(310).getLabel()
+        labelList = list(str(label))
+        if self.cursorState == 0:
+            labelList[self.cursorPos] = '|'
+            self.cursorState = 1
+        else:
+            labelList[self.cursorPos] = ' '
+            self.cursorState = 0
+        label = ''.join(labelList)
+        self.getControl(310).setLabel(label)
+        time.sleep(.4)
+        self.showCursor()
+
+
+    def updateKeyboardLabel(self):
+
+        self.getControl(311).setLabel("Search Media Engine")
+        self.getControl(310).setLabel("|")
+        for i in range(434, 439):
+            self.getControl(i).setVisible(False)
+        self.updateKeyboardLabelToLowerCase()
+        self.updateKeyboardLabelNumeric()
+
+        #self.t = Thread(target = testThread)
+        # time.sleep()
+        self.t = Thread(name='test', target=self.showCursor)
+        self.t.daemon = True
+        self.t.start()
+
+
+
+
+    def updateKeyboardLabelNumeric(self):
+        self.isLock = 0;
+        for i in range(48, 58):
+            try:
+                self.getControl(i).setLabel(chr(i))
+            except:
+                pass
+
+    def updateKeyboardLabelToLowerCase(self):
+        self.isLock = 0;
+        self.isUpper  = 0
+        for i in range(0, 27):
+            try:
+                self.getControl(i+65).setLabel(chr(i+97))
+            except:
+                pass
+
+    def updateKeyboardLabelToUpperCase(self):
+        self.isUpper  = 1
+        for i in range(0, 27):
+            try:
+                self.getControl(i+65).setLabel(chr(i+65))
+            except:
+                pass
+
+    def updateKeyboardLabelSymbols(self):
+        keys = "QWERTYUIOPASDFGHJKLZXCVBNM"
+        symbols = "!@#$%^&*()_-+[]|\\:;'<>?/.,"
+
+        for i in range(0, len(keys)):
+            try:
+                self.getControl(ord(keys[i])).setLabel(symbols[i])
+            except:
+                pass
+
+    def findSymbol(self, control):
+        ret = ''
+        if self.isSymbol != 1:
+            ret = chr(control)
+            if(self.isUpper == 0):
+                ret = ret.lower()
+        else:
+            keys = "QWERTYUIOPASDFGHJKLZXCVBNM"
+            symbols = "!@#$%^&*()_-+[]|\\:;'<>?/.,"
+            ret = chr(control)
+            pos = keys.find(ret)
+            ret = symbols[pos]
+        return ret
+
+    def updateSuggestion(self):
+        #return
+        for i in range(434, 439):
+            self.getControl(i).setVisible(False)
+            self.getControl(i).setLabel('')
+        label = self.getControl(310).getLabel()
+        labelList = list(label)
+        del labelList[self.cursorPos]
+        if(len(labelList) == 0):
+            return
+        label = ''.join(labelList)
+        label = label.lower()
+        control = 434
+
+        #r = requests.get('http://config.myvideolibrary.com/api/index.php/api/categories_api/getAZList?key=A&page=0&category=3&limit=5')
+        #print r.text
+        sugg = self.words.iter(label)
+        cnt = 0
+        for word in sugg:
+            if control > 438:
+                break
+            self.getControl(control).setLabel(word)
+            self.getControl(control).setVisible(True)
+            control += 1
+        return
+
+    def moveLeft(self):
+        self.isLock = 1
+        label = self.getControl(310).getLabel()
+        if(self.cursorPos == 0):
+            self.isLock = 0
+            return
+        labelList = list(label)
+        #print "{0}, {1}, {2}".format(self.cursorPos, label, len(label))
+        del labelList[self.cursorPos]
+        self.cursorPos -= 1
+        if(self.cursorPos < 0):
+            self.cursorPos = 0
+        newLabelList = []
+        for i in range(0, self.cursorPos):
+            newLabelList.append(labelList[i])
+        newLabelList.append(' ')
+        for i in range(self.cursorPos, len(labelList)):
+            newLabelList.append(labelList[i])
+        if self.cursorState == 1:
+            newLabelList[self.cursorPos] = '|'
+            self.cursorState = 1
+        else:
+            newLabelList[self.cursorPos] = ' '
+            self.cursorState = 0
+        label = ''.join(newLabelList)
+        self.getControl(310).setLabel(label)
+        self.updateSuggestion()
+        self.isLock = 0
+        return
+
+    def moveRight(self):
+        self.isLock = 1
+        label = self.getControl(310).getLabel()
+        if(self.cursorPos == len(label)-1):
+            self.isLock = 0
+            return
+        labelList = list(label)
+        #self.cursorPos += 1
+        #if(self.cursorPos >= len(label)):
+        #    self.cursorPos = len(label)-1
+
+
+        #print "{0}, {1}, {2}".format(self.cursorPos, label, len(label))
+        del labelList[self.cursorPos]
+        newLabelList = []
+        for i in range(0, self.cursorPos+1):
+            newLabelList.append(labelList[i])
+        newLabelList.append(' ')
+        for i in range(self.cursorPos+1, len(labelList)):
+            newLabelList.append(labelList[i])
+        self.cursorPos += 1
+        if(self.cursorPos >= len(label)-1):
+            self.cursorPos = len(label)-1
+        if self.cursorState == 1:
+            newLabelList[self.cursorPos] = '|'
+            self.cursorState = 1
+        else:
+            newLabelList[self.cursorPos] = ' '
+            self.cursorState = 0
+        label = ''.join(newLabelList)
+        self.getControl(310).setLabel(label)
+        self.isLock = 0
+        return
+
+    def deleteChar(self):
+        self.isLock = 1
+        if self.cursorPos == 0:
+            self.isLock = 0
+            return
+        label = self.getControl(310).getLabel()
+        labelList = list(label)
+        #print "{0}, {1}, {2}".format(self.cursorPos, label, len(label))
+        del labelList[self.cursorPos-1]
+        #sym = self.findSymbol(control)
+        #labelList += list(sym)
+        self.cursorPos -= 1
+        if(self.cursorPos < 0):
+            self.cursorPos = 0
+        #print self.cursorPos
+        if self.cursorState == 1:
+            labelList[self.cursorPos] = '|'
+            self.cursorState = 1
+        else:
+            labelList[self.cursorPos] = ' '
+            self.cursorState = 0
+        label = ''.join(labelList)
+        self.getControl(310).setLabel(label)
+        self.updateSuggestion()
+        self.isLock = 0
+        return
+
+    def insertChar(self, sym):
+        self.isLock = 1
+        #print self.words.__len__()
+        label = self.getControl(310).getLabel()
+        labelList = list(label)
+        #print "{0}, {1}, {2}".format(self.cursorPos, label, len(label))
+        #del labelList[self.cursorPos]
+        newLabelList = []
+        for i in range(0, self.cursorPos):
+            newLabelList.append(labelList[i])
+        newLabelList += list(sym)
+        for i in range(self.cursorPos, len(labelList)):
+            newLabelList.append(labelList[i])
+        #labelList.append('')
+        self.cursorPos += len(sym)
+        #print self.cursorPos
+        if self.cursorState == 1:
+            newLabelList[self.cursorPos] = '|'
+            self.cursorState = 1
+        else:
+            newLabelList[self.cursorPos] = ' '
+            self.cursorState = 0
+        label = ''.join(newLabelList)
+        self.getControl(310).setLabel(label)
+        self.updateSuggestion()
+        self.isLock = 0
+        return
+
+    def onAction(self, action):
+        if action.getId() != 100 and action.getId() != 107:
+            v = action.getButtonCode() & 255
+            if v >= 33 and v <= 126: #ascii
+                v = chr(v)
+                if self.isUpper == 0:
+                    v = v.lower()
+                self.insertChar(v)
+            elif v == 8: #backspace
+                self.deleteChar()
+            elif v == 130: #left
+                self.moveLeft()
+            elif v == 131: #right
+                self.moveRight()
+            elif v == 13: #enter
+                label = self.getControl(310).getLabel()
+                labelList = list(label)
+                #print "{0}, {1}, {2}".format(self.cursorPos, label, len(label))
+                del labelList[self.cursorPos]
+                self.labelString = ''.join(labelList)
+                self.close()
+                pass
+            elif v == 27:
+                self.labelString = ''
+                self.close()
+                pass
+            elif v == 32:
+                self.insertChar(' ')
+            else:
+                pass
+
+            #print "muri "+ str(v)
+            # 8 back, 9 tab, 13 enter, esc 27, left 130, right 131
+            ''''''
         pass
 
-    def showDialog(self):
-        self.show()
-        self.getControl(21).setLabel("Purchase & Viewing")
-        self.getControl(22).setLabel("Amazon.com .................. [COLOR FF1F6C15]www.amazon.com/dvd[/COLOR]")
-        self.getControl(23).setLabel("Google Play ................... [COLOR FF1F6C15]www.play.google.com/store/movies[/COLOR]")
-        self.getControl(24).setLabel("iTunes.com ..................... [COLOR FF1F6C15]www.apple.com/itunes/charts/movies[/COLOR]")
-        self.getControl(25).setLabel("Fandango ....................... [COLOR FF1F6C15]www.fandango.com[/COLOR]")
-        self.close()
+    def onClick (self, control):
+        #print "control test"
+        if control == 300:
+            label = self.getControl(310).getLabel()
+            labelList = list(label)
+            #print "{0}, {1}, {2}".format(self.cursorPos, label, len(label))
+            del labelList[self.cursorPos]
+            self.labelString = ''.join(labelList)
+            self.close()
+            return
+        if control == 301:
+            self.labelString = ''
+            self.close()
+            return
 
-        self.doModal()
 
-    def onClick	(self, control):
-        if control == 10:
+        ''' This Thing is needed to be done '''
+        if control == 305:
+            self.moveLeft()
+            return
+
+
+        if control == 306:
+            self.moveRight()
+            return
+
+        if control == 8: #Del/ Backspace
+            self.deleteChar()
+            return
+
+        if control == 303 or control == 302:
+            if self.isSymbol != 1:
+                if self.isUpper==0:
+                    self.updateKeyboardLabelToUpperCase()
+                else:
+                    self.updateKeyboardLabelToLowerCase()
+            else:
+                if self.isUpper == 0:
+                    self.isUpper = 1
+                else:
+                    self.isUpper = 0
+            return
+        if control == 304:
+            if self.isSymbol == 1:
+                self.isSymbol = 0
+                if self.isUpper == 1:
+                    self.updateKeyboardLabelToUpperCase()
+                else:
+                    self.updateKeyboardLabelToLowerCase()
+            else:
+                self.isSymbol = 1
+                self.updateKeyboardLabelSymbols()
+            return
+
+        # suggestions buttons
+        if control >= 434 and control <= 438:
+            self.isLock = 1
+            self.labelString = self.getControl(control).getLabel()
+            #label += "|"
+            #self.cursorPos = len(label)-1
+
+            '''self.getControl(310).setLabel(label)
+
+            for i in range(434, 439):
+                self.getControl(i).setVisible(False)
+                self.getControl(i).setLabel('')
+            '''
+
             self.close()
 
+            self.isLock = 0
+            return
 
-
-# class CustomPopup(xbmcgui.WindowXMLDialog):
-#     def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
-#         pass
-#
-#     def setParams(self, trailer_id, source_url, resolved_url, title, video_id, series_id):
-#         self.trailer_id = trailer_id
-#         self.trailer_url = 'http://www.youtube.com/watch?v='+trailer_id
-#         self.source_url = source_url
-#         self.resolved_url = resolved_url
-#         self.title = title.strip()
-#         self.video_id = video_id
-#         self.series_id = series_id
-#
-#         if trailer_id == 'NONE':
-#             self.video_type = 'episode'
-#         else:
-#             self.video_type = 'movie'
-#
-#     def updateLabels(self):
-#         self.show()
-#         self.getControl(20).setLabel(self.source_url)
-#         self.close()
-#
-#     def onClick	(self, control):
-#         if control == 20:
-#             #show source URL
-#             # showMessage('Msg', self.trailer_url)
-#             pass
-#         elif control == 21:
-#             #play trailer
-#             self.close()
-#
-#             if self.trailer_id == 'NONE':
-#                 showMessage('Error', 'No trailer found')
-#                 resume_popup_window()
-#             else:
-#                 play_video(self.trailer_url, 'NONE', self.title + ' - Official trailer', self.video_type)
-#
-#
-#         elif control == 22:
-#             self.close()
-#             play_video(self.source_url, self.resolved_url, self.title, self.video_type)
-#
-#         elif control == 23:
-#             #exit
-#             self.close()
-#
-#         elif control == 24:
-#             self.close()
-#             show_review(self.video_id)
-#
-#         elif control == 18:
-#             #other viewing options
-#             self.close()
-#
-#             purchase_dialog = CustomPurchaseOptions('Custom-PurchaseOptions.xml', os.path.dirname(os.path.realpath(__file__)))
-#             purchase_dialog.showDialog()
-#
-#             resume_popup_window()
-#
-#         elif control == 28:
-#             #official posters
-#             self.close()
-#
-#             if self.trailer_id == "NONE":
-#                 poster_text = "Please visit http://thetvdb.com/?tab=seriesposters&id="+self.series_id+" for official posters and images"
-#             else:
-#                 poster_text = "Please visit http://www.themoviedb.org/movie/"+self.series_id+"-"+self.title.replace(' ', '-')+"/backdrops for official posters and images"
-#
-#             dialog = xbmcgui.Dialog()
-#             dialog.ok("Posters & Images", poster_text)
-#
-#             resume_popup_window()
-#
-#         elif control == 15:
-#             #Watch Previews
-#             self.close()
-#
-#             dialog = xbmcgui.Dialog()
-#             dialog.ok("Watch Previews", "Please visit http://www.primetvseries.com to watch previews of your favorite shows")
-#
-#             resume_popup_window()
-#
-#         elif control == 16:
-#             #Watch Previews
-#             self.close()
-#
-#             dialog = xbmcgui.Dialog()
-#             dialog.ok("Read Reviews", "Please visit http://www.metacritic.com/tv to read reviews of your favorite shows")
-#
-#             resume_popup_window()
-#
-#         elif control == 29:
-#             #facebook share
-#             self.close()
-#
-#             path = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
-#             path64 = 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
-#             if os.path.exists(path):
-#                 # fullUrl = getFullPath(path, "http://www.facebook.com", "", "")
-#                 # subprocess.check_call("am start -a android.intent.action.VIEW -d http://www.facebook.com", shell=False)
-#                 subprocess.check_call(path+" http://www.facebook.com", shell=False)
-#             elif os.path.exists(path64):
-#                 subprocess.check_call(path64+" http://www.facebook.com", shell=False)
-#
-
-# class CustomReviewPopup(xbmcgui.WindowXMLDialog):
-#     def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
-#         pass
-#
-#     def setParams(self, review_url):
-#         self.review_url = review_url
-#
-#     def updateReviewText(self, review, critic_name, review_publish_date, heading):
-#         self.show()
-#         #self.getControl(1).setLabel(heading+'\n[COLOR FF888888] By '+critic_name+' ('+review_publish_date+') [/COLOR]')
-#         self.getControl(1).setLabel(heading)
-#         self.getControl(4).setLabel('[COLOR FF888888] By '+critic_name+' ('+review_publish_date+', The New York Times) [/COLOR]')
-#         self.getControl(2).setText(review)
-#
-#         self.close()
-#
-#     def onClick	(self, control):
-#         if control == 11:
-#             self.close()
-#             resume_popup_window()
-#
-# class CustomPurchaseOptions(xbmcgui.WindowXMLDialog):
-#     def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
-#         pass
-#
-#     def showDialog(self):
-#         self.show()
-#         self.getControl(21).setLabel("Other Purchase/Viewing Options")
-#         self.getControl(22).setLabel("Amazon.com (www.amazon.com/dvd)")
-#         self.getControl(23).setLabel("Google Play (play.google.com/store/movies)")
-#         self.getControl(24).setLabel("iTunes.com (www.apple.com/itunes/charts/movies)")
-#         self.getControl(25).setLabel("Fandango (http://www.fandango.com)")
-#         self.close()
-#
-#         self.doModal()
-#
-#     def onClick	(self, control):
-#         if control == 10:
-#             self.close()
+        self.insertChar(self.findSymbol(control))
 
 
 
@@ -2678,3 +2897,4 @@ if __name__ == '__main__':
         f = open(file_path, 'w')
         f.write(path)
         f.close()
+
