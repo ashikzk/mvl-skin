@@ -2520,6 +2520,27 @@ class CustomReviewPopup(xbmcgui.WindowXMLDialog):
             self.close()
             resume_popup_window()
 
+            
+class CustomPurchaseOptions(xbmcgui.WindowXMLDialog):
+    def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
+        pass
+
+    def showDialog(self):
+        self.show()
+        self.getControl(21).setLabel("Purchase & Viewing")
+        self.getControl(22).setLabel("Amazon.com .................. [COLOR FF1F6C15]www.amazon.com/dvd[/COLOR]")
+        self.getControl(23).setLabel("Google Play ................... [COLOR FF1F6C15]www.play.google.com/store/movies[/COLOR]")
+        self.getControl(24).setLabel("iTunes.com ..................... [COLOR FF1F6C15]www.apple.com/itunes/charts/movies[/COLOR]")
+        self.getControl(25).setLabel("Fandango ....................... [COLOR FF1F6C15]www.fandango.com[/COLOR]")
+        self.close()
+
+        self.doModal()
+
+    def onClick	(self, control):
+        if control == 10:
+            self.close()
+            
+            
 class CustomKeyboard(xbmcgui.WindowXMLDialog):
     def __init__(self, xmlFilename, scriptPath, category, words, defaultSkin = "Default", defaultRes = "1080i"):
         self.isUpper  = 0
