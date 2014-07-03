@@ -5,7 +5,7 @@
         <aligny>center</aligny>
         <textoffsety>23</textoffsety>
         <font>KeyboardButton</font>
-        <texturefocus border="20">common/KeyButtonFO2.png</texturefocus>
+        <texturefocus border="20">common/KeyButtonNF.png</texturefocus>
         <texturenofocus border="20">common/KeyButtonNF.png</texturenofocus>
         <textcolor>FFFFFFFF</textcolor>
         <focusedcolor>Orange</focusedcolor>

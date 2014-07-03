@@ -1,7 +1,44 @@
 <window type="dialog">
   <defaultcontrol always="true">10</defaultcontrol>
-  <include>OpenClose</include>
+  <!-- <include>OpenClose</include> -->
   <controls>
+    <include>DimBG</include>
+
+      <control type="group" description="loading">
+        <posx>850</posx>
+        <posy>400</posy>
+        <control type="image">
+          <description>Busy animation</description>
+          <left>0</left>
+          <top>0</top>
+          <width>220</width>
+          <height>220</height>
+          <texture>dialogs/busy/static_busy.png</texture>
+          <aspectratio>keep</aspectratio>
+        </control>
+        <control type="image">
+          <description>Busy animation</description>
+          <left>0</left>
+          <top>0</top>
+          <width>220</width>
+          <height>220</height>
+          <texture>dialogs/busy/animation_1.png</texture>
+          <aspectratio>keep</aspectratio>
+          <animation effect="rotate" start="0" end="360" center="auto" time="2500" loop="true" condition="true">conditional</animation>
+        </control>
+        <control type="image">
+          <description>Busy animation</description>
+          <left>0</left>
+          <top>0</top>
+          <width>220</width>
+          <height>220</height>
+          <texture>dialogs/busy/animation_2.png</texture>
+          <aspectratio>keep</aspectratio>
+          <animation effect="rotate" start="0" end="-360" center="auto" time="2500" loop="true" condition="true">conditional</animation>
+        </control>  
+		
+      </control>
+  
     <control type="group" description="Content">
       <posx>429</posx>
       <posy>660</posy>
