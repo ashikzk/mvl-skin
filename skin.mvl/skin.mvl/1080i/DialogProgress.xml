@@ -36,20 +36,22 @@
           <aspectratio>keep</aspectratio>
           <animation effect="rotate" start="0" end="-360" center="auto" time="2500" loop="true" condition="true">conditional</animation>
         </control>  
-		
+
       </control>
   
     <control type="group" description="Content">
       <posx>429</posx>
-      <posy>660</posy>
-      <control type="image" description="Dialog BG">
+      <posy>520</posy>
+<!--       <control type="image" description="Dialog BG">
         <posx>90</posx>
         <posy>0</posy>
         <width>882</width>
         <height>330</height>
         <texture border="45">dialogs/TinyDialog.png</texture>
       </control>
+ -->      
       <control type="label" id="1" description="Heading hidden">
+		<visible>false</visible>
         <posx>51</posx>
         <posy>40</posy>
         <height>40</height>
@@ -59,6 +61,7 @@
         <font>-</font>
       </control>
       <control type="label" id="100" description="Heading and Progress">
+		<visible>false</visible>
         <posx>51</posx>
         <posy>40</posy>
         <width>960</width>
@@ -73,7 +76,7 @@
         <height>30</height>
         <width>960</width>
         <label></label>
-        <font>ListDetails</font>
+        <font>Details</font>
         <align>center</align>
       </control>
       <control type="label" id="3" description="Line 2">
@@ -94,7 +97,8 @@
         <font>ListDetails</font>
         <align>center</align>
       </control>
-      <control type="button" id="10" description="Cancel">
+<!--       <control type="button" id="10" description="Cancel">
+		<visible>false</visible> 
         <posx>381</posx>
         <posy>230</posy>
         <height>60</height>
@@ -103,6 +107,6 @@
         <align>center</align>
         <pulseonselect>true</pulseonselect>
       </control>
-    </control>
+ -->    </control>
   </controls>
 </window>

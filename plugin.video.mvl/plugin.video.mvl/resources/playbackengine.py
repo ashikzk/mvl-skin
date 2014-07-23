@@ -144,7 +144,7 @@ class Player(xbmc.Player):
             
         self._reset()
 
-        print "INSIDE SET"
+        #print "INSIDE SET"
         
         win = xbmcgui.Window(10000)
         while win.getProperty('pbe.playing.playbackstopped') == 'false':
@@ -350,9 +350,9 @@ class Player(xbmc.Player):
         
     def KeepAlive(self):
         while self._playbackLock.isSet():
-            common.addon.log('-' + HELPER + '- -' +'Playback lock set. Sleeping for 250.')
+            #common.addon.log('-' + HELPER + '- -' +'Playback lock set. Sleeping for 250.')
             xbmc.sleep(SLEEP_MILLIS)
-        
+
     def _trackPosition(self):
         '''
         Keeps track of where in the video we currently are.
@@ -366,7 +366,7 @@ class Player(xbmc.Player):
                     self.onPlayBackStopped()
             except:
                 common.addon.log_debug('Error while trying to set playback time')
-            common.addon.log_debug('Inside player. Tracker time = %s' % self._lastPos)
+            #common.addon.log_debug('Inside player. Tracker time = %s' % self._lastPos)
             xbmc.sleep(SLEEP_MILLIS)
         common.addon.log('-' + HELPER + '- -' +'Position tracker ending with lastPos = %s' % self._lastPos)
 

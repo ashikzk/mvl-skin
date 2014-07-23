@@ -13,22 +13,21 @@
         <control type="group" description="Dialog Background">
           <control type="image" description="Background">
             <posx>0</posx>
-            <posy>950</posy>
+            <posy>926</posy>
             <width>1920</width>
-            <height>120</height>
+            <height>350</height>
             <texture>img/BlackDotT.png</texture>
           </control>
           <control type="image" description="Background">
             <posx>0</posx>
-            <posy>926</posy>
+            <posy>900</posy>
             <width>1920</width>
-            <height>156</height>
+            <height>400</height>
             <texture border="0,30,0,0">OSD/OSDBackground.png</texture>
-            <!--<colordiffuse>Grey2</colordiffuse>-->
           </control>
           <control type="image">
             <posx>610</posx>
-            <posy>1027</posy>
+            <posy>1045</posy>
             <width>700</width>
             <height>1</height>
             <aspectratio>stretch</aspectratio>
@@ -38,16 +37,17 @@
       </control>
       <control type="group" id="100">
         <visible>!VideoPlayer.Content(LiveTV)</visible>
-        <posx>723</posx>
-        <posy>140r</posy>
+        <posx>660</posx>
+        <posy>145r</posy>
         <onup>noop</onup>
         <ondown>702</ondown>
         <defaultcontrol always="true">602</defaultcontrol>
+        
         <control type="button" id="600">
-          <posx>0</posx>
-          <posy>0</posy>
-          <width>90</width>
-          <height>98</height>
+          <posx>-60</posx>
+          <posy>-40</posy>
+          <width>170</width>
+          <height>185</height>
           <label>$LOCALIZE[210]</label>
           <font>-</font>
           <texturefocus>VideoOSD/OSDPreviousFO.png</texturefocus>
@@ -59,10 +59,10 @@
           <onclick>PlayerControl(Previous)</onclick>
         </control>
         <control type="button" id="601">
-          <posx>70</posx>
-          <posy>0</posy>
-          <width>90</width>
-          <height>98</height>
+          <posx>50</posx>
+          <posy>-40</posy>
+          <width>170</width>
+          <height>185</height>
           <label>$LOCALIZE[31354]</label>
           <font>-</font>
           <texturefocus>VideoOSD/OSDRWFO.png</texturefocus>
@@ -74,10 +74,10 @@
           <onclick>PlayerControl(Rewind)</onclick>
         </control>
         <control type="togglebutton" id="602">
-          <posx>151</posx>
-          <posy>0</posy>
-          <width>90</width>
-          <height>98</height>
+          <posx>160</posx>
+          <posy>-40</posy>
+          <width>170</width>
+          <height>185</height>
           <label>$LOCALIZE[31351]</label>
           <altlabel>$LOCALIZE[208]</altlabel>
           <font>-</font>
@@ -94,10 +94,10 @@
           <onclick>PlayerControl(Play)</onclick>
         </control>
         <control type="button" id="603">
-          <posx>225</posx>
-          <posy>0</posy>
-          <width>90</width>
-          <height>98</height>
+          <posx>260</posx>
+          <posy>-40</posy>
+          <width>170</width>
+          <height>185</height>
           <label>$LOCALIZE[31352]</label>
           <font>-</font>
           <texturefocus>VideoOSD/OSDStopFO.png</texturefocus>
@@ -110,10 +110,10 @@
           <onclick>PlayerControl(Stop)</onclick>
         </control>
         <control type="button" id="604">
-          <posx>305</posx>
-          <posy>0</posy>
-          <width>90</width>
-          <height>98</height>
+          <posx>380</posx>
+          <posy>-40</posy>
+          <width>170</width>
+          <height>185</height>
           <label>$LOCALIZE[31353]</label>
           <font>-</font>
           <texturefocus>VideoOSD/OSDFWFO.png</texturefocus>
@@ -125,10 +125,10 @@
           <onclick>PlayerControl(Forward)</onclick>
         </control>
         <control type="button" id="605">
-          <posx>380</posx>
-          <posy>0</posy>
-          <width>90</width>
-          <height>98</height>
+          <posx>490</posx>
+          <posy>-40</posy>
+          <width>170</width>
+          <height>185</height>
           <label>$LOCALIZE[209]</label>
           <font>-</font>
           <texturefocus>VideoOSD/OSDNextFO.png</texturefocus>
@@ -139,7 +139,36 @@
           <ondown>702</ondown>
           <onclick>PlayerControl(Next)</onclick>
         </control>
+        
+        <control type="togglebutton" id="250">
+            <posx>200r</posx>
+            <posy>-40</posy>
+            <width>185</width>
+            <height>185</height>
+            <label>31356</label>
+            <font>-</font>
+            <texturefocus>VideoOSD/OSDSubtitlesFO.png</texturefocus>
+            <texturenofocus>VideoOSD/OSDSubtitlesNF.png</texturenofocus>
+            <alttexturefocus>VideoOSD/OSDSubtitlesFO.png</alttexturefocus>
+            <alttexturenofocus>VideoOSD/OSDSubtitlesNF.png</alttexturenofocus>
+            <onleft>205</onleft>
+            <onright>251</onright>
+            <onup>1000</onup>
+            <ondown>1000</ondown>
+            <onclick>Close</onclick>
+            <!-- <onclick>XBMC.RunScript(script.xbmc.subtitles)</onclick> -->
+            <onclick>XBMC.RunScript(special://home\addons\plugin.video.mvl\script_subtitles.py)</onclick>
+<!--             
+            <altclick>Skin.SetAddon(SubtitleScript_Path,xbmc.python.subtitles)</altclick>
+            <altclick condition="Window.IsVisible(VideoOSD)">Dialog.Close(VideoOSD)</altclick>
+            <altclick condition="!IsEmpty(Skin.String(SubtitleScript_Path))">XBMC.RunScript($INFO[Skin.String(SubtitleScript_Path)])</altclick>
+ -->            
+            <usealttexture>IsEmpty(Skin.String(SubtitleScript_Path))</usealttexture>
+        </control>
+        
       </control>
+      
+      
       <control type="group" id="100">
         <visible>VideoPlayer.Content(LiveTV)</visible>
         <posx>723</posx>
@@ -245,6 +274,7 @@
           <onclick>ActivateWindow(PVROSDGuide)</onclick>
           <onclick>Dialog.Close(VideoOSD)</onclick>
         </control>
+        
       </control>
       <control type="group" id="101">
         <visible>!VideoPlayer.Content(LiveTV)</visible>
