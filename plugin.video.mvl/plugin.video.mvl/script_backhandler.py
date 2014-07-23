@@ -14,6 +14,7 @@ try:
         # print "PATH (OLD)  = " + path
 
         xbmc.executebuiltin( "Action(back)" )
+
         time.sleep(0.2)
 
         path_new = xbmc.getInfoLabel('Container.FolderPath')
