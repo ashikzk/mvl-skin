@@ -1119,6 +1119,9 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
 
                 if urls['resolved_URL'] == '':
                     urls['resolved_URL'] = 'NONE'
+                else:
+                    #put resolved url above all by making it's src_order set to -1
+                    urls['src_order'] = -1
 
             jsonObj.sort(key=lambda x: x['src_order'])
 
@@ -1214,12 +1217,22 @@ def show_popup(url, resolved_url, title, trailer, parent_id, video_id, series_na
 
         mvl_meta = create_meta('tvshow', series_name.encode('utf-8'), '', '')
         series_id = mvl_meta['tvdb_id']
+        print title
+        print mvl_meta
+
+        episode_title = title[title.find(' ')+1:]
+        season_text = title[0:title.find(' ')]
+        season = season_text[0:season_text.find('x')]
+        episode_num = season_text[season_text.find('x')+1:]
+        mvl_meta = __metaget__.get_episode_meta(episode_title, mvl_meta['imdb_id'], season, episode_num)
+        print mvl_meta
+
     else:
         mvl_meta = create_meta('movie', title, '', '')
         series_id = mvl_meta['tmdb_id']
 
 
-    video_popup.setParams(trailer, url, resolved_url, video_title, video_id, series_id)
+    video_popup.setParams(trailer, url, resolved_url, video_title, video_id, series_id, mvl_meta)
     video_popup.updateLabels()
 
     try:
@@ -1316,8 +1329,11 @@ def WatchedCallbackwithParams(video_type, title, imdb_id, season, episode, year)
     if video_type == 'movie':
         __metaget__.change_watched(video_type, title, imdb_id, season=None, episode=None, year=year, watched=7)
         # xbmc.executebuiltin("XBMC.Container.Refresh")
+    else:
+        __metaget__.change_watched(video_type, title, imdb_id, season=season, episode=episode, year=year, watched=7)
 
-def play_video(url, resolved_url, title, video_type):
+
+def play_video(url, resolved_url, title, video_type, meta):
     global mvl_view_mode
 
     # if check_internet():
@@ -1357,11 +1373,11 @@ def play_video(url, resolved_url, title, video_type):
             #plugin.set_resolved_url(hostedurl)
 
 ######################
-            if video_type == 'movie':
-                mvl_meta = create_meta('movie', title, '', '')
-            else:
-            #     mvl_meta = create_meta('movie', title, '', '')
-                mvl_meta = {'year': ''}
+#            if video_type == 'movie':
+#                mvl_meta = create_meta('movie', title, '', '')
+#            else:
+#            #     mvl_meta = create_meta('movie', title, '', '')
+#                mvl_meta = {'year': ''}
 
 ######################
 
@@ -1372,9 +1388,15 @@ def play_video(url, resolved_url, title, video_type):
             playlist.add(url=hostedurl, listitem=listitem)
 
 
-            player = playbackengine.Player(addon_id='plugin.video.mvl', video_type='movie', title=title,
-                                    season='', episode='', year=mvl_meta['year'], watch_percent=0.9,
-                                    watchedCallbackwithParams=WatchedCallbackwithParams)
+            if video_type == 'movie':
+                player = playbackengine.Player(addon_id='plugin.video.mvl', video_type='movie', title=title,
+                                        season='', episode='', year=meta['year'], watch_percent=0.9,
+                                        watchedCallbackwithParams=WatchedCallbackwithParams)
+            else:
+                player = playbackengine.Player(addon_id='plugin.video.mvl', video_type='episode', title=meta['title'],
+                                        season=meta['season'], episode=meta['episode'],
+                                        year='', imdb_id=meta['imdb_id'], watch_percent=0.9,
+                                        watchedCallbackwithParams=WatchedCallbackwithParams)
 
             #try:
             player.play(playlist)
@@ -1395,7 +1417,6 @@ def play_video(url, resolved_url, title, video_type):
             unplayable = True
     except Exception, e:
         unplayable = True
-        #print 'KISU EKTA HOISE'
         print e
 
     if unplayable:
@@ -2338,7 +2359,7 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
     def __init__(self, xmlFilename, scriptPath, defaultSkin = "Default", defaultRes = "1080i"):
         pass
 
-    def setParams(self, trailer_id, source_url, resolved_url, title, video_id, series_id):
+    def setParams(self, trailer_id, source_url, resolved_url, title, video_id, series_id, mvl_meta):
         self.trailer_id = trailer_id
         self.trailer_url = 'http://www.youtube.com/watch?v='+trailer_id
         self.source_url = source_url
@@ -2346,6 +2367,7 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
         self.title = title.strip()
         self.video_id = video_id
         self.series_id = series_id
+        self.meta = mvl_meta
 
         if trailer_id == 'NONE':
             self.video_type = 'episode'
@@ -2375,7 +2397,7 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
 
         elif control == 22:
             self.close()
-            play_video(self.source_url, self.resolved_url, self.title, self.video_type)
+            play_video(self.source_url, self.resolved_url, self.title, self.video_type, self.meta)
 
         elif control == 23:
             #exit
