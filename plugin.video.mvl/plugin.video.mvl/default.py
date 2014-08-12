@@ -1102,7 +1102,8 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
                       }]
 
 
-            src_list = ['movreel', 'novamov', 'nowvideo', 'gorillavid']
+            src_list = ['movreel', 'mightyupload', 'promptfile', 'firedrive', 'putlocker', 'novamov', 'nowvideo', 'gorillavid']
+            #, 'novamov', 'nowvideo', 'gorillavid']
             #'lemupload',
             #'promptfile', 'mightyupload',
             #'hugefile', 'billionupload', '180upload',
@@ -1119,9 +1120,13 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
 
                 if urls['resolved_URL'] == '':
                     urls['resolved_URL'] = 'NONE'
-                else:
+                    if urls['src_order'] > 0:
+                        urls['src_order'] = len(src_list)+1
+                    #all un-resolved urls will be marked as <len(src_list)+1>
+                    #except for the first src <movreel> which will be shown whenever possible
+                #elif:
                     #put resolved url above all by making it's src_order set to -1
-                    urls['src_order'] = -1
+                    #urls['src_order'] = len(src_list)
 
             jsonObj.sort(key=lambda x: x['src_order'])
 
@@ -1130,7 +1135,7 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
             for urls in jsonObj:
                 # if parent_id == '1' and urls['resolved_URL'] == 'NONE':
                 # if un-resolved and not in premium list, then continue
-                if urls['resolved_URL'] == 'NONE' and urls['src_order'] == len(src_list):
+                if urls['resolved_URL'] == 'NONE' and urls['src_order'] == len(src_list)+1:
                     continue
 
                 source_quality = ''
@@ -2866,4 +2871,8 @@ if __name__ == '__main__':
         #do not update path in case of mark_as_watched/unwatched was selected
         path = xbmc.getInfoLabel('Container.FolderPath')
         file_write('screen_path.dat', path)
+
+
+
+
 
