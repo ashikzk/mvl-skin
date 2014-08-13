@@ -2397,7 +2397,7 @@ class CustomPopup(xbmcgui.WindowXMLDialog):
                 showMessage('Error', 'No trailer found')
                 resume_popup_window()
             else:
-                play_video(self.trailer_url, 'NONE', self.title + ' - Official trailer', self.video_type)
+                play_video(self.trailer_url, 'NONE', self.title + ' - Official trailer', self.video_type, self.meta)
 
 
         elif control == 22:
