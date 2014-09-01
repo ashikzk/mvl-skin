@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.mvl" name="My Video library" version="2.6.77" provider-name="Mukto Software Ltd.">
+<addon id="plugin.video.mvl" name="My Video library" version="2.6.78" provider-name="Mukto Software Ltd.">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
         <import addon="script.module.xbmcswift2" version="2.4.0"/>

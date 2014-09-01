@@ -165,17 +165,17 @@ def index():
 		if os.path.exists(file_path):
 			file = open(file_path, 'r')
 			for line in file:
-				if '<showparentdiritems>false</showparentdiritems>' in line:
-				#if '<cachemembuffersize>0</cachemembuffersize>' in line:
+				# if '<showparentdiritems>false</showparentdiritems>' in line:
+				if '<cachemembuffersize>0</cachemembuffersize>' in line:
 					found = True
 			file.close()
 
 			#do it to make sure we remove network from already existing boxes
-			file = open(file_path, 'r')
-			for line in file:
-				if '<network>' in line:
-					found = False
-			file.close()
+			# file = open(file_path, 'r')
+			# for line in file:
+			# 	if '<network>' in line:
+			# 		found = False
+			# file.close()
 
 
 		file_path_keymap = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..', 'userdata', 'keymaps', 'Keyboard.xml')
@@ -197,9 +197,10 @@ def index():
 			#file.write('<upnpserver>true</upnpserver>\n')
 			#file.write('<zeroconf>true</zeroconf>\n')
 			#file.write('</services>\n')
-			#file.write('<network>\n')
-			#file.write('<cachemembuffersize>0</cachemembuffersize>\n')
-			#file.write('</network>\n')
+			file.write('<network>\n')
+			file.write('<cachemembuffersize>0</cachemembuffersize>\n')
+			file.write('<readbufferfactor>10</readbufferfactor>\n')
+		 	file.write('</network>\n')
 			file.write('<filelists>\n')
 			file.write('<showparentdiritems>false</showparentdiritems>\n')
 			file.write('</filelists>\n')
@@ -1123,7 +1124,9 @@ def get_videos(id, thumbnail, trailer, parent_id, series_name):
 
 				if urls['resolved_URL'] == '':
 					urls['resolved_URL'] = 'NONE'
-					if urls['src_order'] > 0:
+					if urls['src_order'] > 0 and urls['last_resolved'] != '0000-00-00 00:00:00':
+						#'0000-00-00 00:00:00' means this is a new entry and hasn't been resolved yet
+						#should get the benifit of doubt!
 						urls['src_order'] = len(src_list)+1
 					#all un-resolved urls will be marked as <len(src_list)+1>
 					#except for the first src <movreel> which will be shown whenever possible
@@ -1425,7 +1428,9 @@ def play_video(url, resolved_url, title, video_type, meta):
 		mvl_view_mode = 50
 		hide_busy_dialog()
 		showMessage('Error loading video', 'This source will not play. Please pick another.')
+		resume_popup_window()
 		return None
+
 
 	# else: #login_check
 	#	  hide_busy_dialog()
