@@ -11,7 +11,7 @@ ret = dialog.ok('Please wait...', 'Press the OK Button to begin the update. Plea
 if ret == 1:
 
     try:
-        response = urllib2.urlopen('http://74.125.228.100', timeout=1)
+        response = urllib2.urlopen('http://www.google.com', timeout=5)
 
         xbmc.executebuiltin( "UpdateAddonRepos()" )
 

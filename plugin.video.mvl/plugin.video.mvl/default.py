@@ -475,7 +475,7 @@ if usrsettings.getSetting('mac_address') == 'None' or usrsettings.getSetting('ma
 
 def check_internet():
 	try:
-		response = urllib2.urlopen('http://74.125.228.100', timeout=1)
+		response = urllib2.urlopen('http://www.google.com', timeout=5)
 		return True
 	except urllib2.URLError as err:
 		pass
