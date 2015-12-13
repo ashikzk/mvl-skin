@@ -1368,7 +1368,7 @@ def play_video(url, resolved_url, title, video_type, meta):
             #as this takes a while, we'll be importing it only when required
             from resources import commonresolvers
             plugin.log.info(url)
-            hostedurl = commonresolvers.get(url)
+            hostedurl = commonresolvers.get(url).result
             plugin.log.info(hostedurl)
 
         if str(hostedurl)[0] == 'h':# or str(hostedurl)[0] == 'p':
